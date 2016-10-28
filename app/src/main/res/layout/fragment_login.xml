@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginFragment">
+
+    <ImageView
+        android:layout_weight="1"
+        android:src="@drawable/alex_logo"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp" />
+
+    <Button
+        android:id="@+id/signIn"
+        android:background="#000000"
+        android:text="@string/sign_in"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Colored" />
+
+    <Button
+        android:id="@+id/signUp"
+        android:background="#ff1111"
+        android:textColor="#ffffff"
+        android:text="@string/sign_up"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button" />
+
+</LinearLayout>

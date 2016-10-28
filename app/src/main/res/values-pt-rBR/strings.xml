@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">gadder</string>
+
+    <string name="hint_name">Nome</string>
+    <string name="hint_email">nome@email.com</string>
+    <string name="hint_password">Senha</string>
+
+    <string name="short_name">Nome muito curto</string>
+    <string name="short_password">Senha muito curta</string>
+
+    <string name="title_get_permission">Localização</string>
+    <string name="msg_get_permission">
+        A sua localização vai definir se você foi ou não no treino, por isso precisamos dela.
+    </string>
+    <string name="ok">Ok</string>
+    <string name="thanks">Obrigado</string>
+
+    <string name="auth_failed">Falha na autorização!</string>
+
+    <string name="sign_in_first">Faça o login primeiro</string>
+
+    <string name="sign_in">Login</string>
+    <string name="sign_up">Cadastro</string>
+    <string name="sign_out">Sair</string>
+
+    <string name="notifications">Notificações</string>
+
+    <string name="empty_attendees">Não tem treinando</string>
+
+    <string name="whos_there">Quem está na academia?</string>
+
+    <string name="geofences_added">Geofences adicionadas</string>
+    <string name="geofences_removed">Geofences removidas</string>
+
+    <!-- Geofence strings -->
+    <string name="not_connected">GoogleApiClient não está conectado.</string>
+    <string name="geofence_not_available">Geofence não está disponível agora</string>
+    <string name="geofence_too_many_geofences">Muitas geofences foram registradas</string>
+    <string name="geofence_too_many_pending_intents">
+        You have provided too many PendingIntents to the addGeofences() call
+    </string>
+    <string name="unknown_geofence_error">Unknown error: Geofence service is not available</string>
+    <string name="geofence_transition_invalid_type">
+        Geofence transition error: invalid transition type %1$d
+    </string>
+    <string name="geofence_transition_entered">Chegou</string>
+    <string name="geofence_transition_exited">Saiu</string>
+    <string name="unknown_geofence_transition">Transição desconhecida</string>
+    <string name="geofence_transition_notification_text">Clique para entrar no app</string>
+
+</resources>

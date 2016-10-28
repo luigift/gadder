@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "254610893779",
+    "firebase_url": "https://gadder-386c4.firebaseio.com",
+    "project_id": "gadder-386c4",
+    "storage_bucket": "gadder-386c4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254610893779:android:8f9c5d007ba58b50",
+        "android_client_info": {
+          "package_name": "co.gadder.gadder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "254610893779-m0ki7nicqlitc7lf8b4531cdv3rrjdm2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "co.gadder.gadder",
+            "certificate_hash": "AD6E3D4EA27199596195AA92C3983A63A6C331DD"
+          }
+        },
+        {
+          "client_id": "254610893779-hfib5grf5brbia0ic19o4mpvufqjrvdl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ciXNhtIDfNHe2MfnrcPLnTHerponEKE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "254610893779-hfib5grf5brbia0ic19o4mpvufqjrvdl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
