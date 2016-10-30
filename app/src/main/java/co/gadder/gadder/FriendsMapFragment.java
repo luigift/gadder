@@ -62,16 +62,12 @@ public class FriendsMapFragment extends Fragment {
                 Log.d(TAG, "friendId: " + mainActivity.friendsId.toString());
                 for(String friendId : mainActivity.friendsId) {
                     Friend friend = mainActivity.friends.get(friendId);
-                    Log.d(TAG, "Name: " + friend.firstName);
 
                     LatLng friendLocation = new LatLng(friend.latitude, friend.longitude);
-                    if (friend.firstName.equals("Gilberto")) {
-                        mMap.animateCamera(CameraUpdateFactory.newLatLng(friendLocation), null);
-                    }
                     mMap.addMarker(
                             new MarkerOptions()
                                 .position(friendLocation)
-                                .title(friend.firstName + " " + friend.lastName)
+                                .title(friend.name)
                             .snippet("battery: " + friend.battery+"%"));
                 }
 
