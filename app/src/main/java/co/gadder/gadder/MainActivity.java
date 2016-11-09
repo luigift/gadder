@@ -1,18 +1,24 @@
 package co.gadder.gadder;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -53,17 +59,29 @@ public class MainActivity extends AppCompatActivity {
 
     protected List<String> friendsId;
     protected Map<String, Friend> friends;
+    protected FriendsRecyclerAdapter adapter;
 
     protected String loginState = null;
     protected Boolean friendsDownloaded = false;
+
+    private static final int NUM_PAGES = 3;
+    private ViewPager mPager;
+    private PagerAdapter mPagerAdapter;
+
+
+    protected final Location mLocation = new Location("");
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mLocation.setLatitude(-23.6233303);
+        mLocation.setLongitude(-46.6732878);
+
         friends = new HashMap<>();
         friendsId = new ArrayList<>();
+        adapter = new FriendsRecyclerAdapter(MainActivity.this);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -77,26 +95,30 @@ public class MainActivity extends AppCompatActivity {
                     if (checkPermissions()) {
                         if (savedInstanceState == null && (loginState == null || !loginState.equals("friends"))) {
                             Log.d(TAG, "FriendsActivityFragment");
-                            getFragmentManager().beginTransaction()
-                                    .replace(R.id.activity_main, FriendsActivityFragment.newInstance())
-                                    .commit();
+                            mPager = (ViewPager) findViewById(R.id.mainPager);
+                            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+                            mPager.setAdapter(mPagerAdapter);
+                            mPager.setCurrentItem(1);
+//                            getSupportFragmentManager().beginTransaction()
+//                                    .replace(R.id.activity_main, FriendsActivityFragment.newInstance())
+//                                    .commit();
                             loginState = "friends";
                         }
                     } else {
-                        if (savedInstanceState == null && (loginState == null || !loginState.equals("permissions"))) {
-                            Log.d(TAG, "FriendsActivityFragment");
-                            getFragmentManager().beginTransaction()
-                                    .replace(R.id.activity_main, PermissionFragment.newInstance())
-                                    .commit();
-                            loginState = "permissions";
-                        }
+//                        if (savedInstanceState == null && (loginState == null || !loginState.equals("permissions"))) {
+//                            Log.d(TAG, "FriendsActivityFragment");
+//                            getSupportFragmentManager().beginTransaction()
+//                                    .replace(R.id.activity_main, PhoneLoginFragment.newInstance())
+//                                    .commit();
+//                            loginState = "permissions";
+//                        }
                     }
                 } else {
                     Log.d(TAG, "Logged out");
                     if (null == savedInstanceState && (loginState == null || !loginState.equals("login"))) {
                         Log.d(TAG, "LoginFragment");
-                        getFragmentManager().beginTransaction()
-                                .replace(R.id.activity_main, FindFriendsFragment.newInstance())
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.activity_main, LoginFragment.newInstance())
                                 .commit();
                         loginState = "login";
                     }
@@ -108,96 +130,28 @@ public class MainActivity extends AppCompatActivity {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
-        Button findFriends = (Button) findViewById(R.id.buttonFindFriends);
-        findFriends.setOnClickListener(new View.OnClickListener() {
+        ImageButton friendButton = (ImageButton) findViewById(R.id.mainFriendsButton);
+        friendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.READ_CONTACTS}, 32);
-                    return;
-                }
-                getFragmentManager().beginTransaction()
-                        .addToBackStack("findFriends")
-                        .replace(R.id.activity_main, FindFriendsFragment.newInstance())
-                        .commit();
-            }
-        });
-
-        Button token = (Button) findViewById(R.id.token);
-        token.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String t = FirebaseInstanceId.getInstance().getToken();
-
-                JSONObject data = new JSONObject();
-                JSONObject json = new JSONObject();
-                try {
-                    data.put("update", "true");
-                    json.put("to", t);
-                    json.put("data", data);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, SERVER_URL, json, new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d(TAG, "response: " + response);
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d(TAG, "error: " + error);
-                    }
-                }) {
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String, String> header = new HashMap<>();
-                        header.put("Authorization", "key=" + API_KEY);
-                        return header;
-                    }
-
-                    @Override
-                    public String getBodyContentType() {
-                        return "application/json";
-                    }
-                };
-
-                Log.d(TAG, "body: " + request.getBody().toString());
-                Log.d(TAG, "content: " + request.getBodyContentType());
-                try {
-                    Log.d(TAG, "headers: " + request.getHeaders().toString());
-                } catch (AuthFailureError authFailureError) {
-                    Log.d(TAG, "AUTH ERROR");
-                    authFailureError.printStackTrace();
-                }
-                Log.d(TAG, request.toString());
-                requestQueue.add(request);
-
-                Toast.makeText(MainActivity.this, "Token: " + t, Toast.LENGTH_SHORT).show();
-                Log.d(TAG, "Token: " + t);
+                mPager.setCurrentItem(1, true);
             }
         });
 
 
-        Button logout = (Button) findViewById(R.id.send);
-        logout.setOnClickListener(new View.OnClickListener() {
+        ImageButton settings = (ImageButton) findViewById(R.id.mainSettingsButton);
+        settings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                loginState = null;
-                mAuth.signOut();
+                mPager.setCurrentItem(0, true);
             }
         });
 
-        Button profile = (Button) findViewById(R.id.profile);
-        profile.setOnClickListener(new View.OnClickListener() {
+        ImageButton mapButton = (ImageButton) findViewById(R.id.mainMapButton);
+        mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "Profile added");
-                getFragmentManager().beginTransaction()
-                        .addToBackStack("profile")
-                        .add(R.id.activity_main, ProfileFragment.newInstance(), "profile")
-                        .commit();
+                mPager.setCurrentItem(2, true);
             }
         });
 
@@ -210,6 +164,59 @@ public class MainActivity extends AppCompatActivity {
 //            Log.d(TAG, "Action: " + intent.getAction() + " extras: " + intent.getExtras().toString());
 //        }
 //    };
+
+
+    public void sendUpdateRequest() {
+        String t = FirebaseInstanceId.getInstance().getToken();
+
+        JSONObject data = new JSONObject();
+        JSONObject json = new JSONObject();
+        try {
+            data.put("update", "true");
+            json.put("to", t);
+            json.put("data", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, SERVER_URL, json, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d(TAG, "response: " + response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(TAG, "error: " + error);
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> header = new HashMap<>();
+                header.put("Authorization", "key=" + API_KEY);
+                return header;
+            }
+
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+        };
+
+        Log.d(TAG, "body: " + request.getBody().toString());
+        Log.d(TAG, "content: " + request.getBodyContentType());
+        try {
+            Log.d(TAG, "headers: " + request.getHeaders().toString());
+        } catch (AuthFailureError authFailureError) {
+            Log.d(TAG, "AUTH ERROR");
+            authFailureError.printStackTrace();
+        }
+        Log.d(TAG, request.toString());
+        requestQueue.add(request);
+
+        Toast.makeText(MainActivity.this, "Token: " + t, Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Token: " + t);
+    }
 
     @Override
     protected void onStart() {
@@ -254,15 +261,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addFriendsListener() {
-        Log.d(TAG, "addFriendsListener");
-        for (String uid : friendsId) {
+        Log.d(TAG, "addFriendsListener: " + friendsId.size());
+        for (final String uid : friendsId) {
             mDatabase.child(Constants.USERS).child(uid).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Log.d(TAG, "DataSnapshot: " + dataSnapshot.toString());
                     Friend friend = dataSnapshot.getValue(Friend.class);
                     if (friend != null) {
-                        friends.put(dataSnapshot.getKey(), friend);
+                        friend.id = dataSnapshot.getKey();
+                        adapter.updateItem(friend);
+                        Log.d(TAG, "update: " + friend.name);
                     }
                 }
 
@@ -304,5 +312,47 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return  permissionGranted;
+    }
+
+    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment fragment;
+            switch (position) {
+                case 0:
+                    fragment = ProfileFragment.newInstance(new Friend());
+                    break;
+                case 1:
+                    fragment = FriendsActivityFragment.newInstance();
+                    break;
+                case 2:
+                    fragment = FriendsMapFragment.newInstance();
+                    break;
+                default:
+                    fragment = new Fragment();
+            }
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mPager.getCurrentItem() == 0) {
+            // If the user is currently looking at the first step, allow the system to handle the
+            // Back button. This calls finish() on this activity and pops the back stack.
+            super.onBackPressed();
+        } else {
+            // Otherwise, select the previous step.
+            mPager.setCurrentItem(mPager.getCurrentItem() - 1);
+        }
     }
 }

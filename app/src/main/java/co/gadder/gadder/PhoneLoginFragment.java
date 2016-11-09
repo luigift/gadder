@@ -1,42 +1,30 @@
 package co.gadder.gadder;
 
 import android.Manifest;
-import android.annotation.TargetApi;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.os.Handler;
 import android.provider.Telephony;
 import android.support.v4.app.ActivityCompat;
-import android.telephony.PhoneNumberUtils;
+import android.support.v4.app.Fragment;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 
 import com.hbb20.CountryCodePicker;
 
 import java.util.Random;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PhoneLoginFragment extends Fragment {
     private final static String TAG = "PhoneLoginFragment";

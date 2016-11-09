@@ -3,6 +3,7 @@ package co.gadder.gadder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 
-public class SignInFragment extends android.app.Fragment {
+public class SignInFragment extends Fragment {
 
     public SignInFragment() {
         // Required empty public constructor

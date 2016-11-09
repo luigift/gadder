@@ -1,40 +1,23 @@
 package co.gadder.gadder;
 
-import android.graphics.Rect;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
-
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.squareup.picasso.Picasso;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendsActivityFragment extends Fragment {
     private final static String TAG = "FriendsActivityFragment";
 
-    private static class FriendViewHolder extends RecyclerView.ViewHolder {
-        TextView nameText;
-        TextView batteryText;
-        CircleImageView imageView;
-
-        public FriendViewHolder(View itemView) {
-            super(itemView);
-            nameText = (TextView) itemView.findViewById(R.id.cellName);
-            imageView = (CircleImageView) itemView.findViewById(R.id.cellImage);
-            batteryText = (TextView) itemView.findViewById(R.id.cellBatteryLevel);
-        }
-    }
-
     private MainActivity activity;
-    FirebaseRecyclerAdapter<Friend, FriendViewHolder> adapter;
+
+    private static int recyclerPosition = 0;
+    private static Boolean scrollingDown = null;
+
 
     public FriendsActivityFragment() {
         // Required empty public constructor
@@ -48,7 +31,6 @@ public class FriendsActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        activity = (MainActivity) getActivity();
     }
 
     @Override
@@ -56,44 +38,82 @@ public class FriendsActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
         Log.d(TAG, "onCreateView");
         // Inflate the layout for this fragment
-        View layout = inflater.inflate(R.layout.fragment_friends_activity, container, false);
-
-//        RecyclerView recyclerView = (RecyclerView) layout.findViewById(R.id.friendsRecyclerView);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//
-//        adapter = new FirebaseRecyclerAdapter<Friend, FriendViewHolder>(
-//                Friend.class,
-//                R.layout.item_friend,
-//                FriendViewHolder.class,
-//                activity.mDatabase.child()
-//        ) {
-//            @Override
-//            protected void populateViewHolder(FriendViewHolder viewHolder, Friend model, int position) {
-//                String name = model.firstName + model.lastName;
-//                viewHolder.nameText.setText(name);
-//                viewHolder.batteryText.setText(model.battery.toString());
-//                if (model.pictureUrl != null) {
-//                    if (!model.pictureUrl.isEmpty()) {
-//                        Picasso.with(getActivity())
-//                                .load(model.pictureUrl)
-//                                .into(viewHolder.imageView);
-//                    }
-//                }
-//            }
-//        };
-//        recyclerView.setAdapter(adapter);
-
-        FloatingActionButton fab = (FloatingActionButton) layout.findViewById(R.id.fabFriendMap);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getFragmentManager().beginTransaction()
-                        .addToBackStack("friendActivity")
-                        .replace(R.id.activity_main, FriendsMapFragment.newInstance())
-                        .commit();
-            }
-        });
-        return layout;
+        return inflater.inflate(R.layout.fragment_friends_activity, container, false);
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        activity = (MainActivity) getActivity();
+
+        RecyclerView recyclerView = (RecyclerView) activity.findViewById(R.id.friendsRecyclerView);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(activity));
+        activity.adapter.setRecyclerView(recyclerView);
+        recyclerView.setAdapter(activity.adapter);
+//        recyclerView.addOnItemTouchListener(
+//                new RecyclerItemClickListener(getActivity(),
+//                        recyclerView,
+//                        new RecyclerItemClickListener.OnItemClickListener() {
+//                            @Override
+//                            public void onItemClick(View view, int position) {
+//
+//                            }
+//
+//                            @Override
+//                            public void onLongItemClick(View view, int position) {
+//                                getFragmentManager().beginTransaction()
+//                                        .addToBackStack("profile")
+//                                        .add(R.id.activity_main,
+//                                                ProfileFragment.newInstance(activity.friends.get(activity.friendsId.get(position))))
+//                                        .commit();
+//                            }
+//                        }));
+
+////        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+////            @Override
+////            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+////                super.onScrollStateChanged(recyclerView, newState);
+////                Log.d(TAG, "newState: " + newState);
+////                if(newState == RecyclerView.SCROLL_STATE_IDLE) {
+////                    Log.d(TAG, "state:" + newState + " down: " + scrollingDown + " pos: " + recyclerPosition);
+////                    if (scrollingDown == null) {
+////
+////                    } else if(scrollingDown) {
+////                        recyclerPosition += 1;
+////                    } else {
+////                        if (recyclerPosition != 0) {
+////                            recyclerPosition -= 1;
+////                        }
+////                    }
+////                    recyclerView.smoothScrollToPosition(recyclerPosition);
+////                    recyclerPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+////                }
+////            }
+////
+////            @Override
+////            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+////                super.onScrolled(recyclerView, dx, dy);
+////                if (dy > 0 ) {
+////                    scrollingDown = true;
+////                } else {
+////                    scrollingDown = false;
+////                }
+//////                Log.d(TAG, "dx: " + dx + " dy: " + dy);
+////            }
+////        });
+//
+////        FloatingActionButton fab = (FloatingActionButton) activity.findViewById(R.id.fabFriendMap);
+////        fab.setOnClickListener(new View.OnClickListener() {
+////            @Override
+////            public void onClick(View view) {
+////                getFragmentManager().beginTransaction()
+////                        .addToBackStack("friendActivity")
+////                        .replace(R.id.activity_main, FriendsMapFragment.newInstance())
+////                        .commit();
+////            }
+////        });
+    }
+
 }
