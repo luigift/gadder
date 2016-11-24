@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Telephony;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.telephony.SmsManager;
@@ -21,7 +22,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.hbb20.CountryCodePicker;
 
 import java.util.Random;
@@ -66,6 +73,7 @@ public class PhoneLoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        final LoginActivity activity = (LoginActivity) getActivity();
 
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -94,8 +102,54 @@ public class PhoneLoginFragment extends Fragment {
 
                         if(mMessage.equals(sms.getMessageBody()) && mUserPhone.equals(sms.getOriginatingAddress())) {
                             Log.d(TAG, "Phone Verified");
+
+                            // remove non number characters
+                            final String phoneParsed = mUserPhone.replaceAll("\\D+", "");
+
+                            String email = phoneParsed + "@gadder.co";
+                            String password = mUserPhone;
+
+                            activity.mAuth.createUserWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                            Log.d(TAG, "signInWithCustomToken:onComplete:" + task.isSuccessful());
+                                            if (!task.isSuccessful()) {
+                                                Log.w(TAG, "signInWithCustomToken", task.getException());
+                                                Toast.makeText(getActivity(), "Authentication failed.",
+                                                        Toast.LENGTH_SHORT).show();
+                                            } else {
+                                                FirebaseUser user = activity.mAuth.getCurrentUser();
+                                                if (user != null) {
+                                                    activity.mDatabase
+                                                            .child(Constants.VERSION)
+                                                            .child(Constants.USER_PHONE)
+                                                            .child(phoneParsed)
+                                                            .child(user.getUid());
+
+                                                    Friend friend = new Friend();
+
+                                                    friend.sharing.musicSharing = true;
+                                                    friend.sharing.weatherSharing = true;
+                                                    friend.sharing.companySharing = true;
+                                                    friend.sharing.batterySharing = true;
+                                                    friend.sharing.activitySharing = true;
+
+                                                    friend.notification.friendsNearby = true;
+                                                    friend.notification.requestActivity = true;
+
+                                                    activity.mDatabase
+                                                            .child(Constants.VERSION)
+                                                            .child(Constants.USERS)
+                                                            .setValue(friend);
+                                                }
+
+                                            }
+                                        }
+                                    });
+
                             getFragmentManager().beginTransaction()
-                                    .replace(R.id.activity_main, VerifiedFragment.newInstance())
+                                    .replace(R.id.activity_login, VerifiedFragment.newInstance())
                                     .commit();
                         }
                     }

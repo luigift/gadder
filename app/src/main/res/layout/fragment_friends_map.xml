@@ -10,11 +10,39 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/mapRecycler"
-        android:background="#30000000"
+    <ImageButton
+        android:id="@+id/nextFriendOnMap"
+        android:layout_marginEnd="28dp"
+        android:layout_marginRight="28dp"
+        android:layout_marginBottom="106dp"
         android:layout_alignParentBottom="true"
-        android:layout_width="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/ic_keyboard_arrow_left_white_48dp"
+        android:background="@android:color/transparent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <ImageButton
+        android:layout_marginBottom="22dp"
+        android:src="@drawable/ic_keyboard_arrow_right_white_48dp"
+        android:background="@android:color/transparent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nextFriendOnMap"
+        android:layout_alignLeft="@+id/nextFriendOnMap"
+        android:layout_alignStart="@+id/nextFriendOnMap"
+        android:id="@+id/previousFriendOnMap" />
+
+    <ImageButton
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_bubble_chart_white_48dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/previousFriendOnMap"
+        android:layout_alignLeft="@+id/previousFriendOnMap"
+        android:layout_alignStart="@+id/previousFriendOnMap"
+        android:layout_marginBottom="24dp"
+        android:id="@+id/recenterFriendsOnMap" />
 
 </RelativeLayout>

@@ -11,6 +11,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.daimajia.androidanimations.library.Techniques;
+import com.daimajia.androidanimations.library.YoYo;
+import com.daimajia.androidanimations.library.attention.RubberBandAnimator;
+
 public class LoginFragment extends Fragment {
 
     public LoginFragment() {
@@ -29,12 +33,6 @@ public class LoginFragment extends Fragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -48,28 +46,20 @@ public class LoginFragment extends Fragment {
                 getFragmentManager()
                         .beginTransaction()
                         .addToBackStack("signIn")
-                        .replace(R.id.activity_main, SignInFragment.newInstance())
+                        .replace(R.id.activity_login, PhoneLoginFragment.newInstance())
                         .commit();
             }
         });
 
-        signUp = (Button) layout.findViewById(R.id.signUp);
-        signUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getFragmentManager()
-                        .beginTransaction()
-                        .addToBackStack("signIn")
-                        .replace(R.id.activity_main, SignUpFragment.newInstance())
-                        .commit();
-            }
-        });
         return layout;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onViewCreated");
-        super.onViewCreated(view, savedInstanceState);
+    public void onResume() {
+        super.onResume();
+        YoYo.with(Techniques.Pulse)
+                .duration(700)
+                .delay(1000)
+                .playOn(signIn);
     }
 }

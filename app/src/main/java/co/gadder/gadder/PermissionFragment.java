@@ -84,6 +84,5 @@ public class PermissionFragment extends Fragment {
                 }
                 break;
         }
-
     }
 }

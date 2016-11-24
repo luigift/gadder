@@ -1,12 +1,29 @@
 <resources>
     <string name="app_name">gadder</string>
 
+    <string name="request_contacts">Achar Amigos</string>
+
     <string name="hint_name">Nome</string>
     <string name="hint_email">nome@email.com</string>
     <string name="hint_password">Senha</string>
 
     <string name="short_name">Nome muito curto</string>
     <string name="short_password">Senha muito curta</string>
+
+    <!--Sharing Options-->
+    <string name="music_sharing">Compartilhar Música</string>
+    <string name="weather_sharing">Compartilhar Clima</string>
+    <string name="battery_sharing">Compartilhar Bateria</string>
+    <string name="company_sharing">Compartilhar Companhia</string>
+    <string name="activity_sharing">Compartilhar Atividades</string>
+    <string name="location_sharing">Compartilhar Localização</string>
+    <string name="warning_sharing">
+        Desabilitar o compartilhamento das informações resulta numa pior experiência para você
+        e seus amigos.
+    </string>
+
+    <!--Notification Options-->
+    <string name="friends_nearby">Amigos Próximos</string>
 
     <string name="title_get_permission">Localização</string>
     <string name="msg_get_permission">

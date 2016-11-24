@@ -29,7 +29,7 @@ public class SignInFragment extends Fragment {
     private EditText emailEditText;
     private EditText passwordEditText;
 
-    private MainActivity activity;
+    private LoginActivity activity;
 
     public static SignInFragment newInstance() {
         SignInFragment fragment = new SignInFragment();
@@ -40,7 +40,7 @@ public class SignInFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        activity = (MainActivity) getActivity();
+        activity = (LoginActivity) getActivity();
     }
 
     @Override
@@ -90,10 +90,6 @@ public class SignInFragment extends Fragment {
 //        final String password = passwordEditText.getText().toString();
         final String email = "tedesco.luigi@gmail.com";
         final String password = "[Lt5992]";
-
-//        activity.loginState = null;
-//        Log.d(TAG, "Signed In: " + activity.loginState);
-        activity.loginState = null;
 
         activity.mAuth.signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(getActivity(), new OnFailureListener() {

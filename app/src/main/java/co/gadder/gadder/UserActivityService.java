@@ -37,10 +37,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class UserActivityService extends Service implements
         GoogleApiClient.ConnectionCallbacks,
@@ -62,6 +64,8 @@ public class UserActivityService extends Service implements
 
     private Intent batteryStatus;
 
+    private Calendar calendar;
+
     Map<String, Object> childUpdates = new HashMap<>();
 
     public UserActivityService() {
@@ -78,6 +82,8 @@ public class UserActivityService extends Service implements
 
         buildGoogleApiClient();
 
+        calendar = Calendar.getInstance();
+
     }
 
     @Override
@@ -86,7 +92,6 @@ public class UserActivityService extends Service implements
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
-
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -120,6 +125,7 @@ public class UserActivityService extends Service implements
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Ask for location permission");
         } else {
+            childUpdates.put("timezone", TimeZone.getDefault());
             getLocation();
             getCity();
             getBatteryLevel();
@@ -285,17 +291,18 @@ public class UserActivityService extends Service implements
 
     private void checkStopSelf() {
         if (gotPlaces && gotActivity && gotWeather && gotHeadphone) {
+            childUpdates.put("lastUpdate", calendar.getTime());
             update();
         }
     }
 
     private void update() {
-
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             mDatabase
                     .getDatabase()
                     .getReference()
+                    .child(Constants.VERSION)
                     .child(Constants.USERS)
                     .child(user.getUid())
                     .updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {

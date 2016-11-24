@@ -37,7 +37,7 @@ public class SignUpFragment extends Fragment {
     private EditText nameEditText;
 
 
-    private MainActivity activity;
+    private LoginActivity activity;
 
     public static SignUpFragment newInstance() {
         return new SignUpFragment();
@@ -46,7 +46,7 @@ public class SignUpFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        activity = (MainActivity) getActivity();
+        activity = (LoginActivity) getActivity();
     }
 
     @Override
@@ -97,8 +97,7 @@ public class SignUpFragment extends Fragment {
         final String email = emailEditText.getText().toString();
         final String password = passwordEditText.getText().toString();
         final String fullName = nameEditText.getText().toString();
-        activity.loginState = null;
-//        requestPermissions();
+
         activity.mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
@@ -140,7 +139,11 @@ public class SignUpFragment extends Fragment {
         Toast.makeText(activity, "Logging In...", Toast.LENGTH_SHORT).show();
     }
 
-    private void writeNewUser(String userId, String fullname) {
-        activity.mDatabase.child("users").child(userId).child("fullname").setValue(fullname);
+    private void writeNewUser(String userId, String name) {
+        activity.mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(userId)
+                .child("name").setValue(name);
     }
 }

@@ -132,14 +132,14 @@ public class FriendsRecyclerAdapter
     }
 
     private class FriendViewHolder extends GenericViewHolder {
-        CardView friendCard;
-        ImageView friendImage;
+        TextView friendName;
         TextView distanceText;
+        ImageView friendImage;
         ImageView batteryImage;
 
         FriendViewHolder(View itemView) {
             super(itemView);
-            friendCard = (CardView) itemView.findViewById(R.id.friendCard);
+            friendName = (TextView) itemView.findViewById(R.id.friendName);
             friendImage = (ImageView) itemView.findViewById(R.id.friendImage);
             batteryImage = (ImageView) itemView.findViewById(R.id.friendBattery);
             distanceText = (TextView) itemView.findViewById(R.id.friendDistance);
@@ -147,21 +147,24 @@ public class FriendsRecyclerAdapter
 
         public void updateView(int position) {
             final Friend friend = getItem(position);
+            Log.d(TAG, "updateView: " + friend.name);
 
+            this.friendName.setText(friend.name);
             this.batteryImage.setImageResource(getBatteryResource(friend.battery));
 
             String distance =
                     Math.round(activity.mLocation.distanceTo(friend.getLocation()) / 1000) + " km";
             distanceText.setText(distance);
+
             if(friend.image == null) {
-                if (friend.pictureUrl != null) {
-                    if (!friend.pictureUrl.isEmpty()) {
-                        Picasso.with(activity)
-                                .load(friend.pictureUrl)
-                                .into(friendImage);
-                    }
+                Log.d(TAG, friend.name + " image null");
+                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
+                    Picasso.with(activity)
+                            .load(friend.pictureUrl)
+                            .into(friendImage);
                 }
             } else {
+                Log.d(TAG, friend.name + " image ok");
                 friendImage.setImageBitmap(friend.image);
             }
         }
@@ -208,6 +211,7 @@ public class FriendsRecyclerAdapter
 
     @Override
     public GenericViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.d(TAG, "onCreateViewHolder");
         switch (viewType) {
             case CONTACTS_REQUEST_VIEWHOLDER:
                 return new ContactsRequestViewHolder(LayoutInflater
@@ -252,7 +256,6 @@ public class FriendsRecyclerAdapter
 
         holder.updateView(position);
     }
-
 
     @Override
     public int getItemCount() {

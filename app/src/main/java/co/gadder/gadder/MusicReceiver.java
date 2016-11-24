@@ -6,20 +6,37 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MusicReceiver extends BroadcastReceiver {
     private final static String TAG = "MusicReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        String action = intent.getAction();
-        String cmd = intent.getStringExtra("command");
-        Log.v(TAG, action + " / " + cmd);
-        String artist = intent.getStringExtra("artist");
+        Boolean playing = intent.getBooleanExtra("playing", false);
+
         String album = intent.getStringExtra("album");
         String track = intent.getStringExtra("track");
-        Log.v(TAG, artist + ":" + album + ":" + track);
-        Toast.makeText(context, track, Toast.LENGTH_SHORT).show();
+        String artist = intent.getStringExtra("artist");
+        String song = artist + ":" + album + ":" + track;
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put("song", song);
+            childUpdates.put("playing", playing);
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference()
+                    .child("users")
+                    .child(user.getUid())
+                    .child("music")
+                    .updateChildren(childUpdates);
+        }
     }
 }

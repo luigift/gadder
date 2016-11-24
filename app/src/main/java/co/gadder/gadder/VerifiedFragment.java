@@ -1,6 +1,7 @@
 package co.gadder.gadder;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -54,6 +55,14 @@ public class VerifiedFragment extends Fragment {
                 }
             }
         });
+
+        final Button skip = (Button) getActivity().findViewById(R.id.buttonSkipFindFriends);
+        skip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getActivity(), MainActivity.class));
+            }
+        });
 //        Uri uri = Uri.parse("content://sms/inbox/8549");
 //        Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
 //        while(c.moveToNext()) {
@@ -67,7 +76,7 @@ public class VerifiedFragment extends Fragment {
 
     private void findFriends() {
         getFragmentManager().beginTransaction()
-                .replace(R.id.activity_main, FindFriendsFragment.newInstance())
+                .replace(R.id.activity_login, FindFriendsFragment.newInstance())
                 .commit();
     }
 

@@ -1,9 +1,11 @@
 package co.gadder.gadder;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
@@ -81,7 +83,7 @@ public class FindFriendsFragment extends Fragment {
             }
         };
 
-        final MainActivity activity = (MainActivity) getActivity();
+        final LoginActivity activity = (LoginActivity) getActivity();
 
         ListView friendsList = (ListView) activity.findViewById(R.id.friendsList);
         friendsList.setAdapter(friendsAdapter);
@@ -93,22 +95,35 @@ public class FindFriendsFragment extends Fragment {
             String rawPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
             friend.phone = rawPhone.replaceAll("\\D+",""); // remove non number characters
 
-            activity.mDatabase.child("user_phone").child(friend.phone).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.exists()) {
-                        Log.d(TAG, "name" +friend.name + " phone: " + friend.phone);
-                        String uid = dataSnapshot.getValue(String.class);
-                        friendsAdapter.addItem(uid, friend);
-                    }
-                }
+            activity.mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_PHONE)
+                    .child(friend.phone)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.exists()) {
+                                Log.d(TAG, "name" +friend.name + " phone: " + friend.phone);
+                                String uid = dataSnapshot.getValue(String.class);
+                                friendsAdapter.addItem(uid, friend);
+                            }
+                        }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                }
-            });
+                        }
+                    });
         }
         phones.close();
+
+
+        FloatingActionButton cancel = (FloatingActionButton) getActivity().findViewById(R.id.cancelFindFrinds);
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getActivity(), MainActivity.class));
+            }
+        });
     }
 }

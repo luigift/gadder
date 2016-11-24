@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements
     protected List<Friend> contacts;
     protected List<String> friendsId;
     protected Map<String, Friend> friends;
+    protected Map<String, ValueEventListener> listeners;
 
     protected FriendsRecyclerAdapter adapter;
 
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements
         mLocation.setLongitude(-46.6732878);
 
         friends = new HashMap<>();
+        listeners = new HashMap<>();
         contacts = new ArrayList<>();
         friendsId = new ArrayList<>();
         adapter = new FriendsRecyclerAdapter(MainActivity.this);
@@ -201,9 +203,10 @@ public class MainActivity extends AppCompatActivity implements
                     Log.d(TAG, "Logged out");
                     if (null == savedInstanceState && (loginState == null || !loginState.equals("login"))) {
                         Log.d(TAG, "LoginFragment");
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.activity_main, LoginFragment.newInstance())
-                                .commit();
+                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+//                        getSupportFragmentManager().beginTransaction()
+//                                .replace(R.id.activity_main, LoginFragment.newInstance())
+//                                .commit();
                         loginState = "login";
                     }
                 }
@@ -356,47 +359,51 @@ public class MainActivity extends AppCompatActivity implements
                         String rawPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
                         friend.phone = rawPhone.replaceAll("\\D+", ""); // remove non number characters
 
-                        mDatabase.child("user_phone").child(friend.phone).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                if (dataSnapshot.exists()) {
-                                    Log.d(TAG, "name" + friend.name + " phone: " + friend.phone);
-                                    friend.id = dataSnapshot.getValue(String.class);
-                                    if (!friends.containsKey(friend.id)) { // not a friend
-                                        Log.d(TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
-                                        int index = getContactById(friend.id);
-                                        if (index < 0) { // haven't been displayed
-                                            contacts.add(friend);
-                                            adapter.notifyItemChanged(friends.size() + contacts.size());
+                        mDatabase
+                                .child(Constants.VERSION)
+                                .child(Constants.USER_PHONE)
+                                .child(friend.phone)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if (dataSnapshot.exists()) {
+                                            Log.d(TAG, "name" + friend.name + " phone: " + friend.phone);
+                                            friend.id = dataSnapshot.getValue(String.class);
+                                            if (!friends.containsKey(friend.id)) { // not a friend
+                                                Log.d(TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
+                                                int index = getContactById(friend.id);
+                                                if (index < 0) { // haven't been displayed
+                                                    contacts.add(friend);
+                                                    adapter.notifyItemChanged(friends.size() + contacts.size());
 
-                                            mDatabase.child("users").child(friend.id).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                @Override
-                                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                                    Log.d(TAG, "contact info downloaded");
-                                                    int index = getContactById(dataSnapshot.getKey());
-                                                    if (index >= 0) {
-                                                        Friend newFriend = dataSnapshot.getValue(Friend.class);
-                                                        newFriend.id = dataSnapshot.getKey();
-                                                        contacts.get(index).update(newFriend);
-                                                        adapter.notifyItemChanged(friends.size() + index);
-                                                    }
+                                                    mDatabase.child("users").child(friend.id).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            Log.d(TAG, "contact info downloaded");
+                                                            int index = getContactById(dataSnapshot.getKey());
+                                                            if (index >= 0) {
+                                                                Friend newFriend = dataSnapshot.getValue(Friend.class);
+                                                                newFriend.id = dataSnapshot.getKey();
+                                                                contacts.get(index).update(newFriend);
+                                                                adapter.notifyItemChanged(friends.size() + index);
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
+
+                                                        }
+                                                    });
                                                 }
-
-                                                @Override
-                                                public void onCancelled(DatabaseError databaseError) {
-
-                                                }
-                                            });
+                                            }
                                         }
                                     }
-                                }
-                            }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
 
-                            }
-                        });
+                                    }
+                                });
                     }
                     phones.close();
                 }
@@ -424,26 +431,33 @@ public class MainActivity extends AppCompatActivity implements
                     .child(user.getUid())
                     .addChildEventListener(new ChildEventListener() {
                         @Override
-                        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                            if ((!friendsId.contains(dataSnapshot.getKey())) {
-                                friendsId.add(data.getKey());
+                        public void onChildAdded(DataSnapshot snap, String s) {
+                            Log.d(TAG, "onChildAdded: " + snap.toString());
+                            if ((Boolean) snap.getValue()) {
+                                addFriend(snap.getKey());
                             }
                             friendsDownloaded = true;
                         }
 
                         @Override
-                        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                            Log.d(TAG, "onChildChanged: " + dataSnapshot);
-//                            if (friendsId.contains())
+                        public void onChildChanged(DataSnapshot snap, String s) {
+                            Log.d(TAG, "onChildChanged: " + snap.toString());
+                            if ((Boolean) snap.getValue()) {
+                                addFriend(snap.getKey());
+                            } else {
+                                removeFriend(snap.getKey());
+                            }
                         }
 
                         @Override
-                        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                        public void onChildRemoved(DataSnapshot snap) {
+                            Log.d(TAG, "onChildRemoved: " + snap.toString());
+                            removeFriend(snap.getKey());
                         }
 
                         @Override
-                        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                        public void onChildMoved(DataSnapshot snap, String s) {
+                            Log.d(TAG, "onChildMoved: " + snap.toString());
 
                         }
 
@@ -452,63 +466,79 @@ public class MainActivity extends AppCompatActivity implements
                             friendsDownloaded = false;
                         }
                     });
-//                    .addListenerForSingleValueEvent(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    for (DataSnapshot data : dataSnapshot.getChildren()) {
-//                        Log.d(TAG, "child: " + data + "\n");
-//                        if ((Boolean) data.getValue()) {
-//                            friendsId.add(data.getKey());
-//                        }
-//                    }
-//                    addFriendsListener();
-//                }
-//
-//                @Override
-//                public void onCancelled(DatabaseError databaseError) {
-//                    friendsDownloaded = false;
-//                }
-//            });
         }
     }
 
-    private void addFriendsListener() {
-        Log.d(TAG, "addFriendsListener: " + friendsId.size());
-        for (final String uid : friendsId) {
-            mDatabase
-                    .child(Constants.VERSION)
-                    .child(Constants.USERS)
-                    .child(uid)
-                    .addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            final Friend friend = dataSnapshot.getValue(Friend.class);
-                            if (friend != null) {
-                                friend.id = dataSnapshot.getKey();
-                                final int index = friendsId.indexOf(dataSnapshot.getKey());
-                                Friend olFriend = friends.get(friendsId.get(index));
-                                if(olFriend != null) { //update friend
-                                    Log.d(TAG, "friend updated: " + olFriend.name);
-                                    olFriend.update(friend);
-                                    friends.get(friendsId.get(index)).update(friend);
-                                    ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
-                                    adapter.notifyItemChanged(index);
-                                } else { // add friend
-                                    Log.d(TAG, "friend added: " + friend.name + "picture: " + friend.pictureUrl);
-//                            friends.put(friend.id, friend);
-                                    ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
-//                            adapter.notifyItemInserted(index);
-                                    adapter.addItem(friend);
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Log.w(TAG, "Error: " + databaseError.getDetails() + databaseError.getDetails());
-                        }
-                    });
+    private void addFriend(String uid) {
+        Log.d(TAG, "add Friend: " + uid);
+        if (!friendsId.contains(uid)) {
+            Friend friend = new Friend();
+            friend.id = uid;
+            friendsId.add(uid);
+            friends.put(uid, friend);
+            ValueEventListener listener = addFriendListener(uid);
+            listeners.put(uid, listener);
         }
+        Log.d(TAG, "FriendsId: " + friendsId.size() + " " + friendsId.toString());
+        Log.d(TAG, "Friends: " + friends.size() +  " " + friends.keySet().toString());
+        Log.d(TAG, "Listeners: " + listeners.size() + " " + listeners.keySet().toString());
+    }
+
+    private void removeFriend(String uid) {
+        Log.d(TAG, "removeFriend: "+  uid);
+        int index = friendsId.indexOf(uid);
+        friendsId.remove(uid);
+        ValueEventListener listener = listeners.get(uid);
+        if (listener != null) {
+            mDatabase.removeEventListener(listener);
+        }
+        listeners.remove(uid);
+        adapter.notifyDataSetChanged();
+        Log.d(TAG, "FriendsId: " + friendsId.size() + " " + friendsId.toString());
+        Log.d(TAG, "Friends: " + friends.size() +  " " + friends.keySet().toString());
+        Log.d(TAG, "Listeners: " + listeners.size() + " " + listeners.keySet().toString());
+//        adapter.notifyItemRemoved(index);
+    }
+
+    private ValueEventListener addFriendListener(String uid) {
+        Log.d(TAG, "addFriendListener: " + friendsId.size());
+
+        final ValueEventListener listener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                final Friend friend = dataSnapshot.getValue(Friend.class);
+                if (friend != null) {
+                    friend.id = dataSnapshot.getKey();
+                    final int index = friendsId.indexOf(dataSnapshot.getKey());
+                    Friend olFriend = friends.get(friendsId.get(index));
+                    if(olFriend != null) { //update friend
+                        Log.d(TAG, "friend updated: " + olFriend.name);
+                        olFriend.update(friend);
+                        friends.get(friendsId.get(index)).update(friend);
+                        ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                        adapter.notifyItemChanged(index);
+                    } else { // add friend
+                        Log.d(TAG, "friend added: " + friend.name + "picture: " + friend.pictureUrl);
+//                            friends.put(friend.id, friend);
+//                            adapter.notifyItemInserted(index);
+                        ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                        adapter.addItem(friend);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "Error: " + databaseError.getDetails() + databaseError.getDetails());
+            }
+        };
+
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(uid)
+                .addValueEventListener(listener);
+        return listener;
     }
 
     public Boolean checkContactsPermission() {

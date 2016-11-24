@@ -12,7 +12,7 @@ public class PhoneStatusReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction().equals(Intent.ACTION_SHUTDOWN)) {
-            Log.d(TAG, "shutdown");
+            Log.d(TAG, "Shutdown");
         } else if(intent.getAction().equals(Intent.ACTION_LOCALE_CHANGED)){
             Log.d(TAG, "Localed changed");
         } else if(intent.getAction().equals(Intent.ACTION_USER_PRESENT)) {

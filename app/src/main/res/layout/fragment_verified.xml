@@ -34,7 +34,7 @@
         android:layout_centerHorizontal="true"
         android:textAllCaps="false"
         android:textColor="@android:color/white"
-        android:id="@+id/button3"
+        android:id="@+id/buttonSkipFindFriends"
         style="@style/Widget.AppCompat.Button.Borderless" />
 
 </RelativeLayout>

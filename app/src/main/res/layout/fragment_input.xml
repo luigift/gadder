@@ -1,13 +1,43 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#30000000"
     tools:context="co.gadder.gadder.InputFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <android.support.v7.widget.CardView
+        android:layout_gravity="center"
+        app:cardCornerRadius="30dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_margin="32dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/profileUserCard">
+
+        <LinearLayout
+            android:id="@+id/profileUserEditLayout"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.v4.widget.Space
+                android:id="@+id/profileImage"
+                android:layout_gravity="center"
+                android:layout_marginLeft="3dp"
+                android:layout_marginStart="3dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp" />
+
+            <EditText
+                android:id="@+id/profileName"
+                android:hint="@string/activity_input"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:layout_margin="10dp" />
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 
 </FrameLayout>
