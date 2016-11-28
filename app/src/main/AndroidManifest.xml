@@ -26,6 +26,9 @@
         <meta-data
             android:name="com.google.android.awareness.API_KEY"
             android:value="AIzaSyDOqMRPMGhvidjWF5fiz-XgdPyUFaVI4Ts" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="b80dacc6b66cc5d01476c9d065db45d5d10af078" />
 
         <activity
             android:name=".MainActivity"
@@ -97,10 +100,12 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".LoginActivity"
+        <activity
+            android:name=".LoginActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize"/>
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".InputActivity"></activity>
     </application>
 
 </manifest>

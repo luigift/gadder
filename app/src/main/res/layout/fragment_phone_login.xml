@@ -16,12 +16,6 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="10dp"/>
 
-    <ProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-        android:id="@+id/verificationProgress" />
-
     <TextView
         android:text="@string/explaining_verification"
         android:layout_width="wrap_content"
@@ -38,7 +32,6 @@
         android:layout_margin="16dp"
         android:id="@+id/linearLayout">
 
-
         <com.hbb20.CountryCodePicker
             android:id="@+id/ccp"
             android:layout_weight="0.3"
@@ -50,10 +43,10 @@
             android:textColor="@color/colorAccent"
             android:layout_weight="0.7"
             android:layout_width="0dp"
-            android:textSize="35sp"
+            android:textSize="30sp"
             android:layout_height="wrap_content"
             android:id="@+id/phoneNumberInput"
-            android:inputType="phone" />
+            android:inputType="number" />
     </LinearLayout>
 
     <LinearLayout
@@ -63,24 +56,22 @@
         android:layout_height="match_parent">
 
         <Button
-            android:text="Verify"
+            android:text="@string/send_sms"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="5dp"
-            android:id="@+id/verifyPhoneButton"
+            android:id="@+id/sendSmsButton"
             style="@style/Widget.AppCompat.Button.Colored" />
 
         <TextView
             android:layout_gravity="center"
-            android:text="Carrier SMS charges may apply"
+            android:text="@string/charges_may_apply"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textView3"
             android:textSize="12sp"
-            android:layout_marginBottom="8dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true" />
+            android:layout_marginBottom="8dp" />
     </LinearLayout>
 
 

@@ -37,6 +37,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -154,16 +155,16 @@ public class UserActivityService extends Service implements
 
     private void getCity() {
         Geocoder gcd = new Geocoder(this, Locale.getDefault());
-        List<Address> addresses = null;
+        List<Address> addresses;
         try {
             addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            if (addresses.size() > 0) {
+                String city = addresses.get(0).getLocality();
+                Log.d(TAG, "city: " + city);
+                childUpdates.put("city", city);
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        if (addresses.size() > 0) {
-            String city = addresses.get(0).getLocality();
-            Log.d(TAG, "city: " + city);
-            childUpdates.put("city", city);
         }
     }
 
@@ -215,36 +216,51 @@ public class UserActivityService extends Service implements
         Awareness.SnapshotApi.getWeather(mGoogleApiClient).setResultCallback(new ResultCallback<WeatherResult>() {
             @Override
             public void onResult(@NonNull WeatherResult weatherResult) {
-                Float temperature = weatherResult.getWeather().getTemperature(Weather.CELSIUS);
+                int temperature = Math.round(weatherResult.getWeather().getTemperature(Weather.CELSIUS));
                 int[] conditions = weatherResult.getWeather().getConditions();
 
                 Log.d(TAG, "Temperature: " + temperature);
                 Log.d(TAG, "Conditions: " + "\n");
                 String textCondition = "";
+
+                List<String> weather = new ArrayList<String>();
                 for(int cond : conditions) {
                     if (cond == Weather.CONDITION_CLEAR) {
                         textCondition = "Clear";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_FOGGY) {
                         textCondition = "Foggy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_CLOUDY) {
                         textCondition = "Cloudy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_HAZY) {
                         textCondition = "Hazy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_ICY) {
                         textCondition = "Icy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_RAINY) {
                         textCondition = "Rainy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_SNOWY) {
                         textCondition = "Snowy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_STORMY) {
                         textCondition = "Stormy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_WINDY) {
                         textCondition = "Windy";
+                        weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_UNKNOWN) {
                         textCondition = "Unknown";
+                        weather.add(textCondition);
                     }
                     Log.d(TAG, "            " + textCondition + "\n");
                 }
+
+                childUpdates.put("weather", weather);
+                childUpdates.put("temperature", temperature);
 
                 gotWeather = true;
                 checkStopSelf();

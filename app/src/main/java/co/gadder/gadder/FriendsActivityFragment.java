@@ -18,13 +18,7 @@ public class FriendsActivityFragment extends Fragment {
 
     private MainActivity activity;
 
-    private static int recyclerPosition = 0;
-    private static Boolean scrollingDown = null;
-
-
-    public FriendsActivityFragment() {
-        // Required empty public constructor
-    }
+    public FriendsActivityFragment() {}
 
     public static FriendsActivityFragment newInstance() {
         return new FriendsActivityFragment();
@@ -50,9 +44,6 @@ public class FriendsActivityFragment extends Fragment {
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
-//        recyclerView
-//                .setLayoutManager(
-//                    new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(getActivity(),
                         recyclerView,
@@ -64,51 +55,14 @@ public class FriendsActivityFragment extends Fragment {
 
                             @Override
                             public void onLongItemClick(View view, int position) {
-
+                                getFragmentManager().beginTransaction()
+                                        .addToBackStack("click")
+                                        .replace(R.id.friendActivityLayout, FloatingProfileFragment.newInstance(activity.adapter.getItem(position)))
+                                        .commit();
                             }
                         }));
         activity.adapter.setRecyclerView(recyclerView);
 
-//        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-//                super.onScrollStateChanged(recyclerView, newState);
-//                Log.d(TAG, "newState: " + newState);
-//                if(newState == RecyclerView.SCROLL_STATE_IDLE) {
-//                    Log.d(TAG, "state:" + newState + " down: " + scrollingDown + " pos: " + recyclerPosition);
-//                    if (scrollingDown == null) {
-//
-//                    } else if(scrollingDown) {
-//                        recyclerPosition += 1;
-//                    } else {
-//                        if (recyclerPosition != 0) {
-//                            recyclerPosition -= 1;
-//                        }
-//                    }
-//                    recyclerView.smoothScrollToPosition(recyclerPosition);
-//                    recyclerPosition = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
-//                }
-//            }
-//
-//            @Override
-//            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                if (dy > 0 ) {
-//                    scrollingDown = true;
-//                } else {
-//                    scrollingDown = false;
-//                }
-//                Log.d(TAG, "dx: " + dx + " dy: " + dy);
-//            }
-//        });
-
         return layout;
     }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-    }
-
 }

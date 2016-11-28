@@ -2,6 +2,7 @@ package co.gadder.gadder;
 
 import android.Manifest;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -20,6 +21,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements
     protected String loginState = null;
     protected Boolean friendsDownloaded = false;
 
-    private static final int NUM_PAGES = 2;
+    private static final int NUM_PAGES = 3;
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
@@ -133,6 +135,9 @@ public class MainActivity extends AppCompatActivity implements
                     if (checkPermissions()) {
                         if (savedInstanceState == null && (loginState == null || !loginState.equals("friends"))) {
                             Log.d(TAG, "FriendsActivityFragment");
+
+                            startService(new Intent(MainActivity.this, UserActivityService.class));
+
                             mPager = (ViewPager) findViewById(R.id.mainPager);
                             mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
                             mPager.setAdapter(mPagerAdapter);
@@ -144,6 +149,8 @@ public class MainActivity extends AppCompatActivity implements
                                 public void onClick(View view) {
                                     if (appBarExpanded) {
                                         appBarLayout.setExpanded(false, true);
+                                    } else {
+                                        appBarLayout.setExpanded(true, false);
                                     }
                                     mPager.setCurrentItem(0, true);
                                 }
@@ -161,6 +168,39 @@ public class MainActivity extends AppCompatActivity implements
                                 }
                             });
 
+                            final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
+                            notification.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    if (appBarExpanded) {
+                                        appBarLayout.setExpanded(false, true);
+                                    }
+                                    mPager.setCurrentItem(2, true);
+                                }
+                            });
+
+                            mDatabase.child(Constants.VERSION)
+                                    .child(Constants.USERS)
+                                    .child(user.getUid())
+                                    .child("noNotifications")
+                                    .addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            Integer noNotifications =
+                                                    dataSnapshot.getValue(Integer.class);
+                                            if (noNotifications != null && noNotifications > 0 ) {
+                                                notification.setImageResource(R.drawable.ic_notifications_active_black_24dp);
+                                            } else {
+                                                notification.setImageResource(R.drawable.ic_notifications_black_24dp);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+
                             mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
                                 @Override
                                 public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -172,11 +212,15 @@ public class MainActivity extends AppCompatActivity implements
                                     if (position == 0 ) {
                                         profile.setColorFilter(Color.argb(255,33,34,89));
                                         main.clearColorFilter();
+                                        notification.clearColorFilter();
                                     } else if (position == 1) {
                                         profile.clearColorFilter();
                                         main.setColorFilter(Color.argb(255,33,34,89));
+                                        notification.clearColorFilter();
                                     } else {
-
+                                        profile.clearColorFilter();
+                                        main.clearColorFilter();
+                                        notification.setColorFilter(Color.argb(255,33,34,89));
                                     }
                                 }
 
@@ -186,11 +230,20 @@ public class MainActivity extends AppCompatActivity implements
                                 }
                             });
 
-                            startService(new Intent(MainActivity.this, UserActivityService.class));
-
                             loginState = "friends";
                         }
                     } else {
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
+                                .setMessage("Give the location permission bro")
+                                .setTitle("Locatioooon!!")
+                                .setPositiveButton("Ok, ok...", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        requestPermissions();
+                                    }
+                                });
+                        builder.create().show();
 //                        if (savedInstanceState == null && (loginState == null || !loginState.equals("permissions"))) {
 //                            Log.d(TAG, "FriendsActivityFragment");
 //                            getSupportFragmentManager().beginTransaction()
@@ -203,7 +256,10 @@ public class MainActivity extends AppCompatActivity implements
                     Log.d(TAG, "Logged out");
                     if (null == savedInstanceState && (loginState == null || !loginState.equals("login"))) {
                         Log.d(TAG, "LoginFragment");
-                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                        finish();
 //                        getSupportFragmentManager().beginTransaction()
 //                                .replace(R.id.activity_main, LoginFragment.newInstance())
 //                                .commit();
@@ -219,17 +275,6 @@ public class MainActivity extends AppCompatActivity implements
         appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         appBarLayout.setExpanded(false);
         appBarExpanded = false;
-        if (appBarLayout.getLayoutParams() != null) {
-            CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-            AppBarLayout.Behavior appBarLayoutBehaviour = new AppBarLayout.Behavior();
-            appBarLayoutBehaviour.setDragCallback(new AppBarLayout.Behavior.DragCallback() {
-                @Override
-                public boolean canDrag(@NonNull AppBarLayout appBarLayout) {
-                    return false;
-                }
-            });
-            layoutParams.setBehavior(appBarLayoutBehaviour);
-        }
         final Integer[] initialOffset = new Integer[]{null};
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
@@ -248,10 +293,7 @@ public class MainActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                getSupportFragmentManager().beginTransaction()
-                        .addToBackStack("inputFragment")
-                        .add(R.id.activity_main, InputFragment.newInstance())
-                        .commit();
+            startActivity(new Intent(MainActivity.this, InputActivity.class));
             }
         });
 
@@ -376,24 +418,28 @@ public class MainActivity extends AppCompatActivity implements
                                                     contacts.add(friend);
                                                     adapter.notifyItemChanged(friends.size() + contacts.size());
 
-                                                    mDatabase.child("users").child(friend.id).addListenerForSingleValueEvent(new ValueEventListener() {
-                                                        @Override
-                                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                                            Log.d(TAG, "contact info downloaded");
-                                                            int index = getContactById(dataSnapshot.getKey());
-                                                            if (index >= 0) {
-                                                                Friend newFriend = dataSnapshot.getValue(Friend.class);
-                                                                newFriend.id = dataSnapshot.getKey();
-                                                                contacts.get(index).update(newFriend);
-                                                                adapter.notifyItemChanged(friends.size() + index);
-                                                            }
-                                                        }
+                                                    mDatabase
+                                                            .child(Constants.VERSION)
+                                                            .child(Constants.USERS)
+                                                            .child(friend.id)
+                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                                @Override
+                                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                    Log.d(TAG, "contact info downloaded");
+                                                                    int index = getContactById(dataSnapshot.getKey());
+                                                                    if (index >= 0) {
+                                                                        Friend newFriend = dataSnapshot.getValue(Friend.class);
+                                                                        newFriend.id = dataSnapshot.getKey();
+                                                                        contacts.get(index).update(newFriend);
+                                                                        adapter.notifyItemChanged(friends.size() + index);
+                                                                    }
+                                                                }
 
-                                                        @Override
-                                                        public void onCancelled(DatabaseError databaseError) {
+                                                                @Override
+                                                                public void onCancelled(DatabaseError databaseError) {
 
-                                                        }
-                                                    });
+                                                                }
+                                                            });
                                                 }
                                             }
                                         }
@@ -564,23 +610,23 @@ public class MainActivity extends AppCompatActivity implements
             permissionGranted = false;
         }
 
-        if (ActivityCompat
-                .checkSelfPermission(
-                        MainActivity.this,
-                        Manifest.permission.CAMERA) !=
-                PackageManager.PERMISSION_GRANTED ) {
-            Log.d(TAG, "Permission Missing: Camera");
-            permissionGranted = false;
-        }
-
-        if (ActivityCompat
-                .checkSelfPermission(
-                        MainActivity.this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-                PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Permission Missing: Storage");
-            permissionGranted = false;
-        }
+//        if (ActivityCompat
+//                .checkSelfPermission(
+//                        MainActivity.this,
+//                        Manifest.permission.CAMERA) !=
+//                PackageManager.PERMISSION_GRANTED ) {
+//            Log.d(TAG, "Permission Missing: Camera");
+//            permissionGranted = false;
+//        }
+//
+//        if (ActivityCompat
+//                .checkSelfPermission(
+//                        MainActivity.this,
+//                        Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
+//                PackageManager.PERMISSION_GRANTED) {
+//            Log.d(TAG, "Permission Missing: Storage");
+//            permissionGranted = false;
+//        }
 
         return  permissionGranted;
     }
@@ -599,6 +645,9 @@ public class MainActivity extends AppCompatActivity implements
                     break;
                 case 1:
                     fragment = FriendsActivityFragment.newInstance();
+                    break;
+                case 2:
+                    fragment = NotificationFragment.newInstance();
                     break;
                 default:
                     fragment = new Fragment();

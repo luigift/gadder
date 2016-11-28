@@ -134,7 +134,7 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+        ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
@@ -145,11 +145,11 @@ public class ProfileFragment extends Fragment {
                     user.id = dataSnapshot.getKey();
                     Log.d("ProfileFragment", "user: " + dataSnapshot.toString());
                     name.setText(user.name);
-                    music.setChecked(user.sharing.musicSharing);
-                    battery.setChecked(user.sharing.batterySharing);
-                    company.setChecked(user.sharing.companySharing);
-                    location.setChecked(user.sharing.locationSharing);
-                    activities.setChecked(user.sharing.activitySharing);
+//                    music.setChecked(user.sharing.musicSharing);
+//                    battery.setChecked(user.sharing.batterySharing);
+//                    company.setChecked(user.sharing.companySharing);
+//                    location.setChecked(user.sharing.locationSharing);
+//                    activities.setChecked(user.sharing.activitySharing);
 
                     if (user.image == null) {
                         if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {

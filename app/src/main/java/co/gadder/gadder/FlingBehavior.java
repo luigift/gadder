@@ -1,6 +1,8 @@
 package co.gadder.gadder;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +19,12 @@ public final class FlingBehavior extends AppBarLayout.Behavior {
 
     public FlingBehavior(Context context, AttributeSet attrs) {
         super(context, attrs);
+        this.setDragCallback(new AppBarLayout.Behavior.DragCallback(){
+            @Override
+            public boolean canDrag(@NonNull AppBarLayout appBarLayout) {
+                return false;
+            }
+        });
     }
 
     @Override
@@ -39,4 +47,5 @@ public final class FlingBehavior extends AppBarLayout.Behavior {
         super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed);
         isPositive = dy > 0;
     }
+
 }

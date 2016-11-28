@@ -63,15 +63,6 @@ public class VerifiedFragment extends Fragment {
                 startActivity(new Intent(getActivity(), MainActivity.class));
             }
         });
-//        Uri uri = Uri.parse("content://sms/inbox/8549");
-//        Cursor c = getActivity().getContentResolver().query(uri, null, null, null, null);
-//        while(c.moveToNext()) {
-//            String pid = c.getString(0);
-//            String body = c.getString(c.getColumnIndex("body"));
-//            String u = "content://sms/" + pid;
-//            Log.d(TAG, "PID: " + pid + " body: " + body);
-//        }
-//        c.close();
     }
 
     private void findFriends() {

@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 
 public class SignInFragment extends Fragment {
@@ -23,6 +24,7 @@ public class SignInFragment extends Fragment {
 
     private static final String TAG = "SingUpFragment";
 
+    private FirebaseAuth mAuth;
 
     // UI elements
     private ImageButton nextButton;
@@ -41,6 +43,7 @@ public class SignInFragment extends Fragment {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         activity = (LoginActivity) getActivity();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -86,12 +89,10 @@ public class SignInFragment extends Fragment {
     }
 
     private void signInUser() {
-//        final String email = emailEditText.getText().toString();
-//        final String password = passwordEditText.getText().toString();
-        final String email = "tedesco.luigi@gmail.com";
-        final String password = "[Lt5992]";
+        final String email = emailEditText.getText().toString();
+        final String password = passwordEditText.getText().toString();
 
-        activity.mAuth.signInWithEmailAndPassword(email, password)
+        mAuth.signInWithEmailAndPassword(email, password)
                 .addOnFailureListener(getActivity(), new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {

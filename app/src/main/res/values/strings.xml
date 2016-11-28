@@ -13,6 +13,19 @@
 
     <string name="activity_input">What are you doing?</string>
 
+
+    <string name="verify">Verify</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="try_again">Try Again</string>
+    <string name="wrong_code_title">Oops! Wrong Code!</string>
+    <string name="wrong_code_message">
+        I\'m sorry but the code you have entered doea not match.
+    </string>
+    <string name="verifing_phone_message">We are verifing the number\:</string>
+    <string name="enter_sms_code">Please enter the code you have received.</string>
+    <string name="charges_may_apply">Carrier SMS charges may apply</string>
+
+
     <!--Sharing Options-->
     <string name="music_sharing">Music Sharing</string>
     <string name="battery_sharing">Battery Sharing</string>

@@ -150,11 +150,15 @@ public class FriendsRecyclerAdapter
             Log.d(TAG, "updateView: " + friend.name);
 
             this.friendName.setText(friend.name);
-            this.batteryImage.setImageResource(getBatteryResource(friend.battery));
+            if (friend.sharing.batterySharing != null && friend.sharing.batterySharing) {
+                this.batteryImage.setImageResource(getBatteryResource(friend.battery));
+            }
 
-            String distance =
-                    Math.round(activity.mLocation.distanceTo(friend.getLocation()) / 1000) + " km";
-            distanceText.setText(distance);
+            if (friend.sharing.locationSharing != null && friend.sharing.locationSharing) {
+                String distance =
+                        Math.round(activity.mLocation.distanceTo(friend.getLocation()) / 1000) + " km";
+                distanceText.setText(distance);
+            }
 
             if(friend.image == null) {
                 Log.d(TAG, friend.name + " image null");

@@ -12,6 +12,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.List;
+
 public class Friend {
 
     private static final String TAG = "Friend";
@@ -55,11 +57,11 @@ public class Friend {
     public String city;
     public int battery;
     public int noFriends;
-    public String weather;
     public String activity;
+    public int temperature;
     public Boolean headphone;
     public TimeZone timeZone;
-    public Float temperature;
+    public List<String> weather;
 
     public Music music = new Music();
     public Sharing sharing = new Sharing();

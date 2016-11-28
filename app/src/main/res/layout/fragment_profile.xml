@@ -38,7 +38,6 @@
                 <TextView
                     android:id="@+id/profileName"
                     android:gravity="center"
-                    android:text="Luigi Tedesco"
                     android:textStyle="bold"
                     android:layout_weight="1"
                     android:layout_width="0dp"

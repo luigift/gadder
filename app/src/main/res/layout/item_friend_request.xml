@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_gravity="center"
+        android:layout_margin="16dp"
+        android:id="@+id/friendRequestImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp" />
+
+    <TextView
+        android:layout_weight="1"
+        android:layout_gravity="center"
+        android:id="@+id/friendRequestName"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:textStyle="bold"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:layout_margin="16dp"
+        android:layout_gravity="center"
+        android:tint="@android:color/holo_red_light"
+        android:src="@drawable/ic_close_white_24dp"
+        android:id="@+id/friendRequestAccept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <View
+        android:layout_gravity="center"
+        android:background="#40342234"
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        android:layout_margin="6dp" />
+
+    <ImageView
+        android:layout_margin="16dp"
+        android:layout_gravity="center"
+        android:tint="@color/colorAccent"
+        android:src="@drawable/ic_done_white_24dp"
+        android:id="@+id/friendRequestReject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

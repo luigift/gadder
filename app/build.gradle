@@ -41,6 +41,7 @@ dependencies {
     compile 'com.android.volley:volley:1.0.0'
 
     // Firebase
+    compile 'com.firebaseui:firebase-ui-database:0.4.0'
     compile 'com.google.firebase:firebase-core:10.0.0'
     compile 'com.google.firebase:firebase-auth:10.0.0'
     compile 'com.google.firebase:firebase-storage:10.0.0'
@@ -59,7 +60,5 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 }
-
-
 
 apply plugin: 'com.google.gms.google-services'
