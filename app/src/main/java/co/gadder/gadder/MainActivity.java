@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -63,14 +65,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+import co.gadder.gadder.emoji.Objects;
+
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
-    private static final String TAG = "Main Activity";
-    private static final String SENDER_ID = "254610893779";
-    private static final String SERVER_URL = "https://fcm.googleapis.com/fcm/send";
-    private static final String API_KEY = "AIzaSyDHV8lCJNf8VUIOx2L8KCI8zDYhlXinB70";
+    private static final String TAG = "MainActivity";
 
     public static final int REQUEST_LOCATION_PERMISSION = 10;
     public static final int REQUEST_READ_CONTACTS_PERMISSION = 11;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements
     protected ArrayList<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent = null;
 
-    private RequestQueue requestQueue;
 
     public FirebaseAuth mAuth;
     public StorageReference mStorage;
@@ -121,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements
         friendsId = new ArrayList<>();
         adapter = new FriendsRecyclerAdapter(MainActivity.this);
 
+        mStorage = FirebaseStorage.getInstance().getReference();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -130,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (user != null) {
                     uid = user.getUid();
                     getFriends(user);
-                    getFriendsFromContacts();
+//                    getFriendsFromContacts();
                     Log.d(TAG, "Logged in");
                     if (checkPermissions()) {
                         if (savedInstanceState == null && (loginState == null || !loginState.equals("friends"))) {
@@ -260,18 +263,14 @@ public class MainActivity extends AppCompatActivity implements
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                         finish();
-//                        getSupportFragmentManager().beginTransaction()
-//                                .replace(R.id.activity_main, LoginFragment.newInstance())
-//                                .commit();
+
                         loginState = "login";
                     }
                 }
             }
         };
 
-
-        mStorage = FirebaseStorage.getInstance().getReference();
-
+        // Detect AppBarLayout Expanded
         appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         appBarLayout.setExpanded(false);
         appBarExpanded = false;
@@ -293,76 +292,23 @@ public class MainActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            startActivity(new Intent(MainActivity.this, InputActivity.class));
+                startActivity(new Intent(MainActivity.this, InputActivity.class));
             }
         });
 
         final FloatingActionButton privacyFab = (FloatingActionButton) findViewById(R.id.privacyFab);
+//        privacyFab.setImageBitmap(Constants.textAsBitmap(Objects.LOCK, 50, Color.WHITE));
         privacyFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 //                if (privacyFab.)
 //                privacyFab.setImageResource(R.drawable.ic_lock_open_white_24dp);
-                startService(new Intent(MainActivity.this, UserActivityService.class));
+//                startService(new Intent(MainActivity.this, UserActivityService.class));
+
+
                 Toast.makeText(MainActivity.this, "Update user", Toast.LENGTH_SHORT).show();
             }
         });
-
-        requestQueue = Volley.newRequestQueue(this);
-
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-    }
-
-    public void sendUpdateRequest() {
-        String t = FirebaseInstanceId.getInstance().getToken();
-
-        JSONObject data = new JSONObject();
-        JSONObject json = new JSONObject();
-        try {
-            data.put("update", "true");
-            json.put("to", t);
-            json.put("data", data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, SERVER_URL, json, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                Log.d(TAG, "response: " + response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "error: " + error);
-            }
-        }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> header = new HashMap<>();
-                header.put("Authorization", "key=" + API_KEY);
-                return header;
-            }
-
-            @Override
-            public String getBodyContentType() {
-                return "application/json";
-            }
-        };
-
-        Log.d(TAG, "body: " + request.getBody().toString());
-        Log.d(TAG, "content: " + request.getBodyContentType());
-        try {
-            Log.d(TAG, "headers: " + request.getHeaders().toString());
-        } catch (AuthFailureError authFailureError) {
-            Log.d(TAG, "AUTH ERROR");
-            authFailureError.printStackTrace();
-        }
-        Log.d(TAG, request.toString());
-        requestQueue.add(request);
-
-        Toast.makeText(MainActivity.this, "Token: " + t, Toast.LENGTH_SHORT).show();
-        Log.d(TAG, "Token: " + t);
     }
 
     @Override
@@ -370,13 +316,27 @@ public class MainActivity extends AppCompatActivity implements
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
 
+        List<String> tokens = new ArrayList<>();
+        tokens.add(FirebaseInstanceId.getInstance().getToken());
+        RequestManager.getInstance(MainActivity.this).sendUpdateRequest(tokens);
+
         IntentFilter intentFilter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
 //        registerReceiver(mReceiver, intentFilter);
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        List<String> tokens = new ArrayList<>();
+        tokens.add(FirebaseInstanceId.getInstance().getToken());
+        RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
@@ -391,9 +351,26 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "getFriendsFromContacts");
         if (checkContactsPermission()) {
             Log.d(TAG, "got Contacts permission");
-            new Thread(new Runnable() {
+
+            final StrictMode.ThreadPolicy old = StrictMode.getThreadPolicy();
+            AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+
                 @Override
-                public void run() {
+                protected void onPreExecute() {
+                    super.onPreExecute();
+                    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder(old)
+                            .permitDiskWrites()
+                            .build());
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    super.onPostExecute(s);
+                    StrictMode.setThreadPolicy(old);
+                }
+
+                @Override
+                protected String doInBackground(Void... voids) {
                     Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
                     while (phones.moveToNext()) {
                         final Friend friend = new Friend();
@@ -409,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         if (dataSnapshot.exists()) {
-                                            Log.d(TAG, "name" + friend.name + " phone: " + friend.phone);
+                                            Log.d(TAG, "name: " + friend.name + " phone: " + friend.phone);
                                             friend.id = dataSnapshot.getValue(String.class);
                                             if (!friends.containsKey(friend.id)) { // not a friend
                                                 Log.d(TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
@@ -452,8 +429,10 @@ public class MainActivity extends AppCompatActivity implements
                                 });
                     }
                     phones.close();
+                    return "done";
                 }
-            }).start();
+            };
+            task.execute();
         }
     }
 
@@ -588,15 +567,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public Boolean checkContactsPermission() {
-        if (ActivityCompat
+        return ActivityCompat
                 .checkSelfPermission(
                         MainActivity.this,
-                        Manifest.permission.READ_CONTACTS) !=
-                PackageManager.PERMISSION_GRANTED) {
-            return false;
-        } else {
-            return true;
-        }
+                        Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
     }
 
     private Boolean checkPermissions() {

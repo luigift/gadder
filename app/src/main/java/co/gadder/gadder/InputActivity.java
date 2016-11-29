@@ -11,7 +11,6 @@ public class InputActivity extends AppCompatActivity {
         setContentView(R.layout.activity_input);
 
         getSupportFragmentManager().beginTransaction()
-                .addToBackStack("inputFragment")
                 .add(R.id.activity_input, InputFragment.newInstance())
                 .commit();
     }

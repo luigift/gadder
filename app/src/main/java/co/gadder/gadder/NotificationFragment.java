@@ -87,7 +87,6 @@ public class NotificationFragment extends Fragment {
                             .child(user.getUid())
             ) {
 
-
                 @Override
                 protected void populateViewHolder(final FriendRequestViewHolder viewHolder, String model, final int position) {
 

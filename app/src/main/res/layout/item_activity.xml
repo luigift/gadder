@@ -7,9 +7,9 @@
 
     <TextView
         android:id="@+id/activityImage"
-        android:textSize="60sp"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:textSize="40sp"
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
 
     <TextView
         android:id="@+id/activityDescription"

@@ -151,9 +151,9 @@ public class ProfileFragment extends Fragment {
 //                    location.setChecked(user.sharing.locationSharing);
 //                    activities.setChecked(user.sharing.activitySharing);
 
-                    if (user.image == null) {
+                    if (user.image == null && getContext() != null) {
                         if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-                            Glide.with(getActivity())
+                            Glide.with(getContext())
                                     .load(user.pictureUrl)
                                     .into(image);
                         }
