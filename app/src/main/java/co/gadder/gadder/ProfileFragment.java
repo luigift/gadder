@@ -4,6 +4,7 @@ import android.util.Log;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -25,6 +26,19 @@ public class ProfileFragment extends Fragment {
     private static  final String TAG = "ProfileFragment";
 
     Friend user = new Friend();
+
+    CardView edit;
+    TextView name;
+    CircleImageView image;
+
+    Switch music;
+    Switch nearby;
+    Switch battery;
+    Switch weather;
+    Switch company;
+    Switch location;
+    Switch activities;
+    Switch request;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -53,19 +67,19 @@ public class ProfileFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         activity = (MainActivity) getActivity();
 
-        final TextView name = (TextView) getActivity().findViewById(R.id.profileName);
-        final CardView edit = (CardView) getActivity().findViewById(R.id.profileUserCard);
+        name = (TextView) getActivity().findViewById(R.id.profileName);
+        edit = (CardView) getActivity().findViewById(R.id.profileUserCard);
 
-        final Switch music = (Switch) getActivity().findViewById(R.id.profileMusicSwitch);
-        final Switch nearby = (Switch) getActivity().findViewById(R.id.profileNearbySwitch);
-        final Switch battery = (Switch) getActivity().findViewById(R.id.profileBatterySwitch);
-        final Switch weather = (Switch) getActivity().findViewById(R.id.profileWeatherSwitch);
-        final Switch company = (Switch) getActivity().findViewById(R.id.profileCompanySwitch);
-        final Switch location = (Switch) getActivity().findViewById(R.id.profileLocationSwitch);
-        final Switch activities = (Switch) getActivity().findViewById(R.id.profileActivitySwitch);
-        final Switch request = (Switch) getActivity().findViewById(R.id.profileFriendRequestSwitch);
+        music = (Switch) getActivity().findViewById(R.id.profileMusicSwitch);
+        nearby = (Switch) getActivity().findViewById(R.id.profileNearbySwitch);
+        battery = (Switch) getActivity().findViewById(R.id.profileBatterySwitch);
+        weather = (Switch) getActivity().findViewById(R.id.profileWeatherSwitch);
+        company = (Switch) getActivity().findViewById(R.id.profileCompanySwitch);
+        location = (Switch) getActivity().findViewById(R.id.profileLocationSwitch);
+        activities = (Switch) getActivity().findViewById(R.id.profileActivitySwitch);
+        request = (Switch) getActivity().findViewById(R.id.profileFriendRequestSwitch);
 
-        final CircleImageView image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
+        image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
 
         Button logout = (Button) activity.findViewById(R.id.send);
         logout.setOnClickListener(new View.OnClickListener() {
@@ -134,42 +148,6 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
-                user = dataSnapshot.getValue(Friend.class);
-                if (user != null) {
-                    Log.d(TAG, "user: " + user.toString());
-
-                    user.id = dataSnapshot.getKey();
-                    Log.d("ProfileFragment", "user: " + dataSnapshot.toString());
-                    name.setText(user.name);
-//                    music.setChecked(user.sharing.musicSharing);
-//                    battery.setChecked(user.sharing.batterySharing);
-//                    company.setChecked(user.sharing.companySharing);
-//                    location.setChecked(user.sharing.locationSharing);
-//                    activities.setChecked(user.sharing.activitySharing);
-
-                    if (user.image == null && getContext() != null) {
-                        if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-                            Glide.with(getContext())
-                                    .load(user.pictureUrl)
-                                    .into(image);
-                        }
-                    } else {
-                        image.setImageBitmap(user.image);
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -182,5 +160,24 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+    }
+
+    public void setUser() {
+        name.setText(user.name);
+        music.setChecked(user.sharing.musicSharing);
+        battery.setChecked(user.sharing.batterySharing);
+        company.setChecked(user.sharing.companySharing);
+        location.setChecked(user.sharing.locationSharing);
+        activities.setChecked(user.sharing.activitySharing);
+
+        if (user.image == null && getContext() != null) {
+            if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
+                Glide.with(getContext())
+                        .load(user.pictureUrl)
+                        .into(image);
+            }
+        } else {
+            image.setImageBitmap(user.image);
+        }
     }
 }

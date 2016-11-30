@@ -37,8 +37,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +61,7 @@ public class UserActivityService extends Service implements
 
     private Location location;
 
+    private Boolean gotTime = false;
     private Boolean gotPlaces = false;
     private Boolean gotWeather = false;
     private Boolean gotActivity = false;
@@ -126,7 +130,7 @@ public class UserActivityService extends Service implements
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Ask for location permission");
         } else {
-            childUpdates.put("timezone", TimeZone.getDefault());
+            getTime();
             getLocation();
             getCity();
             getBatteryLevel();
@@ -268,6 +272,15 @@ public class UserActivityService extends Service implements
         });
     }
 
+    private void getTime() {
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        String date = sdf.format(calendar.getTime());
+
+        childUpdates.put("lastUpdate", date); //DateFormat.getDateTimeInstance().format(new Date()));//calendar.getTime());
+        gotTime = true;
+        checkStopSelf();
+    }
+
     private void getHeadphone() {
         Awareness.SnapshotApi.getHeadphoneState(mGoogleApiClient).setResultCallback(new ResultCallback<HeadphoneStateResult>() {
             @Override
@@ -306,8 +319,7 @@ public class UserActivityService extends Service implements
     }
 
     private void checkStopSelf() {
-        if (gotPlaces && gotActivity && gotWeather && gotHeadphone) {
-            childUpdates.put("lastUpdate", calendar.getTime());
+        if (gotPlaces && gotActivity && gotWeather && gotHeadphone && gotTime) {
             update();
         }
     }

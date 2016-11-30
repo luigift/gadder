@@ -2,6 +2,7 @@ package co.gadder.gadder;
 
 import android.app.ActionBar;
 import android.content.Context;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,12 +22,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import co.gadder.gadder.emoji.Activity;
 
 public class InputFragment extends Fragment {
 
+    private static final String TAG = InputFragment.class.getSimpleName();
+
     private String[] mActivityType;
     private int[] mActivityTypeEmoji;
+
+    private TextView mImage;
+    private String mActivity;
+    private EditText mDescription;
 
 
     public InputFragment() {
@@ -55,9 +70,14 @@ public class InputFragment extends Fragment {
         mActivityType = getActivity().getResources().getStringArray(R.array.activity_types);
         mActivityTypeEmoji = getActivity().getResources().getIntArray(R.array.activity_types_emojis);
 
+        mImage = (TextView) getActivity().findViewById(R.id.activityImage);
+        mDescription = (EditText) getActivity().findViewById(R.id.inputActivity);
+
+        // Activity pager
         final ViewPager pager = (ViewPager) getActivity().findViewById(R.id.activityTypeViewPager);
         pager.setAdapter(new ActivityTypePagerAdapter(getActivity()));
 
+        // Type activity tab
         final RecyclerView recycler = (RecyclerView) getActivity().findViewById(R.id.activityTypeTab);
         recycler.setAdapter(new ActivityTypeRecyclerAdapter(getContext()));
         recycler.setHasFixedSize(true);
@@ -93,22 +113,30 @@ public class InputFragment extends Fragment {
                     }
                 }));
 
-//        RecyclerView recycler = (RecyclerView) getActivity().findViewById(R.id.inputViewPager);
-//        recycler.setHasFixedSize(true);
-//        ActivityTypeRecyclerAdapter adapter = new ActivityTypeRecyclerAdapter(getActivity());
-//        recycler.setAdapter(adapter);
-//        recycler.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        final TextView confirm = (TextView) getActivity().findViewById(R.id.confirmActivity);
+        confirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-//        FloatingActionButton cancel = (FloatingActionButton) getActivity().findViewById(R.id.cancelFab);
-//        cancel.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//            }
-//        });
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-//        final EditText input = (EditText) getActivity().findViewById(R.id.inputActivity);
-
+                if (user != null) {
+                    Map<String, Object> childUpdates = new HashMap<>();
+                    childUpdates.put("description", mDescription.getText().toString());
+                    childUpdates.put("activity", mActivity);
+//                childUpdates.put("location", mLocation);
+//                childUpdates.put("start", mDateTime);
+//                childUpdates.put("end", mDateTime);
+                    FirebaseDatabase.getInstance().getReference()
+                            .child(Constants.VERSION)
+                            .child(Constants.USER_ACTIVITIES)
+                            .child(user.getUid())
+                            .updateChildren(childUpdates);
+                } else {
+                    Log.e(TAG, "No user found");
+                }
+            }
+        });
     }
 
     private class ActivityTypePagerAdapter extends PagerAdapter {
@@ -124,22 +152,30 @@ public class InputFragment extends Fragment {
             LayoutInflater inflater = LayoutInflater.from(mContext);
             ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.item_activity_type, container, false);
 
-            RecyclerView recycler = (RecyclerView) layout.findViewById(R.id.activityTypeRecyclerView);
-            
+            // Activity recycler
+            final RecyclerView recycler = (RecyclerView) layout.findViewById(R.id.activityTypeRecyclerView);
             recycler.setAdapter(new ActivityRecyclerAdapter(getContext(), position));
             recycler.setLayoutManager(new LinearLayoutManager(mContext));
             recycler.setHasFixedSize(true);
-            recycler.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recycler, new RecyclerItemClickListener.OnItemClickListener() {
-                @Override
-                public void onItemClick(View view, int position) {
+            float offsetPx = 250; //        getResources().getDimension(R.dimen.bottom_offset_dp);
+            BottomOffsetDecoration bottomOffsetDecoration = new BottomOffsetDecoration((int) offsetPx);
+            recycler.addItemDecoration(bottomOffsetDecoration);
+            recycler.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), recycler,
+                    new RecyclerItemClickListener.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position) {
+                            ActivityRecyclerAdapter adapter = (ActivityRecyclerAdapter) recycler.getAdapter();
+                            Map<String, Object> item = adapter.getItem(position);
+                            mImage.setText(new String(Character.toChars((int) item.get("emoji"))));
+                            mActivity = (String) item.get("activity");
+                            mDescription.setText(mActivity);
+                        }
 
-                }
+                        @Override
+                        public void onLongItemClick(View view, int position) {
 
-                @Override
-                public void onLongItemClick(View view, int position) {
-
-                }
-            }));
+                        }
+                    }));
 
             container.addView(layout);
 
@@ -201,6 +237,27 @@ public class InputFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mActivityType.length;
+        }
+    }
+
+    static class BottomOffsetDecoration extends RecyclerView.ItemDecoration {
+        private int mBottomOffset;
+
+        public BottomOffsetDecoration(int bottomOffset) {
+            mBottomOffset = bottomOffset;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            super.getItemOffsets(outRect, view, parent, state);
+            int dataSize = state.getItemCount();
+            int position = parent.getChildLayoutPosition(view);
+            if (dataSize > 0 && position == dataSize - 1) {
+                outRect.set(0, 0, 0, mBottomOffset);
+            } else {
+                outRect.set(0, 0, 0, 0);
+            }
+
         }
     }
 }

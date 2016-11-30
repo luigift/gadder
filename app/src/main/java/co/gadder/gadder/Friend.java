@@ -2,6 +2,7 @@ package co.gadder.gadder;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.icu.text.SimpleDateFormat;
 import android.icu.util.TimeZone;
 import android.location.Location;
 import android.util.Log;
@@ -12,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.Date;
 import java.util.List;
 
 public class Friend {
@@ -61,13 +63,13 @@ public class Friend {
     public int temperature;
     public Boolean headphone;
     public TimeZone timeZone;
+    public String lastUpdate;
     public List<String> weather;
 
     public Music music = new Music();
     public Sharing sharing = new Sharing();
     public Coordinates coordinates = new Coordinates();
     public Notifications notification = new Notifications();
-
 
     public Bitmap image;
     public int position;
@@ -92,6 +94,7 @@ public class Friend {
         this.noFriends = updatedFriend.noFriends;
         this.headphone = updatedFriend.headphone;
         this.pictureUrl = updatedFriend.pictureUrl;
+        this.lastUpdate = updatedFriend.lastUpdate;
         this.temperature = updatedFriend.temperature;
 
         this.music = updatedFriend.music;
@@ -123,6 +126,10 @@ public class Friend {
 
         return location;
     }
+
+//    public Date getLastUpdate() {
+//        return new SimpleDateFormat(Constants.DATE_FORMAT).parse(lastUpdate);
+//    }
 
     public void downloadImage(final MainActivity activity) {
         if (activity == null) throw new AssertionError();

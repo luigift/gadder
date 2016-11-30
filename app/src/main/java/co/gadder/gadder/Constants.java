@@ -12,7 +12,11 @@ public class Constants {
     public final static String USER_TOKEN = "user_token";
     public final static String USER_PHONE = "user_phone";
     public final static String USER_FRIENDS = "user_friends";
+    public final static String USER_ACTIVITIES = "user_activities";
     public final static String USER_NOTIFICATIONS = "user_notifications";
+
+
+    final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     public static Bitmap textAsBitmap(String text, float textSize, int textColor) {
         Paint paint = new Paint(ANTI_ALIAS_FLAG);

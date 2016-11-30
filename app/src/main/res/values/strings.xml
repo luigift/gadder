@@ -149,5 +149,34 @@
         <item>0x1F3C0</item>
     </integer-array>
 
+    <string-array name="activity_places">
+        <item>Home</item>
+        <item>Movie</item>
+        <item>Park</item>
+        <item>School</item>
+        <item>Shopping</item>
+        <item>University</item>
+        <item>Work</item>
+    </string-array>
+
+    <string-array name="activity_music">
+        <item>Base</item>
+        <item>Concert</item>
+        <item>Drums</item>
+        <item>Guitar</item>
+        <item>Jam</item>
+        <item>Piano</item>
+        <item>Sax</item>
+        <item>Singing</item>
+        <item>Trumpet</item>
+    </string-array>
+
+    <string-array name="activity_nightlife">
+        <item>Bar</item>
+        <item>Club</item>
+        <item>Girls night out</item>
+        <item>House Party</item>
+    </string-array>
+
 
 </resources>

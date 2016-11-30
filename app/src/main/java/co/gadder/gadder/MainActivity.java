@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -31,13 +32,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -57,15 +54,10 @@ import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-
-import co.gadder.gadder.emoji.Objects;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -76,32 +68,39 @@ public class MainActivity extends AppCompatActivity implements
     public static final int REQUEST_LOCATION_PERMISSION = 10;
     public static final int REQUEST_READ_CONTACTS_PERMISSION = 11;
 
+
+    // Geofence
     protected GoogleApiClient mGoogleApiClient;
     protected ArrayList<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent = null;
 
-
+    // Firebase
     public FirebaseAuth mAuth;
     public StorageReference mStorage;
     public DatabaseReference mDatabase;
     public FirebaseAuth.AuthStateListener mAuthListener;
 
+    // Friends & Contacts
     protected List<Friend> contacts;
     protected List<String> friendsId;
     protected Map<String, Friend> friends;
     protected Map<String, ValueEventListener> listeners;
+
 
     protected FriendsRecyclerAdapter adapter;
 
     protected String loginState = null;
     protected Boolean friendsDownloaded = false;
 
+    // View pager
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
     public String uid;
+    protected Friend user;
 
+    // Coordinator layout
     public Boolean appBarExpanded;
     private AppBarLayout appBarLayout;
 
@@ -152,8 +151,6 @@ public class MainActivity extends AppCompatActivity implements
                                 public void onClick(View view) {
                                     if (appBarExpanded) {
                                         appBarLayout.setExpanded(false, true);
-                                    } else {
-                                        appBarLayout.setExpanded(true, false);
                                     }
                                     mPager.setCurrentItem(0, true);
                                 }
@@ -166,6 +163,8 @@ public class MainActivity extends AppCompatActivity implements
                                 public void onClick(View view) {
                                     if (appBarExpanded) {
                                         appBarLayout.setExpanded(false, true);
+                                    } else {
+                                        appBarLayout.setExpanded(true, false);
                                     }
                                     mPager.setCurrentItem(1, true);
                                 }
@@ -341,6 +340,28 @@ public class MainActivity extends AppCompatActivity implements
             mAuth.removeAuthStateListener(mAuthListener);
         }
 //        unregisterReceiver(mReceiver);
+    }
+
+    public void getUserProfile() {
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
+                user = dataSnapshot.getValue(Friend.class);
+                if (user != null) {
+                    Log.d(TAG, "user: " + user.toString());
+
+                    user.id = dataSnapshot.getKey();
+                    Log.d("ProfileFragment", "user: " + dataSnapshot.toString());
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     public Friend getFriendByPosition(int position) {
@@ -535,13 +556,27 @@ public class MainActivity extends AppCompatActivity implements
                 if (friend != null) {
                     friend.id = dataSnapshot.getKey();
                     final int index = friendsId.indexOf(dataSnapshot.getKey());
-                    Friend olFriend = friends.get(friendsId.get(index));
+                    final Friend olFriend = friends.get(friendsId.get(index));
                     if(olFriend != null) { //update friend
                         Log.d(TAG, "friend updated: " + olFriend.name);
                         olFriend.update(friend);
-                        friends.get(friendsId.get(index)).update(friend);
-                        ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
-                        adapter.notifyItemChanged(index);
+//                        friends.get(friendsId.get(index)).update(friend);
+                        if (olFriend.image == null) {
+                            Glide.with(MainActivity.this)
+                                    .load(friend.pictureUrl)
+                                    .asBitmap()
+                                    .into(new SimpleTarget<Bitmap>(200, 200) {
+                                        @Override
+                                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                                            olFriend.image = resource;
+                                            ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                                            adapter.notifyItemChanged(index);
+                                        }
+                                    });
+                        } else {
+                            ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                            adapter.notifyItemChanged(index);
+                        }
                     } else { // add friend
                         Log.d(TAG, "friend added: " + friend.name + "picture: " + friend.pictureUrl);
 //                            friends.put(friend.id, friend);
