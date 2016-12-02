@@ -299,8 +299,8 @@ public class SmsCodeFragment extends Fragment {
                                 friend.sharing.batterySharing = true;
                                 friend.sharing.activitySharing = true;
 
-                                friend.notification.friendsNearby = true;
-                                friend.notification.requestActivity = true;
+                                friend.notification.nearbyNotification = true;
+                                friend.notification.requestNotification = true;
 
                                 mDatabase
                                         .child(Constants.VERSION)

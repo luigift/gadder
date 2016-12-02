@@ -1,24 +1,19 @@
 package co.gadder.gadder;
 
-import android.Manifest;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -28,6 +23,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -65,9 +61,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = "MainActivity";
 
-    public static final int REQUEST_LOCATION_PERMISSION = 10;
-    public static final int REQUEST_READ_CONTACTS_PERMISSION = 11;
-
+    // Time
+    private TimingLogger timings = new TimingLogger(TAG, "");
 
     // Geofence
     protected GoogleApiClient mGoogleApiClient;
@@ -97,22 +92,26 @@ public class MainActivity extends AppCompatActivity implements
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
-    public String uid;
     protected Friend user;
 
     // Coordinator layout
     public Boolean appBarExpanded;
     private AppBarLayout appBarLayout;
 
-    protected final Location mLocation = new Location("");
+    // Fragments
+    private FriendsMapFragment mapFragment;
+    private ProfileFragment profileFragment;
+    private NotificationFragment notificationFragment;
+    private FriendsActivityFragment activityFragment;
 
+
+    /*
+    *       Activity Lifecycle
+    * */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mLocation.setLatitude(-23.6233303);
-        mLocation.setLongitude(-46.6732878);
 
         friends = new HashMap<>();
         listeners = new HashMap<>();
@@ -127,148 +126,238 @@ public class MainActivity extends AppCompatActivity implements
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                Log.d(TAG, "AuthListener: " + loginState);
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    uid = user.getUid();
-                    getFriends(user);
-//                    getFriendsFromContacts();
-                    Log.d(TAG, "Logged in");
-                    if (checkPermissions()) {
-                        if (savedInstanceState == null && (loginState == null || !loginState.equals("friends"))) {
-                            Log.d(TAG, "FriendsActivityFragment");
+                    if (loginState == null || !loginState.equals("friends")) {
+                        loginState = "friends";
 
-                            startService(new Intent(MainActivity.this, UserActivityService.class));
+                        setPrivacyButton();
+                        setActivityButton();
+                        getMapFragment();
+                        syncFriends(user.getUid());
+                        syncUserProfile(user.getUid());
+                        displayPermissionDialog();
+                        updateUser();
+                        setViewPager();
+                        setNotificationListener(user.getUid());
+                        listenToCoordinatorExpansion();
+                        getFriendsFromContacts();
 
-                            mPager = (ViewPager) findViewById(R.id.mainPager);
-                            mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
-                            mPager.setAdapter(mPagerAdapter);
-                            mPager.setCurrentItem(1);
-
-                            final ImageView profile = (ImageView) findViewById(R.id.goToProfile);
-                            profile.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    if (appBarExpanded) {
-                                        appBarLayout.setExpanded(false, true);
-                                    }
-                                    mPager.setCurrentItem(0, true);
-                                }
-                            });
-
-                            final ImageView main = (ImageView) findViewById(R.id.goToMainScreen);
-                            main.setColorFilter(Color.argb(255,33,34,89));
-                            main.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    if (appBarExpanded) {
-                                        appBarLayout.setExpanded(false, true);
-                                    } else {
-                                        appBarLayout.setExpanded(true, false);
-                                    }
-                                    mPager.setCurrentItem(1, true);
-                                }
-                            });
-
-                            final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
-                            notification.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    if (appBarExpanded) {
-                                        appBarLayout.setExpanded(false, true);
-                                    }
-                                    mPager.setCurrentItem(2, true);
-                                }
-                            });
-
-                            mDatabase.child(Constants.VERSION)
-                                    .child(Constants.USERS)
-                                    .child(user.getUid())
-                                    .child("noNotifications")
-                                    .addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(DataSnapshot dataSnapshot) {
-                                            Integer noNotifications =
-                                                    dataSnapshot.getValue(Integer.class);
-                                            if (noNotifications != null && noNotifications > 0 ) {
-                                                notification.setImageResource(R.drawable.ic_notifications_active_black_24dp);
-                                            } else {
-                                                notification.setImageResource(R.drawable.ic_notifications_black_24dp);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(DatabaseError databaseError) {
-
-                                        }
-                                    });
-
-                            mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                                @Override
-                                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-                                }
-
-                                @Override
-                                public void onPageSelected(int position) {
-                                    if (position == 0 ) {
-                                        profile.setColorFilter(Color.argb(255,33,34,89));
-                                        main.clearColorFilter();
-                                        notification.clearColorFilter();
-                                    } else if (position == 1) {
-                                        profile.clearColorFilter();
-                                        main.setColorFilter(Color.argb(255,33,34,89));
-                                        notification.clearColorFilter();
-                                    } else {
-                                        profile.clearColorFilter();
-                                        main.clearColorFilter();
-                                        notification.setColorFilter(Color.argb(255,33,34,89));
-                                    }
-                                }
-
-                                @Override
-                                public void onPageScrollStateChanged(int state) {
-
-                                }
-                            });
-
-                            loginState = "friends";
-                        }
-                    } else {
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
-                                .setMessage("Give the location permission bro")
-                                .setTitle("Locatioooon!!")
-                                .setPositiveButton("Ok, ok...", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        requestPermissions();
-                                    }
-                                });
-                        builder.create().show();
-//                        if (savedInstanceState == null && (loginState == null || !loginState.equals("permissions"))) {
-//                            Log.d(TAG, "FriendsActivityFragment");
-//                            getSupportFragmentManager().beginTransaction()
-//                                    .replace(R.id.activity_main, PhoneLoginFragment.newInstance())
-//                                    .commit();
-//                            loginState = "permissions";
-//                        }
                     }
                 } else {
-                    Log.d(TAG, "Logged out");
-                    if (null == savedInstanceState && (loginState == null || !loginState.equals("login"))) {
-                        Log.d(TAG, "LoginFragment");
-                        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent);
-                        finish();
-
+                    if (loginState == null || !loginState.equals("login")) {
                         loginState = "login";
+                        goToLoginActivity();
                     }
                 }
             }
         };
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+        Glide.with(getApplicationContext()).onStart();
+
+        List<String> tokens = new ArrayList<>();
+        tokens.add(FirebaseInstanceId.getInstance().getToken());
+        RequestManager.getInstance(MainActivity.this).sendUpdateRequest(tokens);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        List<String> tokens = new ArrayList<>();
+        tokens.add(FirebaseInstanceId.getInstance().getToken());
+        RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
+        Glide.with(getApplicationContext()).onStop();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        Glide.with(getApplicationContext()).onLowMemory();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+//        Glide.with(getApplicationContext()).pauseRequests();
+        Glide.with(getApplicationContext()).onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(appBarExpanded) {
+            appBarLayout.setExpanded(false, true);
+        } else if (mPager.getCurrentItem() != 1) {
+            mPager.setCurrentItem(1, true);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case PermissionManager.REQUEST_CONTACTS_PERMISSION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "contact permission granted");
+                    getFriendsFromContacts();
+                } else {
+                    // TODO: EXPLAIN WHY WE NEED THE PERMISSION
+                }
+                break;
+        }
+    }
+
+    /*
+    *       UI methods
+    * */
+    private void getMapFragment() {
+        mapFragment = (FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+    }
+
+    private void setViewPager() {
+        long startTime = System.currentTimeMillis();
+
+        mPager = (ViewPager) findViewById(R.id.mainPager);
+        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
+        mPager.setCurrentItem(1);
+
+        final ImageView profile = (ImageView) findViewById(R.id.goToProfile);
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (appBarExpanded) {
+                    appBarLayout.setExpanded(false, true);
+                }
+                mPager.setCurrentItem(0, true);
+            }
+        });
+
+        final ImageView main = (ImageView) findViewById(R.id.goToMainScreen);
+        main.setColorFilter(Color.argb(255,33,34,89));
+        main.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (appBarExpanded) {
+                    appBarLayout.setExpanded(false, true);
+                } else {
+                    appBarLayout.setExpanded(true, false);
+                }
+                mPager.setCurrentItem(1, true);
+            }
+        });
+
+        final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
+        notification.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (appBarExpanded) {
+                    appBarLayout.setExpanded(false, true);
+                }
+                mPager.setCurrentItem(2, true);
+            }
+        });
+
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (position == 0 ) {
+                    profile.setColorFilter(Color.argb(255,33,34,89));
+                    main.clearColorFilter();
+                    notification.clearColorFilter();
+                } else if (position == 1) {
+                    profile.clearColorFilter();
+                    main.setColorFilter(Color.argb(255,33,34,89));
+                    notification.clearColorFilter();
+                } else {
+                    profile.clearColorFilter();
+                    main.clearColorFilter();
+                    notification.setColorFilter(Color.argb(255,33,34,89));
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
+
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        Log.d(TAG, "SetPagerMenu: " + elapsedTime + "ms");
+    }
+
+    private void setNotificationListener(String uid) {
+        final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
+        mDatabase.child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(uid)
+                .child("noNotifications")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Integer noNotifications =
+                                dataSnapshot.getValue(Integer.class);
+                        if (noNotifications != null && noNotifications > 0 ) {
+                            notification.setImageResource(R.drawable.ic_notifications_active_black_24dp);
+                        } else {
+                            notification.setImageResource(R.drawable.ic_notifications_black_24dp);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+    }
+
+    private void displayPermissionDialog() {
+        if (!PermissionManager.checkLocationPermission(this)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
+                    .setMessage("Give the location permission bro")
+                    .setTitle("Locatioooon!!")
+                    .setPositiveButton("Ok, ok...", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            PermissionManager.requestLocationPermission(MainActivity.this);
+                        }
+                    });
+            builder.create().show();
+        }
+    }
+
+    private void goToLoginActivity() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void listenToCoordinatorExpansion() {
         // Detect AppBarLayout Expanded
         appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
         appBarLayout.setExpanded(false);
@@ -286,7 +375,20 @@ public class MainActivity extends AppCompatActivity implements
                 }
             }
         });
+    }
 
+    private void setPrivacyButton() {
+        final FloatingActionButton privacyFab = (FloatingActionButton) findViewById(R.id.privacyFab);
+//        privacyFab.setImageBitmap(Constants.textAsBitmap(Objects.LOCK, 50, Color.WHITE));
+        privacyFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "Change user privacy", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void setActivityButton() {
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.activityFab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -294,74 +396,104 @@ public class MainActivity extends AppCompatActivity implements
                 startActivity(new Intent(MainActivity.this, InputActivity.class));
             }
         });
-
-        final FloatingActionButton privacyFab = (FloatingActionButton) findViewById(R.id.privacyFab);
-//        privacyFab.setImageBitmap(Constants.textAsBitmap(Objects.LOCK, 50, Color.WHITE));
-        privacyFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                if (privacyFab.)
-//                privacyFab.setImageResource(R.drawable.ic_lock_open_white_24dp);
-//                startService(new Intent(MainActivity.this, UserActivityService.class));
-
-
-                Toast.makeText(MainActivity.this, "Update user", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-
-        List<String> tokens = new ArrayList<>();
-        tokens.add(FirebaseInstanceId.getInstance().getToken());
-        RequestManager.getInstance(MainActivity.this).sendUpdateRequest(tokens);
-
-        IntentFilter intentFilter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-//        registerReceiver(mReceiver, intentFilter);
-    }
-
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        List<String> tokens = new ArrayList<>();
-        tokens.add(FirebaseInstanceId.getInstance().getToken());
-        RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
+    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
         }
-//        unregisterReceiver(mReceiver);
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment fragment;
+            switch (position) {
+                case 0:
+                    profileFragment = ProfileFragment.newInstance();
+                    fragment = profileFragment;
+                    break;
+                case 1:
+                    activityFragment = FriendsActivityFragment.newInstance();
+                    fragment = activityFragment;
+                    break;
+                case 2:
+                    notificationFragment = NotificationFragment.newInstance();
+                    fragment = notificationFragment;
+                    break;
+                default:
+                    fragment = new Fragment();
+            }
+            return fragment;
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
     }
 
-    public void getUserProfile() {
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
-                user = dataSnapshot.getValue(Friend.class);
-                if (user != null) {
-                    Log.d(TAG, "user: " + user.toString());
+    public void selectFriend(int position) {
+        appBarLayout.setExpanded(true, true);
+        appBarExpanded = true;
+        mapFragment.focusFriend(getFriendByPosition(position));
+    }
 
-                    user.id = dataSnapshot.getKey();
-                    Log.d("ProfileFragment", "user: " + dataSnapshot.toString());
+    /*
+    *       Server methods
+    * */
+    public void requestFriendship(int position) {
+        if (user != null) {
+            Friend contact = contacts.get(friends.size() - position);
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_NOTIFICATIONS)
+                    .child(contact.id)
+                    .child(user.id)
+                    .setValue("friendship");
 
-                }
-            }
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_FRIENDS)
+                    .child(contact.id)
+                    .child(user.id)
+                    .setValue(false);
+        }
+    }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+    private void updateUser() {
+        startService(new Intent(MainActivity.this, UserActivityService.class));
+    }
 
-            }
-        });
+    private void syncTokens(){}
+
+    public void syncUserProfile(String uid) {
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(uid)
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
+                        user = dataSnapshot.getValue(Friend.class);
+                        if (user != null) {
+                            user.id = dataSnapshot.getKey();
+                            Glide.with(MainActivity.this).load(user.pictureUrl).asBitmap().into(
+                                    new SimpleTarget<Bitmap>(200, 200) {
+                                        @Override
+                                        public void onResourceReady(Bitmap resource,
+                                                                    GlideAnimation<? super Bitmap> glideAnimation) {
+                                            user.image = resource;
+                                            profileFragment.setUser(user);
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
     }
 
     public Friend getFriendByPosition(int position) {
@@ -370,7 +502,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void getFriendsFromContacts() {
         Log.d(TAG, "getFriendsFromContacts");
-        if (checkContactsPermission()) {
+        if (PermissionManager.checkContactsPermission(this)) {
             Log.d(TAG, "got Contacts permission");
 
             final StrictMode.ThreadPolicy old = StrictMode.getThreadPolicy();
@@ -468,13 +600,13 @@ public class MainActivity extends AppCompatActivity implements
         return -1;
     }
 
-    private void getFriends(final FirebaseUser user) {
-        Log.d(TAG, "getFriends");
+    private void syncFriends(String uid) {
+        Log.d(TAG, "syncFriends");
         if (!friendsDownloaded) {
             mDatabase
                     .child(Constants.VERSION)
                     .child(Constants.USER_FRIENDS)
-                    .child(user.getUid())
+                    .child(uid)
                     .addChildEventListener(new ChildEventListener() {
                         @Override
                         public void onChildAdded(DataSnapshot snap, String s) {
@@ -504,7 +636,6 @@ public class MainActivity extends AppCompatActivity implements
                         @Override
                         public void onChildMoved(DataSnapshot snap, String s) {
                             Log.d(TAG, "onChildMoved: " + snap.toString());
-
                         }
 
                         @Override
@@ -525,14 +656,10 @@ public class MainActivity extends AppCompatActivity implements
             ValueEventListener listener = addFriendListener(uid);
             listeners.put(uid, listener);
         }
-        Log.d(TAG, "FriendsId: " + friendsId.size() + " " + friendsId.toString());
-        Log.d(TAG, "Friends: " + friends.size() +  " " + friends.keySet().toString());
-        Log.d(TAG, "Listeners: " + listeners.size() + " " + listeners.keySet().toString());
     }
 
     private void removeFriend(String uid) {
         Log.d(TAG, "removeFriend: "+  uid);
-        int index = friendsId.indexOf(uid);
         friendsId.remove(uid);
         ValueEventListener listener = listeners.get(uid);
         if (listener != null) {
@@ -540,9 +667,6 @@ public class MainActivity extends AppCompatActivity implements
         }
         listeners.remove(uid);
         adapter.notifyDataSetChanged();
-        Log.d(TAG, "FriendsId: " + friendsId.size() + " " + friendsId.toString());
-        Log.d(TAG, "Friends: " + friends.size() +  " " + friends.keySet().toString());
-        Log.d(TAG, "Listeners: " + listeners.size() + " " + listeners.keySet().toString());
 //        adapter.notifyItemRemoved(index);
     }
 
@@ -552,15 +676,20 @@ public class MainActivity extends AppCompatActivity implements
         final ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onDataChange: " + dataSnapshot.toString());
                 final Friend friend = dataSnapshot.getValue(Friend.class);
                 if (friend != null) {
+                    Log.d(TAG, "got friend: " + friend.name);
                     friend.id = dataSnapshot.getKey();
+
                     final int index = friendsId.indexOf(dataSnapshot.getKey());
                     final Friend olFriend = friends.get(friendsId.get(index));
+                    Log.d(TAG, "oldFriend: " + olFriend.toString());
                     if(olFriend != null) { //update friend
                         Log.d(TAG, "friend updated: " + olFriend.name);
-                        olFriend.update(friend);
-//                        friends.get(friendsId.get(index)).update(friend);
+//                        olFriend.update(friend);
+                        friends.get(friendsId.get(index)).update(friend);
+                        Log.d(TAG, "updated oldFriend: " + friends.get(friendsId.get(index)).toString());
                         if (olFriend.image == null) {
                             Glide.with(MainActivity.this)
                                     .load(friend.pictureUrl)
@@ -569,19 +698,20 @@ public class MainActivity extends AppCompatActivity implements
                                         @Override
                                         public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
                                             olFriend.image = resource;
-                                            ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
-                                            adapter.notifyItemChanged(index);
+                                            mapFragment.updateFriendOnMap(olFriend);
+                                            adapter.notifyDataSetChanged();
+//                                            adapter.notifyItemInserted(index);
+//                                            adapter.notifyItemChanged(index, olFriend);
+                                            Log.d(TAG, "Friend image loaded: "+ olFriend.name);
                                         }
                                     });
                         } else {
-                            ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                            mapFragment.updateFriendOnMap(friend);
                             adapter.notifyItemChanged(index);
                         }
                     } else { // add friend
                         Log.d(TAG, "friend added: " + friend.name + "picture: " + friend.pictureUrl);
-//                            friends.put(friend.id, friend);
-//                            adapter.notifyItemInserted(index);
-                        ((FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).updateFriendOnMap(friend);
+                        mapFragment.updateFriendOnMap(friend);
                         adapter.addItem(friend);
                     }
                 }
@@ -601,103 +731,8 @@ public class MainActivity extends AppCompatActivity implements
         return listener;
     }
 
-    public Boolean checkContactsPermission() {
-        return ActivityCompat
-                .checkSelfPermission(
-                        MainActivity.this,
-                        Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
-    }
 
-    private Boolean checkPermissions() {
-        Boolean permissionGranted = true;
-        if (ActivityCompat
-                .checkSelfPermission(
-                        MainActivity.this,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-                PackageManager.PERMISSION_GRANTED ) {
-            Log.d(TAG, "Permission Missing: Location");
-            permissionGranted = false;
-        }
-
-//        if (ActivityCompat
-//                .checkSelfPermission(
-//                        MainActivity.this,
-//                        Manifest.permission.CAMERA) !=
-//                PackageManager.PERMISSION_GRANTED ) {
-//            Log.d(TAG, "Permission Missing: Camera");
-//            permissionGranted = false;
-//        }
-//
-//        if (ActivityCompat
-//                .checkSelfPermission(
-//                        MainActivity.this,
-//                        Manifest.permission.WRITE_EXTERNAL_STORAGE) !=
-//                PackageManager.PERMISSION_GRANTED) {
-//            Log.d(TAG, "Permission Missing: Storage");
-//            permissionGranted = false;
-//        }
-
-        return  permissionGranted;
-    }
-
-    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter {
-        public ScreenSlidePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            Fragment fragment;
-            switch (position) {
-                case 0:
-                    fragment = ProfileFragment.newInstance();
-                    break;
-                case 1:
-                    fragment = FriendsActivityFragment.newInstance();
-                    break;
-                case 2:
-                    fragment = NotificationFragment.newInstance();
-                    break;
-                default:
-                    fragment = new Fragment();
-            }
-            return fragment;
-        }
-
-        @Override
-        public int getCount() {
-            return NUM_PAGES;
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if(appBarExpanded) {
-            appBarLayout.setExpanded(false, true);
-        } else if (mPager.getCurrentItem() != 1) {
-            mPager.setCurrentItem(1, true);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_READ_CONTACTS_PERMISSION:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "contact permission granted");
-                    getFriendsFromContacts();
-                } else {
-                    // TODO: EXPLAIN WHY WE NEED THE PERMISSION
-                }
-                break;
-        }
-    }
+    ////////////////////// GEOFENCES //////////////////////
 
     private GeofencingRequest getGeofencingRequest() {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
@@ -708,21 +743,6 @@ public class MainActivity extends AppCompatActivity implements
         );
         builder.addGeofences(mGeofenceList);
         return builder.build();
-    }
-
-    private void requestPermissions() {
-        if (ActivityCompat
-                .checkSelfPermission(
-                        MainActivity.this,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat
-                    .requestPermissions(
-                            MainActivity.this,
-                            new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                            REQUEST_LOCATION_PERMISSION);
-        }
     }
 
     public void addGeofences() {
@@ -785,13 +805,15 @@ public class MainActivity extends AppCompatActivity implements
     protected synchronized void buildGoogleApiClient() {
         Log.d(TAG, "buildGoogleApiClient");
 
-        requestPermissions();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
+        if (PermissionManager.checkLocationPermission(this)) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        } else {
+            PermissionManager.requestLocationPermission(this);
+        }
     }
 
     public void populateGeofenceList() {

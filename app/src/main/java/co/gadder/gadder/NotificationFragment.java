@@ -92,12 +92,10 @@ public class NotificationFragment extends Fragment {
 
                     Log.d("populateViewHolder", "model : " + model);
 
-                    Log.d(TAG, "item: " + getRef(position).getKey() + " "  + getItem(position));
-
                     activity.mDatabase
                             .child(Constants.VERSION)
                             .child(Constants.USERS)
-                            .child(model)
+                            .child(getRef(position).getKey())
                             .addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {

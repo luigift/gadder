@@ -134,7 +134,7 @@ public class UserActivityService extends Service implements
             getLocation();
             getCity();
             getBatteryLevel();
-            getPlaces();                                                                            // Get places
+//            getPlaces();                                                                            // Get places
             getDetectedActivity();                                                                  // Get user activity through Awareness API
             getWeather();
             getHeadphone();
@@ -153,8 +153,8 @@ public class UserActivityService extends Service implements
 
     private void getLocation() throws SecurityException {
         location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        childUpdates.put("latitude", location.getLatitude());
-        childUpdates.put("longitude", location.getLongitude());
+        childUpdates.put("coordinates/latitude", location.getLatitude());
+        childUpdates.put("coordinates/longitude", location.getLongitude());
     }
 
     private void getCity() {
@@ -230,34 +230,34 @@ public class UserActivityService extends Service implements
                 List<String> weather = new ArrayList<String>();
                 for(int cond : conditions) {
                     if (cond == Weather.CONDITION_CLEAR) {
-                        textCondition = "Clear";
+                        textCondition = Constants.CLEAR;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_FOGGY) {
-                        textCondition = "Foggy";
+                        textCondition = Constants.FOGGY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_CLOUDY) {
-                        textCondition = "Cloudy";
+                        textCondition = Constants.CLOUDY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_HAZY) {
-                        textCondition = "Hazy";
+                        textCondition = Constants.HAZY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_ICY) {
-                        textCondition = "Icy";
+                        textCondition = Constants.ICY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_RAINY) {
-                        textCondition = "Rainy";
+                        textCondition = Constants.RAINY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_SNOWY) {
-                        textCondition = "Snowy";
+                        textCondition = Constants.SNOWY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_STORMY) {
-                        textCondition = "Stormy";
+                        textCondition = Constants.STORMY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_WINDY) {
-                        textCondition = "Windy";
+                        textCondition = Constants.WINDY;
                         weather.add(textCondition);
                     } else if (cond == Weather.CONDITION_UNKNOWN) {
-                        textCondition = "Unknown";
+                        textCondition = Constants.UNKNOWN;
                         weather.add(textCondition);
                     }
                     Log.d(TAG, "            " + textCondition + "\n");

@@ -38,6 +38,18 @@
         though it is not recommended
     </string>
 
+    <string name="degrees">°C</string>
+
+    <!--Info types-->
+    <string name="city">City</string>
+    <string name="music">Music</string>
+    <string name="battery">Battery</string>
+    <string name="weather">Weather</string>
+    <string name="company">Company</string>
+    <string name="location">Location</string>
+    <string name="activity">Activity</string>
+    <string name="temperature">Temperature</string>
+
     <!--Notification Options-->
     <string name="friends_nearby">Friends Nearby</string>
     <string name="friends_request">Friends\' Requests</string>
@@ -93,6 +105,89 @@
     <string name="geofence_transition_exited">Exited</string>
     <string name="unknown_geofence_transition">Unknown Transition</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
+
+    <!--Activities types-->
+    <string name="games">Games</string>
+    <string name="recent">Recent</string>
+    <!--<string name="music">Music</string>-->
+    <string name="sports">Sports</string>
+    <string name="nightlife">Nightlife</string>
+    <string name="places">places</string>
+
+    <!--Weather-->
+    <string name="clear">Clear</string>
+    <string name="foggy">Foggy</string>
+    <string name="snowy">Snowy</string>
+    <string name="cloudy">Cloudy</string>
+    <string name="hazy">Hazy</string>
+    <string name="icy">Icy</string>
+    <string name="rainy">Rainy</string>
+    <string name="stormy">Stormy</string>
+    <string name="windy">Windy</string>
+    <string name="unknown">Unknown</string>
+
+    <!--Places-->
+    <string name="concert">Concert</string>
+    <string name="home">Home</string>
+    <string name="movie">Movie</string>
+    <string name="park">Park</string>
+    <string name="school">School</string>
+    <string name="shopping">Shopping</string>
+    <string name="theater">Theater</string>
+    <string name="university">University</string>
+    <string name="work">Work</string>
+    <string name="bar">Bar</string>
+    <string name="party">Party</string>
+
+    <!--Sports-->
+    <string name="gym">Gym</string>
+    <string name="surf">Surf</string>
+    <string name="golf">Golf</string>
+    <string name="dance">Dance</string>
+    <string name="rugby">Rugby</string>
+    <string name="tennis">Tennis</string>
+    <string name="soccer">Soccer</string>
+    <string name="running">Running</string>
+    <string name="cycling">Cycling</string>
+    <string name="bowling">Bowling</string>
+    <string name="swimming">Swimming</string>
+    <string name="football">Football</string>
+    <string name="baseball">Baseball</string>
+    <string name="basketball">Basketball</string>
+    <string name="table_tennis">Table Tennis</string>
+
+    <!--Music-->
+    <string name="base">Base</string>
+    <string name="drums">Drums</string>
+    <string name="guitar">Guitar</string>
+    <string name="jam">Jam</string>
+    <string name="violin">Violin</string>
+    <string name="piano">Piano</string>
+    <string name="sax">Sax</string>
+    <string name="singing">Singing</string>
+    <string name="trumpet">Trumpet</string>
+    <string name="musical_keyboard">Keyboard</string>
+
+    <!--Games-->
+    <string name="rpg">RPG</string>
+    <string name="chess">Chess</string>
+    <string name="cards">Cards</string>
+    <string name="billards">Billards</string>
+    <string name="video_game">Video Game</string>
+
+    <!--Food-->
+    <string name="sushi">Sushi</string>
+    <string name="burger">Burger</string>
+
+
+    <!--Miscellaneous-->
+    <string name="toilet">Toilet</string>
+    <string name="smoking">Smoking</string>
+    <string name="showering">Showering</string>
+
+    <!--Hobbies-->
+    <string name="painting">Painting</string>
+
 
     <string-array name="activity_types">
         <item>Recent</item>

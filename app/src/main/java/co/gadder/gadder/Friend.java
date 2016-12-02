@@ -23,26 +23,26 @@ public class Friend {
     public static class Music {
         public Music() {}
         public String song;
-
         public Boolean playing;
     }
+
     public static class Sharing {
-
         public Sharing() {}
-        public Boolean musicSharing;
 
+        public Boolean musicSharing;
         public Boolean weatherSharing;
         public Boolean batterySharing;
         public Boolean companySharing;
         public Boolean activitySharing;
         public Boolean locationSharing;
     }
-    public static class Notifications {
 
+    public static class Notifications {
         public Notifications() {}
-        public Boolean friendsNearby;
-        public Boolean requestActivity;
+        public Boolean nearbyNotification;
+        public Boolean requestNotification;
     }
+
     public static class Coordinates {
 
         public Coordinates() {}
@@ -73,7 +73,6 @@ public class Friend {
 
     public Bitmap image;
     public int position;
-    public Marker marker;
     private LatLng latLng;
     private Location location;
 
@@ -86,7 +85,6 @@ public class Friend {
         this.time = updatedFriend.time;
         this.city = updatedFriend.city;
         this.image = updatedFriend.image;
-        this.marker = updatedFriend.marker;
         this.weather = updatedFriend.weather;
         this.battery = updatedFriend.battery;
         this.activity = updatedFriend.activity;
@@ -102,9 +100,6 @@ public class Friend {
         this.coordinates = updatedFriend.coordinates;
         this.notification = updatedFriend.notification;
 
-        if (this.marker != null) {
-            this.marker.setPosition(updatedFriend.getLatLng());
-        }
     }
 
     public LatLng getLatLng() {
@@ -173,6 +168,10 @@ public class Friend {
         }
     }
 
+    @Override
+    public String toString() {
+        return "id: "+ id + "\nname: " + name;
+    }
 }
 
 

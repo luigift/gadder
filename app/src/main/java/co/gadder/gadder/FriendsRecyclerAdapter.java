@@ -120,7 +120,7 @@ public class FriendsRecyclerAdapter
             requestContactsPermissionButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_CONTACTS}, activity.REQUEST_READ_CONTACTS_PERMISSION);
+                    PermissionManager.requestContactsPermission(activity);
                 }
             });
         }
@@ -154,9 +154,11 @@ public class FriendsRecyclerAdapter
                 this.batteryImage.setImageResource(getBatteryResource(friend.battery));
             }
 
-            if (friend.sharing.locationSharing != null && friend.sharing.locationSharing) {
+            if (activity.user != null &&
+                    friend.sharing.locationSharing != null &&
+                    friend.sharing.locationSharing ){
                 String distance =
-                        Math.round(activity.mLocation.distanceTo(friend.getLocation()) / 1000) + " km";
+                        Math.round(activity.user.getLocation().distanceTo(friend.getLocation()) / 1000) + " km";
                 distanceText.setText(distance);
             }
 
@@ -204,7 +206,7 @@ public class FriendsRecyclerAdapter
     public int getItemViewType(int position) {
         int itemViewType = FRIEND_VIEWHOLDER;
         if (position >= activity.friends.size()) {
-            if (activity.checkContactsPermission()) {
+            if (PermissionManager.checkContactsPermission(activity)) {
                 itemViewType = NEW_FRIENDS_VIEWHOLDER;
             } else {
                 itemViewType = CONTACTS_REQUEST_VIEWHOLDER;
@@ -266,7 +268,7 @@ public class FriendsRecyclerAdapter
         if(activity.friends.size() == 0) {
             return 0;
         } else {
-            if (activity.checkContactsPermission()) {
+            if (PermissionManager.checkContactsPermission(activity)) {
                 return activity.friends.size() + activity.contacts.size();
             } else {
                 return activity.friends.size() + 1;

@@ -50,14 +50,19 @@ public class FriendsActivityFragment extends Fragment {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-
+                                Log.d(TAG, "position: " + position + "size: " + activity.friends.size());
+                                if (position < activity.friends.size()) {
+                                    activity.selectFriend(position);
+                                } else {
+                                    activity.requestFriendship(position);
+                                }
                             }
 
                             @Override
                             public void onLongItemClick(View view, int position) {
                                 getFragmentManager().beginTransaction()
                                         .addToBackStack("click")
-                                        .replace(R.id.friendActivityLayout, FloatingProfileFragment.newInstance(activity.adapter.getItem(position)))
+                                        .replace(R.id.mainPager, FloatingProfileFragment.newInstance(activity.adapter.getItem(position)))
                                         .commit();
                             }
                         }));

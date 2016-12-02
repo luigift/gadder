@@ -1,10 +1,9 @@
 package co.gadder.gadder;
 
-import android.util.Log;
 import android.os.Bundle;
+import android.util.TimingLogger;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -13,10 +12,9 @@ import android.support.v4.app.Fragment;
 import android.widget.CompoundButton;
 import android.support.v7.widget.CardView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.FirebaseDatabase;
 
 import com.bumptech.glide.Glide;
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -25,7 +23,7 @@ public class ProfileFragment extends Fragment {
 
     private static  final String TAG = "ProfileFragment";
 
-    Friend user = new Friend();
+    TimingLogger timings = new TimingLogger(TAG, "Create");
 
     CardView edit;
     TextView name;
@@ -44,8 +42,6 @@ public class ProfileFragment extends Fragment {
         // Required empty public constructor
     }
 
-    private MainActivity activity;
-
     public static ProfileFragment newInstance() {
         return new ProfileFragment();
     }
@@ -53,7 +49,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -65,7 +60,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = (MainActivity) getActivity();
 
         name = (TextView) getActivity().findViewById(R.id.profileName);
         edit = (CardView) getActivity().findViewById(R.id.profileUserCard);
@@ -81,20 +75,56 @@ public class ProfileFragment extends Fragment {
 
         image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
 
-        Button logout = (Button) activity.findViewById(R.id.send);
+        Button logout = (Button) getActivity().findViewById(R.id.send);
         logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                activity.loginState = null;
-                activity.mAuth.signOut();
+                FirebaseAuth.getInstance().signOut();
+            }
+        });
+
+        Friend user = ((MainActivity) getActivity()).user;
+        if (user != null) {
+            setUser(user);
+        }
+    }
+
+    public void setUser(final Friend user) {
+        name.setText(user.name);
+        music.setChecked(user.sharing.musicSharing);
+        battery.setChecked(user.sharing.batterySharing);
+        company.setChecked(user.sharing.companySharing);
+        location.setChecked(user.sharing.locationSharing);
+        activities.setChecked(user.sharing.activitySharing);
+
+        nearby.setChecked(user.notification.nearbyNotification);
+        request.setChecked(user.notification.requestNotification);
+
+        if (user.image == null) {
+            if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
+                Glide.with(getContext())
+                        .load(user.pictureUrl)
+                        .into(image);
+            }
+        } else {
+            image.setImageBitmap(user.image);
+        }
+
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getFragmentManager().beginTransaction()
+                        .addToBackStack("editProfile")
+                        .add(R.id.activity_main, EditFragment.newInstance(user))
+                        .commit();
             }
         });
 
         final DatabaseReference ref =
-                activity.mDatabase
+                FirebaseDatabase.getInstance().getReference()
                         .child(Constants.VERSION)
                         .child(Constants.USERS)
-                        .child(activity.uid);
+                        .child(user.id);
 
         // Sharing callbacks
         music.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -147,37 +177,5 @@ public class ProfileFragment extends Fragment {
                 ref.child("notification").child("requestNotification").setValue(b);
             }
         });
-
-        edit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (user != null) {
-                    getFragmentManager().beginTransaction()
-                            .addToBackStack("editProfile")
-                            .add(R.id.activity_main, EditFragment.newInstance(user))
-                            .commit();
-                }
-            }
-        });
-
-    }
-
-    public void setUser() {
-        name.setText(user.name);
-        music.setChecked(user.sharing.musicSharing);
-        battery.setChecked(user.sharing.batterySharing);
-        company.setChecked(user.sharing.companySharing);
-        location.setChecked(user.sharing.locationSharing);
-        activities.setChecked(user.sharing.activitySharing);
-
-        if (user.image == null && getContext() != null) {
-            if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-                Glide.with(getContext())
-                        .load(user.pictureUrl)
-                        .into(image);
-            }
-        } else {
-            image.setImageBitmap(user.image);
-        }
     }
 }
