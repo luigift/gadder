@@ -1,7 +1,9 @@
 package co.gadder.gadder;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -9,6 +11,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -20,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RequestManager {
 
@@ -43,7 +47,51 @@ public class RequestManager {
         return mInstance;
     }
 
-    public void sendUpdateRequest(List<String> tokens) {
+    public void downloadImage(String url, Response.Listener<Bitmap> listener) {
+        ImageRequest imgRequest = new ImageRequest(url, listener, 200, 200, ImageView.ScaleType.CENTER_CROP, Bitmap.Config.ARGB_8888,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //do stuff
+                    }
+                });
+        mRequestQueue.add(imgRequest);
+    }
+
+    public void sendUpdateRequest(String token) {
+
+        JSONObject data = new JSONObject();
+        JSONObject json = new JSONObject();
+        try {
+            data.put("notify", "true");
+            data.put("update", "true");
+            json.put("data", data);
+            json.put("to", token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        sendRequest(json);
+    }
+    public void sendUpdateRequest(String token, String name, String pictureUrl) {
+
+        JSONObject data = new JSONObject();
+        JSONObject json = new JSONObject();
+        try {
+            data.put("notify", "false"); // TODO change to true
+            data.put("update", "true");
+            data.put("name", name);
+            data.put("pictureUrl", pictureUrl);
+            json.put("data", data);
+            json.put("to", token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        sendRequest(json);
+    }
+
+    public void sendAllUpdateRequest(List<String> tokens) {
 
         for (String t :tokens) {
             JSONObject data = new JSONObject();
@@ -61,7 +109,7 @@ public class RequestManager {
         }
     }
 
-    public void sendRemoveNotificationRequest(List<String> tokens) {
+    public void sendRemoveNotificationRequest(Set<String> tokens) {
         for (String t :tokens) {
             JSONObject data = new JSONObject();
             JSONObject json = new JSONObject();

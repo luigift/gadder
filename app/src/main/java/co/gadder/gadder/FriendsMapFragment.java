@@ -1,6 +1,5 @@
 package co.gadder.gadder;
 
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,13 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.awareness.state.Weather;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -35,6 +31,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -44,20 +45,23 @@ import co.gadder.gadder.emoji.Nature;
 import co.gadder.gadder.emoji.Objects;
 import co.gadder.gadder.emoji.People;
 import co.gadder.gadder.emoji.Symbols;
-import co.gadder.gadder.emoji.Travel;
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static co.gadder.gadder.Constants.EMOJI_SIZE;
 
 public class FriendsMapFragment extends Fragment {
 
     private final static String TAG = "FriendsMapFragment";
 
-    private final static float EMOJI_SIZE = 60f;
+    private final static int DISPLAY_TIME = 2000;
 
     private GoogleMap mMap;
     private MapView mapView;
     private LatLngBounds.Builder mBoundsBuilder;
 
-    private int bounderPadding = 500;
+    private int bounderPadding = 250;
+
+    private Boolean friendFocused = false;
 
     View markerView;
     TextView marketName;
@@ -65,6 +69,8 @@ public class FriendsMapFragment extends Fragment {
     CircleImageView markerImage;
 
     Map<String, Marker> markers;
+
+    LinearLayout infoLayout;
 
     int friendIterator = 0;
 
@@ -92,7 +98,9 @@ public class FriendsMapFragment extends Fragment {
         Log.d(TAG, "onCreateView");
         View layout = inflater.inflate(R.layout.fragment_friends_map, container, false);
 
-        markerView = inflater.inflate(R.layout.marker_name, container, false);
+        infoLayout = (LinearLayout) layout.findViewById(R.id.mapUserInfoLayout);
+
+        markerView = inflater.inflate(R.layout.marker_person, container, false);
 
         marketName = (TextView) markerView.findViewById(R.id.markerName);
         markerActivity = (ImageView) markerView.findViewById(R.id.marketActivity);
@@ -107,33 +115,40 @@ public class FriendsMapFragment extends Fragment {
                 mMap = googleMap;
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-                Log.d(TAG, "friendId: " + activity.friendsId.toString());
+//                for (String friendId : activity.friends.keySet()) {
+//                    Friend friend = activity.friends.get(friendId);
+//
+//                    markerImage.setImageBitmap(friend.image);
+//
+//                    LatLng friendLocation = friend.getLatLng();
+//
+//                    mMap.addMarker(
+//                            new MarkerOptions()
+//                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(markerView)))
+//                                    .position(friendLocation)
+//                                    .title(friend.name)
+//                                    .snippet("battery: " + friend.battery + "%"));
+//                }
 
-                for (String friendId : activity.friendsId) {
-                    Friend friend = activity.friends.get(friendId);
-
-                    markerImage.setImageBitmap(friend.image);
-
-                    LatLng friendLocation = friend.getLatLng();
-
-                    mMap.addMarker(
-                            new MarkerOptions()
-                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(markerView)))
-                                    .position(friendLocation)
-                                    .title(friend.name)
-                                    .snippet("battery: " + friend.battery + "%"));
-                }
+                mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
+                    @Override
+                    public void onCameraMoveStarted(int i) {
+                        unfocusFriend();
+                    }
+                });
 
                 if (PermissionManager.checkLocationPermission(getContext())) {
                     mMap.setMyLocationEnabled(false);
                 }
 
+
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
-                        Toast.makeText(activity, "Click", Toast.LENGTH_SHORT).show();
-
-                        return false;
+                        String uid = (String) marker.getTag();
+                        Friend friend = activity.friends.get(uid);
+                        focusFriend(friend);
+                        return true;
                     }
                 });
 
@@ -155,7 +170,7 @@ public class FriendsMapFragment extends Fragment {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Friend f = activity.getFriendByPosition(friendIterator);
+                Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
                 if (mMap != null) {
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
 
@@ -172,7 +187,7 @@ public class FriendsMapFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (mMap != null) {
-                    Friend f = activity.getFriendByPosition(friendIterator);
+                    Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
 
                     if (friendIterator == 0) {
@@ -189,6 +204,7 @@ public class FriendsMapFragment extends Fragment {
             public void onClick(View view) {
                 if (mMap != null) {
                     mBoundsBuilder = LatLngBounds.builder();
+                    mBoundsBuilder.include(activity.user.getLatLng());
                     for (Marker marker : markers.values()) {
                         mBoundsBuilder.include(marker.getPosition());
                     }
@@ -240,67 +256,170 @@ public class FriendsMapFragment extends Fragment {
         mapView.onSaveInstanceState(outState);
     }
 
+    public void clearFriendInfo(){
+        infoLayout.removeAllViews();
+    }
+
     public void updateFriendOnMap(final Friend friend) {
         Log.d(TAG, "updateFriendOnMap: " + friend.name);
         if (mMap != null && mapView != null && markerImage != null) {
 
-
             // create marker
             if (!markers.containsKey(friend.id)) {
                 Log.d(TAG, "Create Marker: " + friend.name);
+
+                // set emoji
+                if (friend.activity.type != null && !friend.activity.type.isEmpty()) {
+                    GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(friend.activity.type);
+                    if (act != null) {
+                        String emoji = act.emoji;
+                        markerActivity.setImageBitmap(Constants.textAsBitmap(emoji, EMOJI_SIZE, Color.WHITE));
+                    }
+                } else {
+                    markerActivity.setImageBitmap(null);
+                }
+
+                // Set image
                 Random rnd = new Random();
                 int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-                markerImage.setBorderWidth(5);
-                markerImage.setBorderColor(color);
-                markerImage.setImageBitmap(friend.image);
                 marketName.setText(friend.name);
-                markers.put(friend.id,
-                        mMap.addMarker(
-                                new MarkerOptions()
-                                        .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(markerView)))
-                                        .position(friend.getLatLng())
-                                        .title(friend.name)
-                                        .snippet("battery: " + friend.battery + "%")));
-            }
 
-            // update marker
-            Marker marker = markers.get(friend.id);
-            marker.setTitle(friend.name);
-            marker.setSnippet("battery: " + friend.battery + "%");
-            marker.setPosition(friend.getLatLng());
+                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
+                    Log.d(TAG, "download pictureUrl: " + friend.pictureUrl + " " + friend.name);
 
-            if (friend.image == null) {
-                Log.d(TAG, "null image " + friend.name);
+                    markerImage.setBorderWidth(5);
+                    markerImage.clearColorFilter();
+                    markerImage.setBorderColor(color);
+
+                    Picasso.with(getContext())
+                            .load(friend.pictureUrl)
+                            .resize(112, 112)
+                            .centerCrop()
+                            .onlyScaleDown()
+                            .error(R.drawable.ic_face_black_24dp)
+                            .placeholder(R.drawable.ic_face_black_24dp)
+                            .into(markerImage, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    addMarker(friend);
+                                }
+
+                                @Override
+                                public void onError() {
+
+                                }
+                            });
+                } else {
+                    Log.d(TAG, "set drawable: " + friend.pictureUrl + " " + friend.name);
+                    markerImage.setBorderWidth(0);
+                    markerImage.setColorFilter(color);
+                    markerImage.setImageResource(R.drawable.ic_face_black_24dp);
+                    addMarker(friend);
+                }
             } else {
-                Log.d(TAG, "image ok " + friend.name);
-                markerImage.setImageBitmap(friend.image);
-                marker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(markerView)));
+                Log.d(TAG, "update marker: "+ friend.name);
+                Marker marker = markers.get(friend.id);
+                marker.setTag(friend.id);
+                marker.setTitle(friend.name);
+                marker.setPosition(friend.getLatLng());
+                marker.setSnippet("battery: " + friend.battery + "%");
             }
-
-            mBoundsBuilder.include(friend.getLatLng());
-            mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
-
         }
+    }
+
+    public void addMarker(Friend friend){
+        Marker marker = mMap.addMarker(
+                new MarkerOptions()
+                        .icon(BitmapDescriptorFactory
+                                .fromBitmap(getMarkerBitmapFromView(markerView)))
+                        .position(friend.getLatLng())
+                        .title(friend.name)
+                        .snippet("battery: " + friend.battery + "%"));
+        marker.setTag(friend.id);
+        markers.put(friend.id, marker);
+        mBoundsBuilder.include(friend.getLatLng());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
     }
 
     public void focusFriend(Friend friend) {
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(friend.getLatLng()));
-        for(Marker m : markers.values()) {
-            m.setVisible(false);
+        LatLng latLng = friend.getLatLng();
+        if (latLng != null) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
-        markers.get(friend.id).setVisible(true);
+
+        // Display focused marker
+        for (Marker m : markers.values()) {
+            if (m != null) {
+                m.setVisible(false);
+            }
+        }
+        Marker marker = markers.get(friend.id);
+        if (marker != null) {
+            marker.setVisible(true);
+        }
 
         displayFriendInfo(friend);
+
+        friendFocused = true;
+    }
+
+    private void unfocusFriend() {
+        Log.d(TAG, "unfocusFriend");
+
+        if (friendFocused) {
+            for (Marker m : markers.values()) {
+                if (m != null) {
+                    m.setVisible(true);
+                }
+            }
+            infoLayout.removeAllViews();
+        }
+        friendFocused = false;
     }
 
     public void displayFriendInfo(Friend friend) {
-        LinearLayout infoLayout = (LinearLayout) getActivity().findViewById(R.id.mapUserInfoLayout);
+
+        Log.d(TAG, "displayFriendInfo: " + friend.name);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        if (friend.sharing.musicSharing && friend.music.playing || true) {
+        LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layout.setMargins(20,20,20,20);
+
+
+        // Set name
+        if (friend.name != null && !friend.name.isEmpty()) {
             View info = inflater.inflate(R.layout.item_info, null);
-//            info.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            info.setLayoutParams(layout);
+            ImageView image = (ImageView) info.findViewById(R.id.infoImage);
+            final TextView description = (TextView) info.findViewById(R.id.infoText);
+            final TextView value = (TextView) info.findViewById(R.id.infoValue);
+
+            image.setImageBitmap(Constants.textAsBitmap(People.WINKING_FACE, EMOJI_SIZE, Color.BLACK));
+            description.setText(getString(R.string.name));
+            value.setText(friend.name);
+            description.setVisibility(View.GONE);
+            info.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    description.setVisibility(View.VISIBLE);
+                    new Handler().postDelayed(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    description.setVisibility(View.GONE);
+                                }
+                            }, DISPLAY_TIME);
+                }
+            });
+
+            infoLayout.addView(info);
+        }
+
+        // Set music
+        if (friend.sharing.musicSharing && friend.music.playing) {
+            View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
@@ -323,7 +442,7 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
 
@@ -333,6 +452,7 @@ public class FriendsMapFragment extends Fragment {
         if (friend.sharing.batterySharing) {
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
@@ -353,7 +473,7 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
 
@@ -369,6 +489,7 @@ public class FriendsMapFragment extends Fragment {
 
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
@@ -434,7 +555,7 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
 
@@ -447,6 +568,7 @@ public class FriendsMapFragment extends Fragment {
 
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
@@ -468,7 +590,7 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
 
@@ -478,6 +600,7 @@ public class FriendsMapFragment extends Fragment {
         if (friend.sharing.locationSharing) {
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
@@ -497,7 +620,7 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
 
@@ -508,15 +631,48 @@ public class FriendsMapFragment extends Fragment {
         if (friend.sharing.activitySharing) {
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
-//            info.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            info.setLayoutParams(layout);
+            ImageView image = (ImageView) info.findViewById(R.id.infoImage);
+            final TextView description = (TextView) info.findViewById(R.id.infoText);
+            TextView value = (TextView) info.findViewById(R.id.infoValue);
+
+            GadderActivities.GadderActivity activity = GadderActivities.ACTIVITY_MAP.get(friend.activity.type);
+
+            // Set values
+            if (activity != null && activity.emoji != null && !activity.emoji.isEmpty()) {
+                image.setImageBitmap(Constants.textAsBitmap(activity.emoji, EMOJI_SIZE, Color.WHITE));
+                description.setText(activity.description);
+                value.setText(friend.activity.description);
+                description.setVisibility(View.GONE);
+                info.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        description.setVisibility(View.VISIBLE);
+                        new Handler().postDelayed(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        description.setVisibility(View.GONE);
+                                    }
+                                }, DISPLAY_TIME);
+                    }
+                });
+                infoLayout.addView(info);
+            }
+        }
+
+        // Last update
+        if (friend.lastUpdate != null && !friend.lastUpdate.isEmpty()) {
+
+            View info = inflater.inflate(R.layout.item_info, null);
+            info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
             final TextView description = (TextView) info.findViewById(R.id.infoText);
             TextView value = (TextView) info.findViewById(R.id.infoValue);
 
             // Set values
-            image.setImageBitmap(Constants.textAsBitmap(Nature.EARTH_AMERICA, EMOJI_SIZE, Color.WHITE));
-            description.setText(getString(R.string.activity));
-            value.setText(friend.city);
+            image.setImageBitmap(Constants.textAsBitmap(Objects.TIMER_CLOCK, EMOJI_SIZE, Color.WHITE));
+            description.setText(getString(R.string.last_update));
             description.setVisibility(View.GONE);
             info.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -528,13 +684,56 @@ public class FriendsMapFragment extends Fragment {
                                 public void run() {
                                     description.setVisibility(View.GONE);
                                 }
-                            }, 3000);
+                            }, DISPLAY_TIME);
                 }
             });
-            infoLayout.addView(info);
 
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
+                Date date = Calendar.getInstance().getTime();
+                Date lastDate = sdf.parse(friend.lastUpdate);
+
+                long dif  = Math.abs(date.getTime() - lastDate.getTime());
+                long secondsInMilli = 1000;
+                long minutesInMilli = secondsInMilli * 60;
+                long hoursInMilli = minutesInMilli * 60;
+                long daysInMilli = hoursInMilli * 24;
+                long monthsInMilli = daysInMilli * 30;
+
+                long elapsedMonths = dif / monthsInMilli;
+                dif = dif % monthsInMilli;
+
+                long elapsedDays = dif / daysInMilli;
+                dif = dif % daysInMilli;
+
+                long elapsedHours = dif / hoursInMilli;
+                dif = dif % hoursInMilli;
+
+                long elapsedMinutes = dif / minutesInMilli;
+                dif = dif % minutesInMilli;
+
+                long elapsedSeconds = dif / secondsInMilli;
+
+                String elapsedTime = "";
+                if (elapsedMonths > 0 ) {
+                    elapsedTime = elapsedMonths + " " + getString(R.string.months);
+                } else if (elapsedDays > 0 ) {
+                    elapsedTime = elapsedDays + " " + getString(R.string.days);
+                } else if (elapsedHours > 0 ) {
+                    elapsedTime = elapsedHours + " " + getString(R.string.hours);
+                } else if (elapsedMinutes > 0 ) {
+                    elapsedTime = elapsedMinutes + " " + getString(R.string.minutes);
+                } else if (elapsedSeconds > 0 ) {
+                    elapsedTime = elapsedSeconds + " " + getString(R.string.seconds);
+                }
+
+                value.setText(elapsedTime);
+
+                infoLayout.addView(info);
+            } catch (ParseException e) {
+                Log.e(TAG, "Couldn't parse date: " + e + " " + friend.name);
+            }
         }
-
     }
 
     private Bitmap getMarkerBitmapFromView(View view) {

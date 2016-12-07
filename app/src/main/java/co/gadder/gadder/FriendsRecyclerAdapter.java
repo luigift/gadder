@@ -1,14 +1,7 @@
 package co.gadder.gadder;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,11 +12,10 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import java.util.Random;
+import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -88,7 +80,7 @@ public class FriendsRecyclerAdapter
                 v.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mRecyclerView.smoothScrollToPosition(friend.position);
+//                        smoothScrollToPosition(friend.position);
                     }
                 });
                 v.setOnLongClickListener(new View.OnLongClickListener() {
@@ -157,21 +149,32 @@ public class FriendsRecyclerAdapter
             if (activity.user != null &&
                     friend.sharing.locationSharing != null &&
                     friend.sharing.locationSharing ){
-                String distance =
-                        Math.round(activity.user.getLocation().distanceTo(friend.getLocation()) / 1000) + " km";
+                Float dist = activity.user.getLocation().distanceTo(friend.getLocation());
+                Integer m = Math.round(dist/100);
+                Integer km = Math.round( dist / 1000);
+
+                String distance;
+                if (km > 99) {
+                    distance = "99+";
+                } else if (km > 0) {
+                    distance = String.valueOf(km);
+                } else if (m > 1) {
+                    distance = "0." + m;
+                } else {
+                    distance = "0";
+                }
                 distanceText.setText(distance);
             }
 
-            if(friend.image == null) {
-                Log.d(TAG, friend.name + " image null");
-                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
-                    Picasso.with(activity)
-                            .load(friend.pictureUrl)
-                            .into(friendImage);
-                }
-            } else {
-                Log.d(TAG, friend.name + " image ok");
-                friendImage.setImageBitmap(friend.image);
+            if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
+                Picasso.with(activity)
+                        .load(friend.pictureUrl)
+                        .error(R.drawable.ic_face_black_24dp)
+                        .into(friendImage);
+            } else  {
+                Picasso.with(activity)
+                        .load(R.drawable.ic_face_black_24dp)
+                        .into(friendImage);
             }
         }
     }
@@ -191,7 +194,11 @@ public class FriendsRecyclerAdapter
             Friend friend = getItem(position);
             friendName.setText(friend.name);
             if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
-                Glide.with(activity)
+                Picasso.with(activity)
+                        .load(friend.pictureUrl)
+                        .into(friendImage);
+            } else {
+                Picasso.with(activity)
                         .load(friend.pictureUrl)
                         .into(friendImage);
             }
@@ -204,13 +211,19 @@ public class FriendsRecyclerAdapter
 
     @Override
     public int getItemViewType(int position) {
-        int itemViewType = FRIEND_VIEWHOLDER;
-        if (position >= activity.friends.size()) {
-            if (PermissionManager.checkContactsPermission(activity)) {
+        Friend friend = getItem(position);
+        Log.d(TAG, "getItemViewType: " + friend.name);
+        int itemViewType;
+        switch (friend.friendship) {
+            case "friend" :
+                itemViewType = FRIEND_VIEWHOLDER;
+                break;
+            case "contact" :
                 itemViewType = NEW_FRIENDS_VIEWHOLDER;
-            } else {
-                itemViewType = CONTACTS_REQUEST_VIEWHOLDER;
-            }
+                break;
+            default:
+                itemViewType = FRIEND_VIEWHOLDER;
+                break;
         }
         return itemViewType;
     }
@@ -240,70 +253,30 @@ public class FriendsRecyclerAdapter
         }
     }
 
-    private RecyclerView mRecyclerView;
-
-    void setRecyclerView(RecyclerView rv) {
-        mRecyclerView = rv;
-    }
-
     @Override
     public void onBindViewHolder(final GenericViewHolder holder, int position) {
         Log.d(TAG, "onBindViewHolder:  " + position + "type: " + holder.getClass());
-
-//        Random rnd = new Random();
-//        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-//        mRecyclerView.setBackgroundColor(color);
-//        holder.itemView.setBackgroundColor(color);
-
-//        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            activity.getWindow().setStatusBarColor(color);
-//            activity.getWindow().setNavigationBarColor(color);
-//        }
 
         holder.updateView(position);
     }
 
     @Override
     public int getItemCount() {
-        if(activity.friends.size() == 0) {
-            return 0;
-        } else {
-            if (PermissionManager.checkContactsPermission(activity)) {
-                return activity.friends.size() + activity.contacts.size();
-            } else {
-                return activity.friends.size() + 1;
-            }
-        }
+        return activity.friends.size();
     }
 
     public Friend getItem(int position) {
-        if (position < activity.friends.size()) {
-            return activity.friends.get(activity.friendsId.get(position));
-        } else {
-            return activity.contacts.get(position - activity.friends.size());
-        }
-    }
-
-    public void updateItem(Friend friend) {
-        if(activity.friends.containsKey(friend.id)) {
-            int position = activity.friendsId.indexOf(friend.id);
-            activity.friends.put(friend.id, friend);
-            notifyItemChanged(position);
-        } else {
-            addItem(friend);
-        }
+        ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
+        return array.get(position);
     }
 
     public void addItem(Friend friend) {
-        activity.friendsId.add(friend.id);
-        activity.friends.put(friend.id, friend);
-        friend.position = activity.friends.size();
         notifyItemInserted(activity.friends.size());
         notifyItemChanged(0);
     }
 
     public void removeItem(int position) {
-        activity.friends.remove(activity.friendsId.remove(position));
+        activity.friends.remove(getItem(position).id);
         notifyItemRemoved(position);
         notifyItemRangeChanged(position, activity.friends.size());
     }
@@ -330,6 +303,5 @@ public class FriendsRecyclerAdapter
         } else {
             return R.drawable.ic_battery_std_white_24dp;
         }
-
     }
 }

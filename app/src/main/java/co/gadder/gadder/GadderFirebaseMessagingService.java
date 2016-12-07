@@ -10,19 +10,12 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
-import android.widget.RemoteViews;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.google.android.gms.common.api.BooleanResult;
+import com.android.volley.Response;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -84,7 +77,7 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         builder.setSmallIcon(R.drawable.ic_bubble_chart_white_48dp);
-        builder.setContentTitle(getString(R.string.request_friend_activity_title));
+        builder.setContentTitle(getString(R.string.app_name));
 
         if (data.containsKey("name")) {
             String name = data.get("name");
@@ -115,23 +108,23 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
         }
 
         if (data.containsKey("pictureUrl")) {
-            Glide.with(getApplicationContext())
-                    .load(data.get("pictureUrl"))
-                    .asBitmap()
-                    .into(new SimpleTarget<Bitmap>(100, 100) {
-                        @Override
-                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                            builder.setLargeIcon(resource);
 
-                            Notification notification;
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                notification = builder.build();
-                            } else {
-                                notification = builder.getNotification();
-                            }
-                            getNotificationManager().notify(ACTIVITY_REQUEST_ID, notification);
-                        }
-                    });
+            Response.Listener<Bitmap> listener = new Response.Listener<Bitmap>() {
+                @Override
+                public void onResponse(Bitmap bitmap) {
+                    builder.setLargeIcon(Constants.getCircularBitmap(bitmap));
+
+                    Notification notification;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        notification = builder.build();
+                    } else {
+                        notification = builder.getNotification();
+                    }
+                    getNotificationManager().notify(ACTIVITY_REQUEST_ID, notification);
+
+                }
+            };
+            RequestManager.getInstance(getApplicationContext()).downloadImage(data.get("pictureUrl"), listener);
         } else {
             Notification notification;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {

@@ -33,9 +33,10 @@ public class MusicReceiver extends BroadcastReceiver {
             FirebaseDatabase
                     .getInstance()
                     .getReference()
-                    .child("users")
+                    .child(Constants.VERSION)
+                    .child(Constants.USERS)
                     .child(user.getUid())
-                    .child("music")
+                    .child(Constants.MUSIC)
                     .updateChildren(childUpdates);
         }
     }

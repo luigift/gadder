@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,9 +27,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,6 +39,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.Random;
 
@@ -268,6 +272,7 @@ public class SmsCodeFragment extends Fragment {
     private void verifyPhone() {
         Random r = new Random();
         mCode = r.nextInt(8999) + 1000;
+        Toast.makeText(getContext(), "Code: " + mCode, Toast.LENGTH_LONG).show();
         mMessage = "Your gadder verification code: " + mCode;
         SmsManager sm = SmsManager.getDefault();
         sm.sendTextMessage(mPhone, null, mMessage, null, null);
@@ -285,32 +290,55 @@ public class SmsCodeFragment extends Fragment {
                         } else {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
+
+                                // Set phone number
                                 mDatabase
                                         .child(Constants.VERSION)
                                         .child(Constants.USER_PHONE)
                                         .child(mPhoneParsed)
-                                        .child(user.getUid());
+                                        .setValue(user.getUid())
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                Log.d(TAG, "Success: " + mPhoneParsed);
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Log.d(TAG, "Failure: " + mPhoneParsed);
+                                            }
+                                        });
 
+                                // Register friend token
+                                String token = FirebaseInstanceId.getInstance().getToken();
+                                if (token == null || token.isEmpty()) {
+                                    SharedPreferences pref =
+                                            getActivity().getSharedPreferences(
+                                                    getString(R.string.preference_file_key),
+                                                    Context.MODE_PRIVATE);
+                                    token = pref.getString(getString(R.string.token), null);
+                                }
+                                if (token != null) {
+                                    mDatabase
+                                            .child(Constants.VERSION)
+                                            .child(Constants.USER_TOKEN)
+                                            .child(user.getUid())
+                                            .child(token);
+                                }
+
+                                // Create friend profile
                                 Friend friend = new Friend();
-
-                                friend.sharing.musicSharing = true;
-                                friend.sharing.weatherSharing = true;
-                                friend.sharing.companySharing = true;
-                                friend.sharing.batterySharing = true;
-                                friend.sharing.activitySharing = true;
-
-                                friend.notification.nearbyNotification = true;
-                                friend.notification.requestNotification = true;
-
                                 mDatabase
                                         .child(Constants.VERSION)
                                         .child(Constants.USERS)
+                                        .child(user.getUid())
                                         .setValue(friend).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-                                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                                        startActivity(intent);
+                                        getFragmentManager().beginTransaction()
+                                                .replace(R.id.activity_login, VerifiedFragment.newInstance())
+                                                .commit();
                                     }
                                 });
                             }
@@ -325,9 +353,9 @@ public class SmsCodeFragment extends Fragment {
                                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                         @Override
                                         public void onComplete(@NonNull Task<AuthResult> task) {
-                                            getFragmentManager().beginTransaction()
-                                                    .replace(R.id.activity_login, VerifiedFragment.newInstance())
-                                                    .commit();
+                                            Intent intent = new Intent(getActivity(), MainActivity.class);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                                            startActivity(intent);
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {

@@ -2,6 +2,7 @@ package co.gadder.gadder;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -78,7 +79,15 @@ public class PhoneLoginFragment extends Fragment {
     }
 
     private void startVerification() {
-        final String phone = "+" + mCountryCodePicker.getSelectedCountryCode() + mPhoneText.getText();
+        String country_code = mCountryCodePicker.getSelectedCountryCode();
+        final String phone = "+" + country_code + mPhoneText.getText();
+
+        SharedPreferences pref = getActivity().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(getString(R.string.phone), phone);
+        editor.putString(getString(R.string.country_code), country_code);
+        editor.commit();
 
         getFragmentManager().beginTransaction()
                 .addToBackStack("SmsCode")

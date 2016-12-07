@@ -16,16 +16,16 @@
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/markerImage"
         android:layout_gravity="center"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@android:color/white"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:src="@android:color/transparent"
         app:civ_border_width="5dp"
         app:civ_border_color="@color/colorAccent" />
 
     <ImageView
         android:id="@+id/marketActivity"
         android:layout_gravity="bottom|end"
-        android:layout_width="24dp"
-        android:layout_height="24dp" />
+        android:layout_width="28dp"
+        android:layout_height="28dp" />
 
 </FrameLayout>

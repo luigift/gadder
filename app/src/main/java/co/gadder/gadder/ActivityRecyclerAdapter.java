@@ -11,57 +11,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ActivityRecyclerAdapter
         extends RecyclerView.Adapter<ActivityRecyclerAdapter.ActivityViewHolder> {
 
-    int[] mEmojis;
-    Context mContext;
-    Integer mPosition;
-    String[] mDescription;
+    List<GadderActivities.GadderActivity> mActivities;
 
-    public ActivityRecyclerAdapter(Context context, Integer position) {
-        mContext = context;
-        mPosition = position;
-
-        switch (position) {
-            default:
-                mDescription = context.getResources().getStringArray(R.array.activity_sports);
-                mEmojis = context.getResources().getIntArray(R.array.activity_sports_emojis);
-                break;
-            case 0:
-                mDescription = context.getResources().getStringArray(R.array.activity_sports);
-                mEmojis = context.getResources().getIntArray(R.array.activity_sports_emojis);
-                break;
-            case 1:
-                mDescription = context.getResources().getStringArray(R.array.activity_music);
-                mEmojis = context.getResources().getIntArray(R.array.activity_sports_emojis);
-                break;
-            case 2:
-                mDescription = context.getResources().getStringArray(R.array.activity_places);
-                mEmojis = context.getResources().getIntArray(R.array.activity_sports_emojis);
-                break;
-            case 3:
-                mDescription = context.getResources().getStringArray(R.array.activity_nightlife);
-                mEmojis = context.getResources().getIntArray(R.array.activity_sports_emojis);
-                break;
-//            case 4:
-//                break;
-//            case 5:
-//                break;
-//            case 6:
-//                break;
-
-        }
+    public ActivityRecyclerAdapter(Integer position) {
+        mActivities = GadderActivities.ACTIVITY_LIST.get(position);
     }
 
 
-    public Map<String, Object> getItem(int position) {
-        Map<String, Object> item = new HashMap<>();
-        item.put("emoji", mEmojis[position]);
-        item.put("activity", mDescription[position]);
-        return item;
+    public GadderActivities.GadderActivity getItem(int position) {
+        return mActivities.get(position);
     }
 
     public class ActivityViewHolder extends RecyclerView.ViewHolder {
@@ -86,12 +50,13 @@ public class ActivityRecyclerAdapter
 
     @Override
     public void onBindViewHolder(ActivityViewHolder holder, int position) {
-        holder.description.setText(mDescription[position]);
-        holder.image.setText(new String(Character.toChars(mEmojis[position])));
+
+        holder.description.setText(mActivities.get(position).description);
+        holder.image.setText(mActivities.get(position).emoji);
     }
 
     @Override
     public int getItemCount() {
-        return mDescription.length;
+        return mActivities.size();
     }
 }

@@ -12,15 +12,12 @@
 
     <LinearLayout
         android:id="@+id/mapUserInfoLayout"
+        android:layout_centerVertical="true"
         android:orientation="vertical"
         android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginBottom="80dp"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent">
-
-    </LinearLayout>
+        android:layout_height="wrap_content"/>
 
     <ImageButton
         android:id="@+id/nextFriendOnMap"

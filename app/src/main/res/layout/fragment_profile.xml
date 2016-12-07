@@ -37,6 +37,7 @@
 
                 <TextView
                     android:id="@+id/profileName"
+                    android:hint="@string/hint_enter_name"
                     android:gravity="center"
                     android:textStyle="bold"
                     android:layout_weight="1"

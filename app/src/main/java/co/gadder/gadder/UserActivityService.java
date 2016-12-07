@@ -9,6 +9,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -62,7 +63,9 @@ public class UserActivityService extends Service implements
     private Location location;
 
     private Boolean gotTime = false;
+    private Boolean gotCity = false;
     private Boolean gotPlaces = false;
+    private Boolean gotBattery = false;
     private Boolean gotWeather = false;
     private Boolean gotActivity = false;
     private Boolean gotHeadphone = false;
@@ -138,6 +141,14 @@ public class UserActivityService extends Service implements
             getDetectedActivity();                                                                  // Get user activity through Awareness API
             getWeather();
             getHeadphone();
+
+            // safety stopSelf()
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stopSelf();
+                }
+            }, 20000);
         }
     }
 
@@ -166,6 +177,8 @@ public class UserActivityService extends Service implements
                 String city = addresses.get(0).getLocality();
                 Log.d(TAG, "city: " + city);
                 childUpdates.put("city", city);
+                gotCity = true;
+                checkStopSelf();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -191,6 +204,8 @@ public class UserActivityService extends Service implements
 
         Log.d(TAG, "battery: " + (level*100)/ 100);
         childUpdates.put("battery", (level * 100)/100);
+        gotBattery = true;
+        checkStopSelf();
     }
 
     private void getDetectedActivity() {
@@ -210,8 +225,8 @@ public class UserActivityService extends Service implements
                             Log.i(TAG, probableActivity.toString());
                         }
                         gotActivity = true;
-
                         checkStopSelf();
+                        Log.d(TAG, "activityCheckStop");
                     }
                 });
     }
@@ -268,17 +283,19 @@ public class UserActivityService extends Service implements
 
                 gotWeather = true;
                 checkStopSelf();
+                Log.d(TAG, "weatherCheckStop");
             }
         });
     }
 
     private void getTime() {
-        SimpleDateFormat sdf = new SimpleDateFormat();
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
         String date = sdf.format(calendar.getTime());
-
+        Log.d(TAG, "time: " + date);
         childUpdates.put("lastUpdate", date); //DateFormat.getDateTimeInstance().format(new Date()));//calendar.getTime());
         gotTime = true;
         checkStopSelf();
+        Log.d(TAG, "timeCheckStop");
     }
 
     private void getHeadphone() {
@@ -299,6 +316,7 @@ public class UserActivityService extends Service implements
                 }
                 gotHeadphone = true;
                 checkStopSelf();
+                Log.d(TAG, "HeadphoneCheckStop");
             }
         });
     }
@@ -319,17 +337,16 @@ public class UserActivityService extends Service implements
     }
 
     private void checkStopSelf() {
-        if (gotPlaces && gotActivity && gotWeather && gotHeadphone && gotTime) {
+        if (gotCity && gotActivity && gotWeather && gotHeadphone && gotTime && gotBattery) {
             update();
         }
     }
 
     private void update() {
+        Log.d(TAG, "update");
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             mDatabase
-                    .getDatabase()
-                    .getReference()
                     .child(Constants.VERSION)
                     .child(Constants.USERS)
                     .child(user.getUid())
@@ -346,6 +363,8 @@ public class UserActivityService extends Service implements
                     stopSelf();
                 }
             });
+        } else {
+            Log.d(TAG, "user null");
         }
     }
 }

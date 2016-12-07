@@ -1,5 +1,7 @@
 package co.gadder.gadder;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
@@ -43,5 +45,11 @@ public class GadderFirebaseInstanceIDService extends FirebaseInstanceIdService {
                         }
                     });
         }
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(getString(R.string.token), refreshedToken);
+        editor.commit();
     }
 }

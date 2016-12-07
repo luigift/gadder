@@ -12,13 +12,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.android.gms.common.api.BooleanResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -27,6 +26,8 @@ public class NotificationFragment extends Fragment {
     private static final String TAG = "NotificationFragment";
 
     FirebaseRecyclerAdapter mFirebaseAdapter;
+
+    public int noNotifications = 0;
 
     public NotificationFragment () {
 
@@ -89,6 +90,8 @@ public class NotificationFragment extends Fragment {
 
                 @Override
                 protected void populateViewHolder(final FriendRequestViewHolder viewHolder, String model, final int position) {
+                    noNotifications += 1;
+                    activity.setNotificationListener(noNotifications);
 
                     Log.d("populateViewHolder", "model : " + model);
 
@@ -96,13 +99,13 @@ public class NotificationFragment extends Fragment {
                             .child(Constants.VERSION)
                             .child(Constants.USERS)
                             .child(getRef(position).getKey())
-                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                            .addValueEventListener(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     Friend friend = dataSnapshot.getValue(Friend.class);
                                     if (friend != null) {
                                         viewHolder.name.setText(friend.name);
-                                        Glide.with(getActivity())
+                                        Picasso.with(getActivity())
                                                 .load(friend.pictureUrl)
                                                 .into(viewHolder.image);
                                     }
@@ -138,13 +141,15 @@ public class NotificationFragment extends Fragment {
                             .child(user.getUid())
                             .child(getRef(position).getKey())
                             .removeValue();
+
+                    noNotifications -=1;
                 }
 
                 private void setFriendship(Boolean value, int position) {
                     activity.mDatabase
                             .child(Constants.VERSION)
                             .child(Constants.USER_FRIENDS)
-                            .child(getItem(position))
+                            .child(getRef(position).getKey())
                             .child(user.getUid())
                             .setValue(value);
                 }

@@ -202,6 +202,7 @@ public class FindFriendsFragment extends Fragment {
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
                                         Log.d(TAG, "name" + friend.name + " phone: " + friend.phone);
+                                        Log.d(TAG, "snapshot: " + dataSnapshot.toString());
                                         friend.id = dataSnapshot.getValue(String.class);
                                         friendsAdapter.addItem(friend.id, friend);
 

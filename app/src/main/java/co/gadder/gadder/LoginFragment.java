@@ -37,7 +37,6 @@ public class LoginFragment extends Fragment {
     private static final String TAG = "LoginFragment";
 
     // UI elements
-    private Button signUp;
     private Button signIn;
 
     public static LoginFragment newInstance() {

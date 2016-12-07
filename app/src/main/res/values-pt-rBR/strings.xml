@@ -1,15 +1,37 @@
 <resources>
     <string name="app_name">gadder</string>
 
+    <!--Shared Preferences Keys-->
+    <string name="token">token</string>
+    <string name="phone">phone</string>
+    <string name="country_code">country_code</string>
+    <string name="preference_file_key">co.gadder.gadder.PREFERENCE_FILE_KEY</string>
+
+    <!--Friendship status-->
+    <string name="friend">friend</string>
+    <string name="contact">contact</string>
+
     <string name="request_contacts">Achar Amigos</string>
 
     <string name="hint_name">Nome</string>
     <string name="hint_email">nome@email.com</string>
     <string name="hint_password">Senha</string>
-
     <string name="short_name">Nome muito curto</string>
     <string name="short_password">Senha muito curta</string>
 
+    <!--Verify SMS-->
+    <string name="verify">Verify</string>
+    <string name="send_sms">Send SMS</string>
+    <string name="try_again">Try Again</string>
+    <string name="wrong_code_title">Oops! Wrong Code!</string>
+    <string name="charges_may_apply">Carrier SMS charges may apply</string>
+    <string name="verifing_phone_message">We are verifing the number\:</string>
+    <string name="enter_sms_code">Please enter the code you have received.</string>
+    <string name="wrong_code_message">I\'m sorry but the code you have entered doea not match.</string>
+    <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
+
+    <!--Profile Fragment-->
+    <string name="hint_enter_name">Enter your name</string>
     <!--Sharing Options-->
     <string name="music_sharing">Compartilhar Música</string>
     <string name="weather_sharing">Compartilhar Clima</string>
@@ -17,18 +39,42 @@
     <string name="company_sharing">Compartilhar Companhia</string>
     <string name="activity_sharing">Compartilhar Atividades</string>
     <string name="location_sharing">Compartilhar Localização</string>
-    <string name="warning_sharing">
-        Desabilitar o compartilhamento das informações resulta numa pior experiência para você
-        e seus amigos.
-    </string>
-
+    <string name="sharing_warning">Desabilitar o compartilhamento das informações resulta numa pior experiência para você e seus amigos.</string>
     <!--Notification Options-->
     <string name="friends_nearby">Amigos Próximos</string>
+    <string name="friends_request">Friends\' Requests</string>
 
+    <!--Map Fragment-->
+    <string name="degrees">°C</string>
+
+    <!--Input Activity-->
+    <string name="activity_input">What are you doing?</string>
+    <!--Info types-->
+    <string name="name">Name</string>
+    <string name="city">City</string>
+    <string name="music">Music</string>
+    <string name="battery">Battery</string>
+    <string name="weather">Weather</string>
+    <string name="company">Company</string>
+    <string name="location">Location</string>
+    <string name="activity">Activity</string>
+    <string name="last_update">Last Update</string>
+    <string name="temperature">Temperature</string>
+
+    <!--Time lapse-->
+    <string name="days">Days</string>
+    <string name="hours">Hours</string>
+    <string name="months">Months</string>
+    <string name="minutes">Minutes</string>
+    <string name="seconds">Seconds</string>
+
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+
+    <string name="permissions">Permissions</string>
     <string name="title_get_permission">Localização</string>
-    <string name="msg_get_permission">
-        A sua localização vai definir se você foi ou não no treino, por isso precisamos dela.
-    </string>
+    <string name="msg_get_permission">A sua localização vai definir se você foi ou não no treino, por isso precisamos dela.</string>
+
     <string name="ok">Ok</string>
     <string name="thanks">Obrigado</string>
 
@@ -42,27 +88,107 @@
 
     <string name="notifications">Notificações</string>
 
-    <string name="empty_attendees">Não tem treinando</string>
-
-    <string name="whos_there">Quem está na academia?</string>
-
-    <string name="geofences_added">Geofences adicionadas</string>
-    <string name="geofences_removed">Geofences removidas</string>
+    <!--Activity Request Notification-->
+    <string name="and">and</string>
+    <string name="other_friends">other friends</string>
+    <string name="request_friend_activity_title">What are you up to?!</string>
+    <string name="request_friend_activity_message"> wants to know what you are doing now!</string>
 
     <!-- Geofence strings -->
+    <string name="geofences_removed">Geofences removidas</string>
+    <string name="geofences_added">Geofences adicionadas</string>
     <string name="not_connected">GoogleApiClient não está conectado.</string>
     <string name="geofence_not_available">Geofence não está disponível agora</string>
     <string name="geofence_too_many_geofences">Muitas geofences foram registradas</string>
-    <string name="geofence_too_many_pending_intents">
-        You have provided too many PendingIntents to the addGeofences() call
-    </string>
+    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
     <string name="unknown_geofence_error">Unknown error: Geofence service is not available</string>
-    <string name="geofence_transition_invalid_type">
-        Geofence transition error: invalid transition type %1$d
-    </string>
     <string name="geofence_transition_entered">Chegou</string>
     <string name="geofence_transition_exited">Saiu</string>
     <string name="unknown_geofence_transition">Transição desconhecida</string>
     <string name="geofence_transition_notification_text">Clique para entrar no app</string>
+    <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
+
+    <!--Activities types-->
+    <string name="games">Games</string>
+    <string name="recent">Recent</string>
+    <string name="sports">Sports</string>
+    <string name="nightlife">Nightlife</string>
+    <string name="places">places</string>
+    <string name="miscellaneous">miscellaneous</string>
+
+    <!--Weather-->
+    <string name="clear">Clear</string>
+    <string name="foggy">Foggy</string>
+    <string name="snowy">Snowy</string>
+    <string name="cloudy">Cloudy</string>
+    <string name="hazy">Hazy</string>
+    <string name="icy">Icy</string>
+    <string name="rainy">Rainy</string>
+    <string name="stormy">Stormy</string>
+    <string name="windy">Windy</string>
+    <string name="unknown">Unknown</string>
+
+    <!--Places-->
+    <string name="concert">Concert</string>
+    <string name="home">Home</string>
+    <string name="movie">Movie</string>
+    <string name="park">Park</string>
+    <string name="school">School</string>
+    <string name="shopping">Shopping</string>
+    <string name="theater">Theater</string>
+    <string name="university">University</string>
+    <string name="work">Work</string>
+    <string name="bar">Bar</string>
+    <string name="party">Party</string>
+
+    <!--Sports-->
+    <string name="gym">Gym</string>
+    <string name="surf">Surf</string>
+    <string name="golf">Golf</string>
+    <string name="dance">Dance</string>
+    <string name="rugby">Rugby</string>
+    <string name="tennis">Tennis</string>
+    <string name="soccer">Soccer</string>
+    <string name="running">Running</string>
+    <string name="cycling">Cycling</string>
+    <string name="bowling">Bowling</string>
+    <string name="swimming">Swimming</string>
+    <string name="football">Football</string>
+    <string name="baseball">Baseball</string>
+    <string name="basketball">Basketball</string>
+    <string name="table_tennis">Table Tennis</string>
+
+    <!--Music-->
+    <string name="base">Base</string>
+    <string name="drums">Drums</string>
+    <string name="guitar">Guitar</string>
+    <string name="jam">Jam</string>
+    <string name="violin">Violin</string>
+    <string name="piano">Piano</string>
+    <string name="sax">Sax</string>
+    <string name="singing">Singing</string>
+    <string name="trumpet">Trumpet</string>
+    <string name="musical_keyboard">Keyboard</string>
+
+    <!--Games-->
+    <string name="rpg">RPG</string>
+    <string name="chess">Chess</string>
+    <string name="cards">Cards</string>
+    <string name="billiards">Billiards</string>
+    <string name="video_game">Video Game</string>
+
+    <!--Food-->
+    <string name="sushi">Sushi</string>
+    <string name="barbecue">Barbecue</string>
+    <string name="burger">Burger</string>
+
+
+    <!--Miscellaneous-->
+    <string name="toilet">Toilet</string>
+    <string name="smoking">Smoking</string>
+    <string name="showering">Showering</string>
+
+    <!--Hobbies-->
+    <string name="painting">Painting</string>
 
 </resources>

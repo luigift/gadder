@@ -1,19 +1,17 @@
 package co.gadder.gadder;
 
-import android.*;
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -24,18 +22,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,14 +45,10 @@ public class EditFragment extends Fragment {
 
     private Friend user;
 
-    public EditFragment(){}
-
-    public EditFragment(Friend user) {
-        this.user = user;
-    }
+    public EditFragment() {}
 
     public static EditFragment newInstance(Friend user) {
-        EditFragment fragment = new EditFragment(user);
+        EditFragment fragment = new EditFragment();
         return fragment;
     }
 
@@ -74,6 +67,8 @@ public class EditFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        user = ((MainActivity) getActivity()).user;
 
         final TextView editName = (TextView) getActivity().findViewById(R.id.editUserName);
         final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
@@ -133,7 +128,7 @@ public class EditFragment extends Fragment {
 
         editName.setText(user.name);
         if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-            Glide.with(getActivity())
+            Picasso.with(getActivity())
                     .load(user.pictureUrl)
                     .into(editImage);
         } else {
@@ -154,13 +149,38 @@ public class EditFragment extends Fragment {
         if (requestCode == PICK_IMAGE_REQUEST_CODE) {
             Uri imageUri = data.getData();
             Log.d(TAG, "data: " + imageUri.toString());
-            String filePath = getPath(imageUri);
-            Bitmap userImage = BitmapFactory.decodeFile(filePath);
-            final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
-            editImage.setImageBitmap(userImage);
+            String photoPath = getPath(imageUri);
+            Bitmap userBitmap = BitmapFactory.decodeFile(photoPath);
+            if (userBitmap != null) {
 
-            if (userImage != null)
-                updateUserImage(userImage);
+                try {
+                    ExifInterface ei = new ExifInterface(photoPath);
+                    int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_UNDEFINED);
+
+                    switch (orientation) {
+                        case ExifInterface.ORIENTATION_ROTATE_90:
+                            userBitmap = Constants.rotateImage(userBitmap, 90);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_180:
+                            userBitmap = Constants.rotateImage(userBitmap, 180);
+                            break;
+                        case ExifInterface.ORIENTATION_ROTATE_270:
+                            userBitmap = Constants.rotateImage(userBitmap, 270);
+                            break;
+                        case ExifInterface.ORIENTATION_NORMAL:
+                        default:
+                            break;
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Rotation Exception: " + e);
+                }
+
+                final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
+                editImage.setImageBitmap(userBitmap);
+
+                updateUserImage(userBitmap);
+            }
         }
     }
 
@@ -190,11 +210,10 @@ public class EditFragment extends Fragment {
 
     private void updateUserImage(Bitmap bitmap) {
         final MainActivity activity = (MainActivity) getActivity();
-        final String uid = activity.mAuth.getCurrentUser().getUid();
 //        final String timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) + "";
 
         final StorageReference pictureRef =
-                activity.mStorage.child("image/" + uid + ".jpg");
+                activity.mStorage.child("image/" + user.id + ".jpg");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 20, baos);
         final byte[] thumbData = baos.toByteArray();
@@ -212,7 +231,7 @@ public class EditFragment extends Fragment {
                     activity.mDatabase
                             .child(Constants.VERSION)
                             .child(Constants.USERS)
-                            .child(uid)
+                            .child(user.id)
                             .child("pictureUrl")
                             .setValue(downloadUrl.toString());
                 } else {

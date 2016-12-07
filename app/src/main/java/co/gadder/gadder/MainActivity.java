@@ -5,10 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.AsyncTask;
-import android.os.StrictMode;
+import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -28,9 +26,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
@@ -51,15 +46,20 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
+
+import co.gadder.gadder.emoji.Objects;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = "MainActivity";
+
+    private static final int SELECTION_COLOR = Color.argb(40,33,34,89);
 
     // Time
     private TimingLogger timings = new TimingLogger(TAG, "");
@@ -76,13 +76,9 @@ public class MainActivity extends AppCompatActivity implements
     public FirebaseAuth.AuthStateListener mAuthListener;
 
     // Friends & Contacts
-    protected List<Friend> contacts;
-    protected List<String> friendsId;
+    protected Set<String> tokens;
     protected Map<String, Friend> friends;
     protected Map<String, ValueEventListener> listeners;
-
-
-    protected FriendsRecyclerAdapter adapter;
 
     protected String loginState = null;
     protected Boolean friendsDownloaded = false;
@@ -90,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements
     // View pager
     private static final int NUM_PAGES = 3;
     private ViewPager mPager;
-    private PagerAdapter mPagerAdapter;
 
     protected Friend user;
 
@@ -104,23 +99,22 @@ public class MainActivity extends AppCompatActivity implements
     private NotificationFragment notificationFragment;
     private FriendsActivityFragment activityFragment;
 
+    private RequestManager mRequestManager;
 
-    /*
-    *       Activity Lifecycle
-    * */
+    //////////////////// ACTIVITY LIFECYCLE ////////////////////
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        tokens = new HashSet<>();
         friends = new HashMap<>();
         listeners = new HashMap<>();
-        contacts = new ArrayList<>();
-        friendsId = new ArrayList<>();
-        adapter = new FriendsRecyclerAdapter(MainActivity.this);
 
         mStorage = FirebaseStorage.getInstance().getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        mRequestManager = RequestManager.getInstance(MainActivity.this);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -139,9 +133,19 @@ public class MainActivity extends AppCompatActivity implements
                         displayPermissionDialog();
                         updateUser();
                         setViewPager();
-                        setNotificationListener(user.getUid());
                         listenToCoordinatorExpansion();
-                        getFriendsFromContacts();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                getFriendsFromContacts();
+                            }
+                        }, 10000);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                uploadToken();
+                            }
+                        }, 15000);
 
                     }
                 } else {
@@ -158,18 +162,11 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
-        Glide.with(getApplicationContext()).onStart();
-
-        List<String> tokens = new ArrayList<>();
-        tokens.add(FirebaseInstanceId.getInstance().getToken());
-        RequestManager.getInstance(MainActivity.this).sendUpdateRequest(tokens);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        List<String> tokens = new ArrayList<>();
-        tokens.add(FirebaseInstanceId.getInstance().getToken());
         RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
     }
 
@@ -179,21 +176,8 @@ public class MainActivity extends AppCompatActivity implements
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
-        Glide.with(getApplicationContext()).onStop();
     }
 
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        Glide.with(getApplicationContext()).onLowMemory();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-//        Glide.with(getApplicationContext()).pauseRequests();
-        Glide.with(getApplicationContext()).onDestroy();
-    }
 
     @Override
     public void onBackPressed() {
@@ -224,9 +208,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    /*
-    *       UI methods
-    * */
+    ////////////////////// UI METHODS //////////////////////
     private void getMapFragment() {
         mapFragment = (FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     }
@@ -235,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements
         long startTime = System.currentTimeMillis();
 
         mPager = (ViewPager) findViewById(R.id.mainPager);
-        mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        PagerAdapter mPagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
         mPager.setCurrentItem(1);
 
@@ -251,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         final ImageView main = (ImageView) findViewById(R.id.goToMainScreen);
-        main.setColorFilter(Color.argb(255,33,34,89));
+        main.setColorFilter(SELECTION_COLOR);
         main.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -265,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
+        notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
         notification.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -284,17 +267,17 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onPageSelected(int position) {
                 if (position == 0 ) {
-                    profile.setColorFilter(Color.argb(255,33,34,89));
+                    profile.setColorFilter(SELECTION_COLOR);
                     main.clearColorFilter();
                     notification.clearColorFilter();
                 } else if (position == 1) {
                     profile.clearColorFilter();
-                    main.setColorFilter(Color.argb(255,33,34,89));
+                    main.setColorFilter(SELECTION_COLOR);
                     notification.clearColorFilter();
                 } else {
                     profile.clearColorFilter();
                     main.clearColorFilter();
-                    notification.setColorFilter(Color.argb(255,33,34,89));
+                    notification.setColorFilter(SELECTION_COLOR);
                 }
             }
 
@@ -310,29 +293,38 @@ public class MainActivity extends AppCompatActivity implements
         Log.d(TAG, "SetPagerMenu: " + elapsedTime + "ms");
     }
 
-    private void setNotificationListener(String uid) {
+    public void setNotificationListener(int noNotifications) {
         final ImageView notification = (ImageView) findViewById(R.id.goToNotification);
-        mDatabase.child(Constants.VERSION)
-                .child(Constants.USERS)
-                .child(uid)
-                .child("noNotifications")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Integer noNotifications =
-                                dataSnapshot.getValue(Integer.class);
-                        if (noNotifications != null && noNotifications > 0 ) {
-                            notification.setImageResource(R.drawable.ic_notifications_active_black_24dp);
-                        } else {
-                            notification.setImageResource(R.drawable.ic_notifications_black_24dp);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+        if (noNotifications > 0 ) {
+            notification.clearColorFilter();
+            notification.setImageBitmap(Constants.textAsBitmap(Objects.OPEN_MAIL_BOX_WITH_RAISED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
+        } else {
+            notification.clearColorFilter();
+            notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
+        }
+//        mDatabase.child(Constants.VERSION)
+//                .child(Constants.USER_NOTIFICATIONS)
+//                .child(uid)
+//                .child(Constants.NO_NOTIFICATIONS)
+//                .addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                        Integer noNotifications =
+//                                dataSnapshot.getValue(Integer.class);
+//                        if (noNotifications != null && noNotifications > 0 ) {
+//                            notification.clearColorFilter();
+//                            notification.setImageBitmap(Constants.textAsBitmap(Objects.OPEN_MAIL_BOX_WITH_RAISED_FLAG, Constants.EMOJI_SIZE, Color.WHITE));
+//                        } else {
+//                            notification.clearColorFilter();
+//                            notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.EMOJI_SIZE, Color.WHITE));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//
+//                    }
+//                });
     }
 
     private void displayPermissionDialog() {
@@ -352,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void goToLoginActivity() {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
     }
@@ -379,7 +371,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void setPrivacyButton() {
         final FloatingActionButton privacyFab = (FloatingActionButton) findViewById(R.id.privacyFab);
-//        privacyFab.setImageBitmap(Constants.textAsBitmap(Objects.LOCK, 50, Color.WHITE));
+        privacyFab.setImageBitmap(Constants.textAsBitmap(Objects.LOCK, 200, Color.WHITE));
         privacyFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -393,7 +385,8 @@ public class MainActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, InputActivity.class));
+                Intent intent = new Intent(MainActivity.this, InputActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -431,31 +424,33 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    public void selectFriend(int position) {
+    public void selectFriend(Friend friend) {
         appBarLayout.setExpanded(true, true);
         appBarExpanded = true;
-        mapFragment.focusFriend(getFriendByPosition(position));
+        mapFragment.focusFriend(friend);
     }
 
-    /*
-    *       Server methods
-    * */
-    public void requestFriendship(int position) {
+
+    /////////////////// SERVER METHODS ///////////////////
+    public void uploadToken() {
+        String token = FirebaseInstanceId.getInstance().getToken();
+        if (token != null && !token.isEmpty() && user != null) {
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_TOKEN)
+                    .child(user.id)
+                    .setValue(token);
+        }
+    }
+
+    public void requestFriendship(Friend contact) {
         if (user != null) {
-            Friend contact = contacts.get(friends.size() - position);
             mDatabase
                     .child(Constants.VERSION)
                     .child(Constants.USER_NOTIFICATIONS)
                     .child(contact.id)
                     .child(user.id)
                     .setValue("friendship");
-
-            mDatabase
-                    .child(Constants.VERSION)
-                    .child(Constants.USER_FRIENDS)
-                    .child(contact.id)
-                    .child(user.id)
-                    .setValue(false);
         }
     }
 
@@ -463,7 +458,31 @@ public class MainActivity extends AppCompatActivity implements
         startService(new Intent(MainActivity.this, UserActivityService.class));
     }
 
-    private void syncTokens(){}
+    private void requestUpdate(final String uid) {
+        Log.d(TAG, "requestUpdate: " +  uid);
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USER_TOKEN)
+                .child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        String token = dataSnapshot.getValue(String.class);
+                        Log.d(TAG, "User: " + uid + " token: " + token);
+                        if (token != null) {
+                            tokens.add(token);
+                            RequestManager
+                                    .getInstance(MainActivity.this)
+                                    .sendUpdateRequest(token, user.name, user.pictureUrl);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d(TAG, "Canceled uid:token request: " + uid);
+                    }
+                });
+    }
 
     public void syncUserProfile(String uid) {
         mDatabase
@@ -477,15 +496,9 @@ public class MainActivity extends AppCompatActivity implements
                         user = dataSnapshot.getValue(Friend.class);
                         if (user != null) {
                             user.id = dataSnapshot.getKey();
-                            Glide.with(MainActivity.this).load(user.pictureUrl).asBitmap().into(
-                                    new SimpleTarget<Bitmap>(200, 200) {
-                                        @Override
-                                        public void onResourceReady(Bitmap resource,
-                                                                    GlideAnimation<? super Bitmap> glideAnimation) {
-                                            user.image = resource;
-                                            profileFragment.setUser(user);
-                                        }
-                                    });
+                            if (profileFragment != null) {
+                                profileFragment.setUser(user);
+                            }
                         }
                     }
 
@@ -496,41 +509,20 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    public Friend getFriendByPosition(int position) {
-        return friends.get(friendsId.get(position));
-    }
-
     private void getFriendsFromContacts() {
         Log.d(TAG, "getFriendsFromContacts");
         if (PermissionManager.checkContactsPermission(this)) {
             Log.d(TAG, "got Contacts permission");
 
-            final StrictMode.ThreadPolicy old = StrictMode.getThreadPolicy();
-            AsyncTask<Void, Void, String> task = new AsyncTask<Void, Void, String>() {
+            Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+            if (phones != null) {
+                while (phones.moveToNext()) {
+                    final Friend friend = new Friend();
+                    friend.name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    String rawPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    friend.phone = rawPhone.replaceAll("\\D+", ""); // remove non number characters
 
-                @Override
-                protected void onPreExecute() {
-                    super.onPreExecute();
-                    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder(old)
-                            .permitDiskWrites()
-                            .build());
-                }
-
-                @Override
-                protected void onPostExecute(String s) {
-                    super.onPostExecute(s);
-                    StrictMode.setThreadPolicy(old);
-                }
-
-                @Override
-                protected String doInBackground(Void... voids) {
-                    Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-                    while (phones.moveToNext()) {
-                        final Friend friend = new Friend();
-                        friend.name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-                        String rawPhone = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        friend.phone = rawPhone.replaceAll("\\D+", ""); // remove non number characters
-
+                    if (friend.phone != null && !friend.phone.isEmpty()) {
                         mDatabase
                                 .child(Constants.VERSION)
                                 .child(Constants.USER_PHONE)
@@ -543,34 +535,29 @@ public class MainActivity extends AppCompatActivity implements
                                             friend.id = dataSnapshot.getValue(String.class);
                                             if (!friends.containsKey(friend.id)) { // not a friend
                                                 Log.d(TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
-                                                int index = getContactById(friend.id);
-                                                if (index < 0) { // haven't been displayed
-                                                    contacts.add(friend);
-                                                    adapter.notifyItemChanged(friends.size() + contacts.size());
 
-                                                    mDatabase
-                                                            .child(Constants.VERSION)
-                                                            .child(Constants.USERS)
-                                                            .child(friend.id)
-                                                            .addListenerForSingleValueEvent(new ValueEventListener() {
-                                                                @Override
-                                                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                    Log.d(TAG, "contact info downloaded");
-                                                                    int index = getContactById(dataSnapshot.getKey());
-                                                                    if (index >= 0) {
-                                                                        Friend newFriend = dataSnapshot.getValue(Friend.class);
-                                                                        newFriend.id = dataSnapshot.getKey();
-                                                                        contacts.get(index).update(newFriend);
-                                                                        adapter.notifyItemChanged(friends.size() + index);
-                                                                    }
+                                                mDatabase
+                                                        .child(Constants.VERSION)
+                                                        .child(Constants.USERS)
+                                                        .child(friend.id)
+                                                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                Log.d(TAG, "contact info downloaded");
+                                                                Friend newFriend = dataSnapshot.getValue(Friend.class);
+                                                                if (newFriend != null) {
+                                                                    newFriend.id = dataSnapshot.getKey();
+                                                                    newFriend.friendship = getString(R.string.contact);
+                                                                    friends.put(newFriend.id, newFriend);
+                                                                    activityFragment.addFriend(newFriend);
                                                                 }
+                                                            }
 
-                                                                @Override
-                                                                public void onCancelled(DatabaseError databaseError) {
+                                                            @Override
+                                                            public void onCancelled(DatabaseError databaseError) {
 
-                                                                }
-                                                            });
-                                                }
+                                                            }
+                                                        });
                                             }
                                         }
                                     }
@@ -581,23 +568,10 @@ public class MainActivity extends AppCompatActivity implements
                                     }
                                 });
                     }
-                    phones.close();
-                    return "done";
                 }
-            };
-            task.execute();
-        }
-    }
-
-    private int getContactById(String id) {
-        int index = 0;
-        for(Friend contactFriend : contacts) {
-            if (id.equals(contactFriend.id)) {
-                return index;
+                phones.close();
             }
-            index += 1;
         }
-        return -1;
     }
 
     private void syncFriends(String uid) {
@@ -612,7 +586,8 @@ public class MainActivity extends AppCompatActivity implements
                         public void onChildAdded(DataSnapshot snap, String s) {
                             Log.d(TAG, "onChildAdded: " + snap.toString());
                             if ((Boolean) snap.getValue()) {
-                                addFriend(snap.getKey());
+                                requestUpdate(snap.getKey());
+                                addFriendListener(snap.getKey());
                             }
                             friendsDownloaded = true;
                         }
@@ -621,16 +596,16 @@ public class MainActivity extends AppCompatActivity implements
                         public void onChildChanged(DataSnapshot snap, String s) {
                             Log.d(TAG, "onChildChanged: " + snap.toString());
                             if ((Boolean) snap.getValue()) {
-                                addFriend(snap.getKey());
+                                addFriendListener(snap.getKey());
                             } else {
-                                removeFriend(snap.getKey());
+                                removeFriendListener(snap.getKey());
                             }
                         }
 
                         @Override
                         public void onChildRemoved(DataSnapshot snap) {
                             Log.d(TAG, "onChildRemoved: " + snap.toString());
-                            removeFriend(snap.getKey());
+                            removeFriendListener(snap.getKey());
                         }
 
                         @Override
@@ -646,32 +621,13 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void addFriend(String uid) {
-        Log.d(TAG, "add Friend: " + uid);
-        if (!friendsId.contains(uid)) {
-            Friend friend = new Friend();
-            friend.id = uid;
-            friendsId.add(uid);
-            friends.put(uid, friend);
-            ValueEventListener listener = addFriendListener(uid);
-            listeners.put(uid, listener);
-        }
-    }
-
-    private void removeFriend(String uid) {
-        Log.d(TAG, "removeFriend: "+  uid);
-        friendsId.remove(uid);
-        ValueEventListener listener = listeners.get(uid);
-        if (listener != null) {
-            mDatabase.removeEventListener(listener);
-        }
+    private void removeFriendListener(String uid) {
+        friends.remove(uid);
         listeners.remove(uid);
-        adapter.notifyDataSetChanged();
-//        adapter.notifyItemRemoved(index);
     }
 
-    private ValueEventListener addFriendListener(String uid) {
-        Log.d(TAG, "addFriendListener: " + friendsId.size());
+    private void addFriendListener(String uid) {
+        Log.d(TAG, "addFriendListener: " + friends.size());
 
         final ValueEventListener listener = new ValueEventListener() {
             @Override
@@ -680,40 +636,11 @@ public class MainActivity extends AppCompatActivity implements
                 final Friend friend = dataSnapshot.getValue(Friend.class);
                 if (friend != null) {
                     Log.d(TAG, "got friend: " + friend.name);
+                    friend.friendship = getString(R.string.friend);
                     friend.id = dataSnapshot.getKey();
-
-                    final int index = friendsId.indexOf(dataSnapshot.getKey());
-                    final Friend olFriend = friends.get(friendsId.get(index));
-                    Log.d(TAG, "oldFriend: " + olFriend.toString());
-                    if(olFriend != null) { //update friend
-                        Log.d(TAG, "friend updated: " + olFriend.name);
-//                        olFriend.update(friend);
-                        friends.get(friendsId.get(index)).update(friend);
-                        Log.d(TAG, "updated oldFriend: " + friends.get(friendsId.get(index)).toString());
-                        if (olFriend.image == null) {
-                            Glide.with(MainActivity.this)
-                                    .load(friend.pictureUrl)
-                                    .asBitmap()
-                                    .into(new SimpleTarget<Bitmap>(200, 200) {
-                                        @Override
-                                        public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
-                                            olFriend.image = resource;
-                                            mapFragment.updateFriendOnMap(olFriend);
-                                            adapter.notifyDataSetChanged();
-//                                            adapter.notifyItemInserted(index);
-//                                            adapter.notifyItemChanged(index, olFriend);
-                                            Log.d(TAG, "Friend image loaded: "+ olFriend.name);
-                                        }
-                                    });
-                        } else {
-                            mapFragment.updateFriendOnMap(friend);
-                            adapter.notifyItemChanged(index);
-                        }
-                    } else { // add friend
-                        Log.d(TAG, "friend added: " + friend.name + "picture: " + friend.pictureUrl);
-                        mapFragment.updateFriendOnMap(friend);
-                        adapter.addItem(friend);
-                    }
+                    friends.put(friend.id, friend);
+                    mapFragment.updateFriendOnMap(friend);
+                    activityFragment.addFriend(friend);
                 }
             }
 
@@ -728,9 +655,8 @@ public class MainActivity extends AppCompatActivity implements
                 .child(Constants.USERS)
                 .child(uid)
                 .addValueEventListener(listener);
-        return listener;
+        listeners.put(uid, listener);
     }
-
 
     ////////////////////// GEOFENCES //////////////////////
 

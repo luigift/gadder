@@ -1,31 +1,37 @@
 <resources>
     <string name="app_name">gadder</string>
 
-    <string name="explaining_verification">
-        Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.
-    </string>
+    <!--Shared Preferences Keys-->
+    <string name="token">token</string>
+    <string name="phone">phone</string>
+    <string name="country_code">country_code</string>
+    <string name="preference_file_key">co.gadder.gadder.PREFERENCE_FILE_KEY</string>
+
+    <!--Friendship status-->
+    <string name="friend">friend</string>
+    <string name="contact">contact</string>
 
     <string name="request_contacts">Add Friends</string>
 
     <string name="hint_name">Nome</string>
-    <string name="hint_email">nome@email.com</string>
     <string name="hint_password">Password</string>
+    <string name="hint_email">nome@email.com</string>
+    <string name="short_name">Name too short</string>
+    <string name="short_password">Password too short</string>
 
-    <string name="activity_input">What are you doing?</string>
-
-
+    <!--Verify SMS-->
     <string name="verify">Verify</string>
     <string name="send_sms">Send SMS</string>
     <string name="try_again">Try Again</string>
     <string name="wrong_code_title">Oops! Wrong Code!</string>
-    <string name="wrong_code_message">
-        I\'m sorry but the code you have entered doea not match.
-    </string>
+    <string name="charges_may_apply">Carrier SMS charges may apply</string>
     <string name="verifing_phone_message">We are verifing the number\:</string>
     <string name="enter_sms_code">Please enter the code you have received.</string>
-    <string name="charges_may_apply">Carrier SMS charges may apply</string>
+    <string name="wrong_code_message">I\'m sorry but the code you have entered doea not match.</string>
+    <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
 
-
+    <!--Profile Fragment-->
+    <string name="hint_enter_name">Enter your name</string>
     <!--Sharing Options-->
     <string name="music_sharing">Music Sharing</string>
     <string name="battery_sharing">Battery Sharing</string>
@@ -33,14 +39,18 @@
     <string name="weather_sharing">Weather Sharing</string>
     <string name="location_sharing">Location Sharing</string>
     <string name="activity_sharing">Activity Sharing</string>
-    <string name="sharing_warning">
-        Disabling sharing reduces your and your friends experience inside the app,
-        though it is not recommended
-    </string>
+    <string name="sharing_warning">Disabling sharing reduces your and your friends experience inside the app, though it is not recommended</string>
+    <!--Notification Options-->
+    <string name="friends_nearby">Friends Nearby</string>
+    <string name="friends_request">Friends\' Requests</string>
 
+    <!--Map Fragment-->
     <string name="degrees">°C</string>
 
+    <!--Input Activity-->
+    <string name="activity_input">What are you doing?</string>
     <!--Info types-->
+    <string name="name">Name</string>
     <string name="city">City</string>
     <string name="music">Music</string>
     <string name="battery">Battery</string>
@@ -48,21 +58,23 @@
     <string name="company">Company</string>
     <string name="location">Location</string>
     <string name="activity">Activity</string>
+    <string name="last_update">Last Update</string>
     <string name="temperature">Temperature</string>
 
-    <!--Notification Options-->
-    <string name="friends_nearby">Friends Nearby</string>
-    <string name="friends_request">Friends\' Requests</string>
+    <!--Time lapse-->
+    <string name="days">Days</string>
+    <string name="hours">Hours</string>
+    <string name="months">Months</string>
+    <string name="minutes">Minutes</string>
+    <string name="seconds">Seconds</string>
 
-    <string name="short_name">Name too short</string>
-    <string name="short_password">Password too short</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
 
-    <string name="permissions"> Permissions</string>
-
+    <string name="permissions">Permissions</string>
     <string name="title_get_permission">Location</string>
-    <string name="msg_get_permission">
-        Your location is needed to determine whether or not did you come to class
-    </string>
+    <string name="msg_get_permission">Your location is needed to determine whether or not did you come to class</string>
+
     <string name="ok">Ok</string>
     <string name="thanks">Thanks</string>
 
@@ -76,14 +88,6 @@
 
     <string name="notifications">Notifications</string>
 
-    <string name="empty_attendees">There is no one there</string>
-
-    <string name="whos_there">Who\'s at the gym now?</string>
-
-    <string name="geofences_added">Geofences added</string>
-    <string name="geofences_removed">Geofences removed</string>
-
-
     <!--Activity Request Notification-->
     <string name="and">and</string>
     <string name="other_friends">other friends</string>
@@ -91,28 +95,26 @@
     <string name="request_friend_activity_message"> wants to know what you are doing now!</string>
 
     <!-- Geofence strings -->
+    <string name="geofences_added">Geofences added</string>
+    <string name="geofence_transition_exited">Exited</string>
+    <string name="geofence_transition_entered">Entered</string>
+    <string name="geofences_removed">Geofences removed</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
     <string name="not_connected">GoogleApiClient no yet connected. Try again.</string>
     <string name="geofence_not_available">Geofence service is not available now</string>
     <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
-    <string name="geofence_too_many_pending_intents">
-        You have provided too many PendingIntents to the addGeofences() call
-    </string>
     <string name="unknown_geofence_error">Unknown error: Geofence service is not available</string>
-    <string name="geofence_transition_invalid_type">
-        Geofence transition error: invalid transition type %1$d
-    </string>
-    <string name="geofence_transition_entered">Entered</string>
-    <string name="geofence_transition_exited">Exited</string>
-    <string name="unknown_geofence_transition">Unknown Transition</string>
     <string name="geofence_transition_notification_text">Click notification to return to app</string>
+    <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
+    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
 
     <!--Activities types-->
     <string name="games">Games</string>
     <string name="recent">Recent</string>
-    <!--<string name="music">Music</string>-->
     <string name="sports">Sports</string>
     <string name="nightlife">Nightlife</string>
     <string name="places">places</string>
+    <string name="miscellaneous">miscellaneous</string>
 
     <!--Weather-->
     <string name="clear">Clear</string>
@@ -172,11 +174,12 @@
     <string name="rpg">RPG</string>
     <string name="chess">Chess</string>
     <string name="cards">Cards</string>
-    <string name="billards">Billards</string>
+    <string name="billiards">Billiards</string>
     <string name="video_game">Video Game</string>
 
     <!--Food-->
     <string name="sushi">Sushi</string>
+    <string name="barbecue">Barbecue</string>
     <string name="burger">Burger</string>
 
 
@@ -187,91 +190,5 @@
 
     <!--Hobbies-->
     <string name="painting">Painting</string>
-
-
-    <string-array name="activity_types">
-        <item>Recent</item>
-        <item>Work</item>
-        <item>Music</item>
-        <item>Games</item>
-        <item>School</item>
-        <item>Sports</item>
-        <item>Places</item>
-        <item>Nightlife</item>
-    </string-array>
-
-
-    <integer-array name="activity_types_emojis">
-        <item>0x1F550</item>
-        <item>0x1F4BC</item>
-        <item>0x1F3B5</item>
-        <item>0x1F3AF</item>
-        <item>0x1F392</item>
-        <item>0x1F3BD</item>
-        <item>0x1F6A9</item>
-        <item>0x1F378</item>
-    </integer-array>
-
-    <string-array name="activity_sports">
-        <item>Gym</item>
-        <item>Surf</item>
-        <item>Golf</item>
-        <item>Dance</item>
-        <item>Rugby</item>
-        <item>Tennis</item>
-        <item>Soccer</item>
-        <item>Cycling</item>
-        <item>Bowling</item>
-        <item>Swimming</item>
-        <item>Football</item>
-        <item>Baseball</item>
-        <item>Basketball</item>
-    </string-array>
-
-    <integer-array name="activity_sports_emojis">
-        <item>0x1F4AA</item>
-        <item>0x1F3C4</item>
-        <item>0x26F3</item>
-        <item>0x1F483</item>
-        <item>0x1F3C9</item>
-        <item>0x1F3BE</item>
-        <item>0x26BD</item>
-        <item>0x1F6B4</item>
-        <item>0x1F3B3</item>
-        <item>0x1F3CA</item>
-        <item>0x1F3C8</item>
-        <item>0x26BE</item>
-        <item>0x1F3C0</item>
-    </integer-array>
-
-    <string-array name="activity_places">
-        <item>Home</item>
-        <item>Movie</item>
-        <item>Park</item>
-        <item>School</item>
-        <item>Shopping</item>
-        <item>University</item>
-        <item>Work</item>
-    </string-array>
-
-    <string-array name="activity_music">
-        <item>Base</item>
-        <item>Concert</item>
-        <item>Drums</item>
-        <item>Guitar</item>
-        <item>Jam</item>
-        <item>Piano</item>
-        <item>Sax</item>
-        <item>Singing</item>
-        <item>Trumpet</item>
-    </string-array>
-
-    <string-array name="activity_nightlife">
-        <item>Bar</item>
-        <item>Club</item>
-        <item>Girls night out</item>
-        <item>House Party</item>
-    </string-array>
-
 
 </resources>

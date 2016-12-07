@@ -1,14 +1,12 @@
 package co.gadder.gadder;
 
-import android.app.ActionBar;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,30 +16,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
-import co.gadder.gadder.emoji.Activity;
 
 public class InputFragment extends Fragment {
 
     private static final String TAG = InputFragment.class.getSimpleName();
 
-    private String[] mActivityType;
-    private int[] mActivityTypeEmoji;
-
     private TextView mImage;
-    private String mActivity;
+    private String mActivity = "unknown";
     private EditText mDescription;
 
+    private Boolean mActivityReady = false;
+    private Boolean mLocationReady = false;
+    private Friend.Activity mSendActivity = new Friend.Activity();
+
+    private Location mLocation;
 
     public InputFragment() {
     }
@@ -67,13 +66,10 @@ public class InputFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mActivityType = getActivity().getResources().getStringArray(R.array.activity_types);
-        mActivityTypeEmoji = getActivity().getResources().getIntArray(R.array.activity_types_emojis);
-
         mImage = (TextView) getActivity().findViewById(R.id.activityImage);
         mDescription = (EditText) getActivity().findViewById(R.id.inputActivity);
 
-        // Activity pager
+        // Activity type pager
         final ViewPager pager = (ViewPager) getActivity().findViewById(R.id.activityTypeViewPager);
         pager.setAdapter(new ActivityTypePagerAdapter(getActivity()));
 
@@ -82,7 +78,7 @@ public class InputFragment extends Fragment {
         recycler.setAdapter(new ActivityTypeRecyclerAdapter(getContext()));
         recycler.setHasFixedSize(true);
         recycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        
+
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -113,30 +109,60 @@ public class InputFragment extends Fragment {
                     }
                 }));
 
-        final TextView confirm = (TextView) getActivity().findViewById(R.id.confirmActivity);
+        final TextView confirm = (TextView) getActivity().findViewById(R.id.inputSendActivity);
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d(TAG, "confirmActivity");
+                mSendActivity.type = mActivity;
+                mSendActivity.description = mDescription.getText().toString();
+                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
+                String time = sdf.format(Calendar.getInstance().getTime());
+                mSendActivity.time = time;
 
-                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                mActivityReady = true;
 
-                if (user != null) {
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put("description", mDescription.getText().toString());
-                    childUpdates.put("activity", mActivity);
-//                childUpdates.put("location", mLocation);
-//                childUpdates.put("start", mDateTime);
-//                childUpdates.put("end", mDateTime);
-                    FirebaseDatabase.getInstance().getReference()
-                            .child(Constants.VERSION)
-                            .child(Constants.USER_ACTIVITIES)
-                            .child(user.getUid())
-                            .updateChildren(childUpdates);
-                } else {
-                    Log.e(TAG, "No user found");
-                }
+                sendActivity();
+
             }
         });
+    }
+
+
+    public void setLocation(Location location) {
+        Log.d(TAG, "setLocation");
+        mSendActivity.location.latitude = (float) location.getLatitude();
+        mSendActivity.location.longitude = (float) location.getLongitude();
+
+        mLocationReady = true;
+
+        if (mActivityReady) {
+            sendActivity();
+        }
+    }
+
+    private void sendActivity() {
+        Log.d(TAG, "sendActivity");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            Log.d(TAG, "Sending Activity");
+
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(Constants.VERSION + "/" + Constants.USER_ACTIVITIES + "/" + user.getUid(), mSendActivity);
+            childUpdates.put(Constants.VERSION + "/" + Constants.USERS + "/" + user.getUid() + "/" + Constants.ACTIVITY, mSendActivity);
+            FirebaseDatabase.getInstance().getReference()
+                    .updateChildren(childUpdates)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+                    startActivity(intent);
+                }
+            });
+        } else {
+            Log.e(TAG, "No user found");
+        }
     }
 
     private class ActivityTypePagerAdapter extends PagerAdapter {
@@ -149,12 +175,12 @@ public class InputFragment extends Fragment {
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            LayoutInflater inflater = LayoutInflater.from(mContext);
+            final LayoutInflater inflater = LayoutInflater.from(mContext);
             ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.item_activity_type, container, false);
 
             // Activity recycler
             final RecyclerView recycler = (RecyclerView) layout.findViewById(R.id.activityTypeRecyclerView);
-            recycler.setAdapter(new ActivityRecyclerAdapter(getContext(), position));
+            recycler.setAdapter(new ActivityRecyclerAdapter(position));
             recycler.setLayoutManager(new LinearLayoutManager(mContext));
             recycler.setHasFixedSize(true);
             float offsetPx = 250; //        getResources().getDimension(R.dimen.bottom_offset_dp);
@@ -165,9 +191,9 @@ public class InputFragment extends Fragment {
                         @Override
                         public void onItemClick(View view, int position) {
                             ActivityRecyclerAdapter adapter = (ActivityRecyclerAdapter) recycler.getAdapter();
-                            Map<String, Object> item = adapter.getItem(position);
-                            mImage.setText(new String(Character.toChars((int) item.get("emoji"))));
-                            mActivity = (String) item.get("activity");
+                            GadderActivities.GadderActivity item = adapter.getItem(position);
+                            mImage.setText(item.emoji);
+                            mActivity = getString(item.description);
                             mDescription.setText(mActivity);
                         }
 
@@ -189,7 +215,7 @@ public class InputFragment extends Fragment {
 
         @Override
         public int getCount() {
-            return mActivityType.length;
+            return GadderActivities.ACTIVITY_TYPES.size();
         }
 
         @Override
@@ -229,14 +255,15 @@ public class InputFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(ActivityTypeViewHolder holder, int position) {
-            holder.activityType.setText(mActivityType[position]);
-            holder.activityTypeImage.setText(new String(Character.toChars(mActivityTypeEmoji[position])));
+            GadderActivities.GadderActivity activity = GadderActivities.ACTIVITY_TYPES.get(position);
+            holder.activityType.setText(activity.description);
+            holder.activityTypeImage.setText(activity.emoji);
         }
 
 
         @Override
         public int getItemCount() {
-            return mActivityType.length;
+            return GadderActivities.ACTIVITY_LIST.size();
         }
     }
 
@@ -260,4 +287,5 @@ public class InputFragment extends Fragment {
 
         }
     }
+
 }

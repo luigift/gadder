@@ -16,7 +16,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import com.bumptech.glide.Glide;
+import com.squareup.picasso.Picasso;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
@@ -100,14 +101,12 @@ public class ProfileFragment extends Fragment {
         nearby.setChecked(user.notification.nearbyNotification);
         request.setChecked(user.notification.requestNotification);
 
-        if (user.image == null) {
-            if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-                Glide.with(getContext())
-                        .load(user.pictureUrl)
-                        .into(image);
-            }
-        } else {
-            image.setImageBitmap(user.image);
+        if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
+            Picasso.with(getContext())
+                    .load(user.pictureUrl)
+                    .resize(112, 112)
+                    .placeholder(R.drawable.ic_face_black_24dp)
+                    .into(image);
         }
 
         edit.setOnClickListener(new View.OnClickListener() {

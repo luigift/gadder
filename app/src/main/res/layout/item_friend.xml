@@ -13,10 +13,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/friendImage"
+        <FrameLayout
             android:layout_width="56dp"
-            android:layout_height="56dp" />
+            android:layout_height="56dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/friendImage"
+                android:layout_width="56dp"
+                android:layout_height="56dp" />
+
+            <ImageView
+                android:layout_gravity="bottom|end"
+                android:id="@+id/friendBattery"
+                android:rotation="-90"
+                android:layout_width="24dp"
+                android:layout_height="24dp"/>
+
+        </FrameLayout>
 
         <TextView
             android:textStyle="bold"
@@ -32,19 +45,22 @@
             android:layout_gravity="center"
             android:background="@drawable/rounded_rectangle_white_contour"
             android:id="@+id/friendDistance"
-            android:padding="5dp"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+            android:textColor="@color/colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:text="km"
+            android:layout_gravity="bottom"
+            android:background="@drawable/rounded_rectangle_white_contour"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
             android:textColor="@color/colorAccent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <ImageView
-            android:tint="@color/colorAccent"
-            android:layout_gravity="center"
-            android:id="@+id/friendBattery"
-            android:rotation="-90"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
     </LinearLayout>
 
     <View

@@ -17,6 +17,8 @@ public class FriendsActivityFragment extends Fragment {
     private final static String TAG = "FriendsActivityFragment";
 
     private MainActivity activity;
+    private FriendsRecyclerAdapter adapter;
+
 
     public FriendsActivityFragment() {}
 
@@ -39,8 +41,9 @@ public class FriendsActivityFragment extends Fragment {
 
         View layout = inflater.inflate(R.layout.fragment_friends_activity, container, false);
 
-        RecyclerView recyclerView = (RecyclerView) layout.findViewById(R.id.friendsRecyclerView);
-        recyclerView.setAdapter(activity.adapter);
+        final RecyclerView recyclerView = (RecyclerView) layout.findViewById(R.id.friendsRecyclerView);
+        adapter = new FriendsRecyclerAdapter((MainActivity) getActivity());
+        recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setNestedScrollingEnabled(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false));
@@ -51,10 +54,11 @@ public class FriendsActivityFragment extends Fragment {
                             @Override
                             public void onItemClick(View view, int position) {
                                 Log.d(TAG, "position: " + position + "size: " + activity.friends.size());
-                                if (position < activity.friends.size()) {
-                                    activity.selectFriend(position);
-                                } else {
-                                    activity.requestFriendship(position);
+                                Friend friend = adapter.getItem(position);
+                                if (friend.friendship.equals(getString(R.string.friend))){
+                                    activity.selectFriend(adapter.getItem(position));
+                                } else if (friend.friendship.equals(getString(R.string.contact))) {
+                                    activity.requestFriendship(adapter.getItem(position));
                                 }
                             }
 
@@ -62,12 +66,15 @@ public class FriendsActivityFragment extends Fragment {
                             public void onLongItemClick(View view, int position) {
                                 getFragmentManager().beginTransaction()
                                         .addToBackStack("click")
-                                        .replace(R.id.mainPager, FloatingProfileFragment.newInstance(activity.adapter.getItem(position)))
+                                        .replace(R.id.mainPager, FloatingProfileFragment.newInstance(adapter.getItem(position)))
                                         .commit();
                             }
                         }));
-        activity.adapter.setRecyclerView(recyclerView);
 
         return layout;
+    }
+
+    public void addFriend(Friend friend) {
+        adapter.addItem(friend);
     }
 }

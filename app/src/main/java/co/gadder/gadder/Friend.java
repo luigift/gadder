@@ -13,6 +13,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -21,13 +22,37 @@ public class Friend {
     private static final String TAG = "Friend";
 
     public static class Music {
-        public Music() {}
+        public Music() {
+            song = "";
+            playing = false;
+        }
         public String song;
         public Boolean playing;
     }
 
+    public static class Activity {
+        public Activity() {
+            time = "";
+            type = "";
+            description = "";
+            location = new Coordinates();
+        }
+
+        public String time;
+        public String type;
+        public String description;
+        public Coordinates location;
+    }
+
     public static class Sharing {
-        public Sharing() {}
+        public Sharing() {
+            musicSharing = false;
+            weatherSharing = false;
+            batterySharing = false;
+            companySharing = false;
+            activitySharing = false;
+            locationSharing = false;
+        }
 
         public Boolean musicSharing;
         public Boolean weatherSharing;
@@ -38,14 +63,22 @@ public class Friend {
     }
 
     public static class Notifications {
-        public Notifications() {}
+        public Notifications() {
+            nearbyNotification = false;
+            requestNotification = false;
+        }
+
         public Boolean nearbyNotification;
         public Boolean requestNotification;
     }
 
     public static class Coordinates {
 
-        public Coordinates() {}
+        public Coordinates() {
+            latitude = 0f;
+            longitude = 0f;
+        }
+
         public Float latitude;
         public Float longitude;
     }
@@ -55,69 +88,32 @@ public class Friend {
     public String phone;
     public String pictureUrl;
 
-    public String time;
-    public String city;
-    public int battery;
-    public int noFriends;
-    public String activity;
-    public int temperature;
-    public Boolean headphone;
-    public TimeZone timeZone;
-    public String lastUpdate;
-    public List<String> weather;
+    public String friendship;
 
+    public String city;
+    public Integer battery;
+    public String lastUpdate;
+    public Boolean headphone;
+    public Integer temperature;
+    public List<String> weather = new ArrayList<>();
+
+    public Activity activity = new Activity();
     public Music music = new Music();
     public Sharing sharing = new Sharing();
     public Coordinates coordinates = new Coordinates();
     public Notifications notification = new Notifications();
 
-    public Bitmap image;
-    public int position;
-    private LatLng latLng;
-    private Location location;
-
-    public void update(Friend updatedFriend) {
-
-        Log.d(TAG, "ids: " + id + " " + updatedFriend.id);
-        if (!this.id.equals(updatedFriend.id)) throw new AssertionError();
-
-        this.name = updatedFriend.name;
-        this.time = updatedFriend.time;
-        this.city = updatedFriend.city;
-        this.image = updatedFriend.image;
-        this.weather = updatedFriend.weather;
-        this.battery = updatedFriend.battery;
-        this.activity = updatedFriend.activity;
-        this.timeZone = updatedFriend.timeZone;
-        this.noFriends = updatedFriend.noFriends;
-        this.headphone = updatedFriend.headphone;
-        this.pictureUrl = updatedFriend.pictureUrl;
-        this.lastUpdate = updatedFriend.lastUpdate;
-        this.temperature = updatedFriend.temperature;
-
-        this.music = updatedFriend.music;
-        this.sharing = updatedFriend.sharing;
-        this.coordinates = updatedFriend.coordinates;
-        this.notification = updatedFriend.notification;
-
-    }
-
     public LatLng getLatLng() {
-        if (latLng == null) {
-            latLng = new LatLng(coordinates.latitude,coordinates.longitude);
-        }
-        return latLng;
+        return new LatLng(coordinates.latitude,coordinates.longitude);
     }
 
     public Location getLocation() {
         if (coordinates.latitude == null || coordinates.longitude == null)
             throw new AssertionError();
 
-        if (location == null) {
-            location = new Location("");
-            location.setLatitude(coordinates.latitude);
-            location.setLongitude(coordinates.longitude);
-        }
+        Location location = new Location("");
+        location.setLatitude(coordinates.latitude);
+        location.setLongitude(coordinates.longitude);
 
         return location;
     }
@@ -125,48 +121,6 @@ public class Friend {
 //    public Date getLastUpdate() {
 //        return new SimpleDateFormat(Constants.DATE_FORMAT).parse(lastUpdate);
 //    }
-
-    public void downloadImage(final MainActivity activity) {
-        if (activity == null) throw new AssertionError();
-        Log.d(TAG, "downloadImage: " + name);
-        if (pictureUrl != null && !pictureUrl.isEmpty()) {
-            Log.d(TAG, "downloadImage pictureUrl ok: " + name);
-
-            final Target target = new Target() {
-
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    System.out.printf("IMAGE DOWNLOADED");
-                    Log.v(TAG, "Friend image downloaded: " + name);
-                    image = bitmap;
-                    activity.adapter.notifyItemChanged(activity.friendsId.indexOf(id));
-                    FriendsMapFragment fragment =
-                            ((FriendsMapFragment) activity.getSupportFragmentManager()
-                                    .findFragmentById(R.id.map));
-                    if(fragment != null) {
-                        Log.d(TAG, "Friend updated on map: " + name);
-                        fragment.updateFriendOnMap(Friend.this);
-                    } else {
-                        Log.d(TAG, "FriendMapFragment null");
-                    }
-                }
-
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-                    Log.d(TAG, "Error: " + errorDrawable.toString());
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                }
-            };
-
-            Picasso.with(activity)
-                    .load(pictureUrl)
-                    .placeholder(R.drawable.progress_animation)
-                    .into(target);
-        }
-    }
 
     @Override
     public String toString() {
