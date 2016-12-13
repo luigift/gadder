@@ -12,6 +12,7 @@ import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.telephony.SmsManager;
@@ -37,10 +38,13 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class SmsCodeFragment extends Fragment {
@@ -51,6 +55,8 @@ public class SmsCodeFragment extends Fragment {
     public SmsCodeFragment() {
 
     }
+
+    private BroadcastReceiver receiver;
 
     private int mCode;
     private String mPhone;
@@ -222,7 +228,7 @@ public class SmsCodeFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void setSmsReceiver() {
 
-        final BroadcastReceiver receiver = new BroadcastReceiver() {
+        receiver = new BroadcastReceiver() {
             @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -260,7 +266,7 @@ public class SmsCodeFragment extends Fragment {
                         }
                     });
                     try {
-                        Thread.sleep(80);
+                        Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -272,14 +278,16 @@ public class SmsCodeFragment extends Fragment {
     private void verifyPhone() {
         Random r = new Random();
         mCode = r.nextInt(8999) + 1000;
-        Toast.makeText(getContext(), "Code: " + mCode, Toast.LENGTH_LONG).show();
+        Toast.makeText(getActivity(), "code: " + mCode, Toast.LENGTH_SHORT).show(); // TODO remove
         mMessage = "Your gadder verification code: " + mCode;
         SmsManager sm = SmsManager.getDefault();
-        sm.sendTextMessage(mPhone, null, mMessage, null, null);
+//        sm.sendTextMessage(mPhone, null, mMessage, null, null); //TODO remove comment
         animateBar();
     }
 
     private void createUserOrSignIn() {
+        getActivity().unregisterReceiver(receiver);
+
         mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
@@ -291,26 +299,12 @@ public class SmsCodeFragment extends Fragment {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
 
-                                // Set phone number
-                                mDatabase
-                                        .child(Constants.VERSION)
-                                        .child(Constants.USER_PHONE)
-                                        .child(mPhoneParsed)
-                                        .setValue(user.getUid())
-                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                Log.d(TAG, "Success: " + mPhoneParsed);
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Log.d(TAG, "Failure: " + mPhoneParsed);
-                                            }
-                                        });
+                                Map<String, Object> childUpdates = new HashMap<>();
 
-                                // Register friend token
+                                // Register user number
+                                childUpdates.put(Constants.USER_PHONE + "/" + mPhoneParsed + "/", user.getUid());
+
+                                // Register user token
                                 String token = FirebaseInstanceId.getInstance().getToken();
                                 if (token == null || token.isEmpty()) {
                                     SharedPreferences pref =
@@ -320,27 +314,32 @@ public class SmsCodeFragment extends Fragment {
                                     token = pref.getString(getString(R.string.token), null);
                                 }
                                 if (token != null) {
-                                    mDatabase
-                                            .child(Constants.VERSION)
-                                            .child(Constants.USER_TOKEN)
-                                            .child(user.getUid())
-                                            .child(token);
+                                    childUpdates.put(Constants.USER_TOKEN + "/" + user.getUid() + "/", token);
                                 }
 
-                                // Create friend profile
+                                // Create user profile
                                 Friend friend = new Friend();
+                                childUpdates.put(Constants.USERS + "/" + user.getUid() + "/", friend);
+
+                                // Add founders
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
+
                                 mDatabase
                                         .child(Constants.VERSION)
-                                        .child(Constants.USERS)
-                                        .child(user.getUid())
-                                        .setValue(friend).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        getFragmentManager().beginTransaction()
-                                                .replace(R.id.activity_login, VerifiedFragment.newInstance())
-                                                .commit();
-                                    }
-                                });
+                                        .updateChildren(childUpdates)
+                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+                                                goToMainActivity();
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                FirebaseCrash.report(e);
+                                            }
+                                        });
                             }
                         }
                     }
@@ -353,9 +352,7 @@ public class SmsCodeFragment extends Fragment {
                                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                         @Override
                                         public void onComplete(@NonNull Task<AuthResult> task) {
-                                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                                            startActivity(intent);
+                                            goToMainActivity();
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {
@@ -369,4 +366,12 @@ public class SmsCodeFragment extends Fragment {
                 });
     }
 
+    private void goToMainActivity() {
+        if (getActivity() != null) {
+            Intent intent = new Intent(getActivity(), MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            getActivity().finish();
+        }
+    }
 }

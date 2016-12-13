@@ -12,6 +12,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:statusBarColor">?android:attr/colorForeground</item>
+        <item name="android:textColorPrimaryInverse">@android:color/primary_text_dark</item>
         <!--<item name="android:navigationBarColor" tools:targetApi="21">@color/colorPrimary</item>-->
         <!--<item name="android:navigationIcon" tools:targetApi="21">@color/colorAccent</item>-->
     </style>

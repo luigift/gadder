@@ -25,7 +25,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-
     // Image display
     compile 'com.hbb20:ccp:1.6'
     compile 'de.hdodenhof:circleimageview:2.1.0'
@@ -41,16 +40,17 @@ dependencies {
 
     // Firebase
     compile 'com.firebaseui:firebase-ui-database:0.4.0'
-    compile 'com.google.firebase:firebase-core:10.0.0'
-    compile 'com.google.firebase:firebase-auth:10.0.0'
-    compile 'com.google.firebase:firebase-storage:10.0.0'
-    compile 'com.google.firebase:firebase-database:10.0.0'
-    compile 'com.google.firebase:firebase-messaging:10.0.0'
+    compile 'com.google.firebase:firebase-core:10.0.1'
+    compile 'com.google.firebase:firebase-auth:10.0.1'
+    compile 'com.google.firebase:firebase-crash:10.0.1'
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    compile 'com.google.firebase:firebase-database:10.0.1'
+    compile 'com.google.firebase:firebase-messaging:10.0.1'
 
     // Google APIs
-    compile 'com.google.android.gms:play-services-maps:10.0.0'
-    compile 'com.google.android.gms:play-services-location:10.0.0'
-    compile 'com.google.android.gms:play-services-awareness:10.0.0'
+    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.google.android.gms:play-services-location:10.0.1'
+    compile 'com.google.android.gms:play-services-awareness:10.0.1'
 
     // Animations
     compile 'com.nineoldandroids:library:2.4.0'

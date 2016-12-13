@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.TimingLogger;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -33,8 +35,10 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -49,9 +53,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
 
 import co.gadder.gadder.emoji.Objects;
+import co.gadder.gadder.emoji.People;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -59,7 +65,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = "MainActivity";
 
-    private static final int SELECTION_COLOR = Color.argb(40,33,34,89);
+    private static final String FRAGMENT_LOCATION_TAG = "fragment_location_tag";
+    private static final String FRAGMENT_CONTACTS_TAG = "fragment_contacts_tag";
+
+    private static final int SELECTION_COLOR = Color.argb(0,33,34,89);
 
     // Time
     private TimingLogger timings = new TimingLogger(TAG, "");
@@ -96,16 +105,17 @@ public class MainActivity extends AppCompatActivity implements
     // Fragments
     private FriendsMapFragment mapFragment;
     private ProfileFragment profileFragment;
-    private NotificationFragment notificationFragment;
     private FriendsActivityFragment activityFragment;
 
-    private RequestManager mRequestManager;
+    private int color;
 
     //////////////////// ACTIVITY LIFECYCLE ////////////////////
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        FirebaseCrash.log(TAG + " created");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         tokens = new HashSet<>();
         friends = new HashMap<>();
@@ -113,8 +123,6 @@ public class MainActivity extends AppCompatActivity implements
 
         mStorage = FirebaseStorage.getInstance().getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        mRequestManager = RequestManager.getInstance(MainActivity.this);
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -125,21 +133,27 @@ public class MainActivity extends AppCompatActivity implements
                     if (loginState == null || !loginState.equals("friends")) {
                         loginState = "friends";
 
-                        setPrivacyButton();
+//                        getColors();
+//                        setPrivacyButton();
+//                        displayPermissionDialog();
+
+                        hideKeyboard();
                         setActivityButton();
                         getMapFragment();
                         syncFriends(user.getUid());
                         syncUserProfile(user.getUid());
-                        displayPermissionDialog();
+                        requestLocationPermission();
+                        requestContactsPermission();
                         updateUser();
                         setViewPager();
+
                         listenToCoordinatorExpansion();
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 getFriendsFromContacts();
                             }
-                        }, 10000);
+                        }, 5000);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -178,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
     @Override
     public void onBackPressed() {
         if(appBarExpanded) {
@@ -201,6 +214,32 @@ public class MainActivity extends AppCompatActivity implements
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "contact permission granted");
                     getFriendsFromContacts();
+
+                    FragmentManager fm =  getSupportFragmentManager();
+                    Fragment f = fm.findFragmentByTag(FRAGMENT_CONTACTS_TAG);
+                    if (f != null) {
+                        fm.beginTransaction()
+                                .remove(f)
+                                .commitAllowingStateLoss();
+                    }
+                } else {
+                    // TODO: EXPLAIN WHY WE NEED THE PERMISSION
+                }
+                break;
+            case PermissionManager.REQUEST_LOCATION_PERMISSION:
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "contact permission granted");
+
+                    updateUser();
+
+                    FragmentManager fm =  getSupportFragmentManager();
+                    Fragment f = fm.findFragmentByTag(FRAGMENT_LOCATION_TAG);
+                    if (f != null) {
+                        fm.beginTransaction()
+                                .remove(f)
+                                .commitAllowingStateLoss();
+                    }
                 } else {
                     // TODO: EXPLAIN WHY WE NEED THE PERMISSION
                 }
@@ -209,6 +248,61 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     ////////////////////// UI METHODS //////////////////////
+    private void hideKeyboard() {
+        Log.d(TAG, "hideKeyboard");
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+    }
+
+    private void requireUserInfo() {
+        mPager.setCurrentItem(0, true);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setIcon(new BitmapDrawable(getResources(), Constants.textAsBitmap(People.SMILING_FACE_WITH_OPEN_MOUTH, Constants.EMOJI_SIZE, Color.WHITE)))
+                .setTitle(R.string.set_profile_title)
+                .setMessage(getString(R.string.set_profile_message) + " " + People.ASTONISHED_FACE)
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mPager.setCurrentItem(0, true);
+                    }
+                })
+                .setNegativeButton(getString(R.string.angry_no) + " " + People.ANGUISHED_FACE, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        mPager.setCurrentItem(1, true);
+                    }
+                });
+        builder.create().show();
+    }
+
+    private void requestLocationPermission() {
+        FirebaseCrash.log("requestLocationPermission");
+
+        if (!PermissionManager.checkLocationPermission(MainActivity.this)) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.mainLayout, PermissionFragment.newInstance(PermissionFragment.LOCATION), FRAGMENT_LOCATION_TAG)
+                    .commit();
+        }
+    }
+
+    private void requestContactsPermission() {
+        FirebaseCrash.log("requestContactsPermission");
+
+        if (!PermissionManager.checkContactsPermission(MainActivity.this)) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.mainLayout, PermissionFragment.newInstance(PermissionFragment.CONTACTS), FRAGMENT_CONTACTS_TAG)
+                    .commit();
+        }
+    }
+
+    private void getColors() {
+        color = Color.parseColor("#935aa4");
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            color = getColor(R.color.colorPrimary);
+        } else {
+            color = getResources().getColor(R.color.colorPrimary);
+        }
+    }
+
     private void getMapFragment() {
         mapFragment = (FriendsMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     }
@@ -222,6 +316,7 @@ public class MainActivity extends AppCompatActivity implements
         mPager.setCurrentItem(1);
 
         final ImageView profile = (ImageView) findViewById(R.id.goToProfile);
+        profile.setImageBitmap(Constants.textAsBitmap(People.SMILING_FACE_WITH_OPEN_MOUTH, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
         profile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -288,7 +383,6 @@ public class MainActivity extends AppCompatActivity implements
         });
 
 
-
         long elapsedTime = System.currentTimeMillis() - startTime;
         Log.d(TAG, "SetPagerMenu: " + elapsedTime + "ms");
     }
@@ -302,29 +396,6 @@ public class MainActivity extends AppCompatActivity implements
             notification.clearColorFilter();
             notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
         }
-//        mDatabase.child(Constants.VERSION)
-//                .child(Constants.USER_NOTIFICATIONS)
-//                .child(uid)
-//                .child(Constants.NO_NOTIFICATIONS)
-//                .addValueEventListener(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(DataSnapshot dataSnapshot) {
-//                        Integer noNotifications =
-//                                dataSnapshot.getValue(Integer.class);
-//                        if (noNotifications != null && noNotifications > 0 ) {
-//                            notification.clearColorFilter();
-//                            notification.setImageBitmap(Constants.textAsBitmap(Objects.OPEN_MAIL_BOX_WITH_RAISED_FLAG, Constants.EMOJI_SIZE, Color.WHITE));
-//                        } else {
-//                            notification.clearColorFilter();
-//                            notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.EMOJI_SIZE, Color.WHITE));
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(DatabaseError databaseError) {
-//
-//                    }
-//                });
     }
 
     private void displayPermissionDialog() {
@@ -343,8 +414,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void goToLoginActivity() {
+        FirebaseCrash.log("goToLoginActivity");
+
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
     }
@@ -362,7 +435,9 @@ public class MainActivity extends AppCompatActivity implements
                     initialOffset[0] = verticalOffset;
                 } else if (verticalOffset != initialOffset[0]) {
                     appBarExpanded = true;
+                    findViewById(R.id.toolbar).setBackgroundColor(Color.TRANSPARENT);
                 } else {
+                    findViewById(R.id.toolbar).setBackgroundColor(color);
                     appBarExpanded = false;
                 }
             }
@@ -385,6 +460,7 @@ public class MainActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                FirebaseCrash.log("Activity Button Clicked");
                 Intent intent = new Intent(MainActivity.this, InputActivity.class);
                 startActivity(intent);
             }
@@ -409,7 +485,7 @@ public class MainActivity extends AppCompatActivity implements
                     fragment = activityFragment;
                     break;
                 case 2:
-                    notificationFragment = NotificationFragment.newInstance();
+                    NotificationFragment notificationFragment = NotificationFragment.newInstance();
                     fragment = notificationFragment;
                     break;
                 default:
@@ -425,41 +501,81 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void selectFriend(Friend friend) {
-        appBarLayout.setExpanded(true, true);
-        appBarExpanded = true;
-        mapFragment.focusFriend(friend);
-    }
+        if (friend.sharing != null && friend.sharing.locationSharing != null && friend.sharing.locationSharing) {
+            appBarLayout.setExpanded(true, true);
+            appBarExpanded = true;
+            if (mapFragment != null) {
+                mapFragment.focusFriend(friend);
+            }
+        } else {
 
+        }
+    }
 
     /////////////////// SERVER METHODS ///////////////////
     public void uploadToken() {
+        FirebaseCrash.log("goToLoginActivity");
+
         String token = FirebaseInstanceId.getInstance().getToken();
         if (token != null && !token.isEmpty() && user != null) {
             mDatabase
                     .child(Constants.VERSION)
                     .child(Constants.USER_TOKEN)
                     .child(user.id)
-                    .setValue(token);
+                    .setValue(token)
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            FirebaseCrash.report(e);
+                        }
+                    });
         }
     }
 
-    public void requestFriendship(Friend contact) {
+    public void requestFriendship(String friendId) {
+
         if (user != null) {
             mDatabase
                     .child(Constants.VERSION)
                     .child(Constants.USER_NOTIFICATIONS)
-                    .child(contact.id)
+                    .child(friendId)
                     .child(user.id)
-                    .setValue("friendship");
+                    .setValue("friendship")
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            FirebaseCrash.report(e);
+                        }
+                    });
+        }
+    }
+
+    public void removeFriendship(String uid) {
+
+        if (user != null) {
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_FRIENDS)
+                    .child(user.id)
+                    .child(uid)
+                    .setValue(false)
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            FirebaseCrash.report(e);
+                        }
+                    });
         }
     }
 
     private void updateUser() {
+        FirebaseCrash.log("updateUser");
+
         startService(new Intent(MainActivity.this, UserActivityService.class));
     }
 
     private void requestUpdate(final String uid) {
-        Log.d(TAG, "requestUpdate: " +  uid);
+        Log.d(TAG, "requestUpdate: " + uid);
         mDatabase
                 .child(Constants.VERSION)
                 .child(Constants.USER_TOKEN)
@@ -467,10 +583,13 @@ public class MainActivity extends AppCompatActivity implements
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        FirebaseCrash.log("gotToken");
+
                         String token = dataSnapshot.getValue(String.class);
                         Log.d(TAG, "User: " + uid + " token: " + token);
                         if (token != null) {
                             tokens.add(token);
+
                             RequestManager
                                     .getInstance(MainActivity.this)
                                     .sendUpdateRequest(token, user.name, user.pictureUrl);
@@ -480,11 +599,12 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                         Log.d(TAG, "Canceled uid:token request: " + uid);
+                        FirebaseCrash.report(new Throwable(databaseError.toString()));
                     }
                 });
     }
 
-    public void syncUserProfile(String uid) {
+    public void syncUserProfile(final String uid) {
         mDatabase
                 .child(Constants.VERSION)
                 .child(Constants.USERS)
@@ -492,19 +612,39 @@ public class MainActivity extends AppCompatActivity implements
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        FirebaseCrash.log("gotUser");
+
                         Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
                         user = dataSnapshot.getValue(Friend.class);
                         if (user != null) {
                             user.id = dataSnapshot.getKey();
+
+                            if (user.name == null || user.name.isEmpty()) {
+                                requireUserInfo();
+                            }
+
+                            if (activityFragment != null) {
+                                activityFragment.updateRecycler();
+                            }
+
                             if (profileFragment != null) {
                                 profileFragment.setUser(user);
+                            }
+
+                            // set activity to fab
+                            if (user.activity != null && user.activity.type != null) {
+                                final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.activityFab);
+                                GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(user.activity.type);
+                                if (fab != null && act != null ) {
+                                    fab.setImageBitmap(Constants.textAsBitmap(act.emoji, Constants.EMOJI_SIZE, Color.WHITE));
+                                }
                             }
                         }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        FirebaseCrash.report(new Throwable(databaseError.toString()));
                     }
                 });
     }
@@ -516,6 +656,11 @@ public class MainActivity extends AppCompatActivity implements
 
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             if (phones != null) {
+
+                if (activityFragment != null) {
+                    activityFragment.hideProgressBar();
+                }
+
                 while (phones.moveToNext()) {
                     final Friend friend = new Friend();
                     friend.name = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
@@ -546,10 +691,19 @@ public class MainActivity extends AppCompatActivity implements
                                                                 Log.d(TAG, "contact info downloaded");
                                                                 Friend newFriend = dataSnapshot.getValue(Friend.class);
                                                                 if (newFriend != null) {
+
+
                                                                     newFriend.id = dataSnapshot.getKey();
                                                                     newFriend.friendship = getString(R.string.contact);
+                                                                    if (newFriend.name == null || newFriend.name.isEmpty()) {
+                                                                        newFriend.name = friend.name;
+                                                                    }
+
+                                                                    // Display contact
                                                                     friends.put(newFriend.id, newFriend);
-                                                                    activityFragment.addFriend(newFriend);
+                                                                    if (activityFragment != null) {
+                                                                        activityFragment.updateRecycler();
+                                                                    }
                                                                 }
                                                             }
 
@@ -627,7 +781,13 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void addFriendListener(String uid) {
+        FirebaseCrash.log("addFriendListener");
+
         Log.d(TAG, "addFriendListener: " + friends.size());
+
+        if (activityFragment != null) {
+            activityFragment.hideProgressBar();
+        }
 
         final ValueEventListener listener = new ValueEventListener() {
             @Override
@@ -636,11 +796,47 @@ public class MainActivity extends AppCompatActivity implements
                 final Friend friend = dataSnapshot.getValue(Friend.class);
                 if (friend != null) {
                     Log.d(TAG, "got friend: " + friend.name);
+
+                    // Save friends
                     friend.friendship = getString(R.string.friend);
                     friend.id = dataSnapshot.getKey();
-                    friends.put(friend.id, friend);
-                    mapFragment.updateFriendOnMap(friend);
-                    activityFragment.addFriend(friend);
+
+                    if(friends.containsKey(friend.id)) {
+
+                        // Pass old image if same
+                        String oldUrl = friends.get(friend.id).pictureUrl;
+                        if (friend.pictureUrl != null && oldUrl != null && friend.pictureUrl.equals(oldUrl)) {
+                            friend.image = friends.get(friend.id).image;
+                        }
+
+                        friends.put(friend.id, friend);
+                        if (activityFragment != null && activityFragment.adapter != null) {
+                            activityFragment.adapter.updateItem(friend.id);
+                        }
+                    } else {
+                        friends.put(friend.id, friend);
+                        if (activityFragment != null && activityFragment.adapter != null) {
+                            activityFragment.adapter.addItem(friend.id);
+                        }
+                    }
+
+                    // update fragments
+                    if (mapFragment != null) {
+                        mapFragment.updateFriendOnMap(friend);
+                    }
+                    if (activityFragment != null) {
+                        activityFragment.updateRecycler();
+                    }
+
+                    // Update after random time
+                    int time = 5000 * new Random().nextInt(10);
+                    Log.d(TAG, "update: " + friend.name + " after " + time);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            requestUpdate(friend.id);
+                        }
+                    }, time);
                 }
             }
 
@@ -655,6 +851,7 @@ public class MainActivity extends AppCompatActivity implements
                 .child(Constants.USERS)
                 .child(uid)
                 .addValueEventListener(listener);
+
         listeners.put(uid, listener);
     }
 

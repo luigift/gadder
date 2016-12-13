@@ -133,7 +133,7 @@ public class SignUpFragment extends Fragment {
                     getFragmentManager()
                             .beginTransaction()
                             .addToBackStack("singUp")
-                            .replace(R.id.activity_main, SignInFragment.newInstance())
+                            .replace(R.id.coordinatorLayout, SignInFragment.newInstance())
                             .commit();
 
                     Toast.makeText(getActivity(), "You already have an account", Toast.LENGTH_LONG).show();

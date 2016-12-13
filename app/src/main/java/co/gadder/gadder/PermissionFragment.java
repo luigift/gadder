@@ -11,78 +11,93 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class PermissionFragment extends Fragment {
 
     private final static String TAG ="PermissionFragment";
 
-    private final static int REQUEST_PHONE_PERMISSIONS = 45;
+    public final static String LOCATION ="permission_location";
+    public final static String CONTACTS ="permission_contacts";
+
+
+    private final static String ARG_PERMISSION_TYPE = "permission_type";
+    private String mPermissionType;
 
     public PermissionFragment() {
         // Required empty public constructor
     }
 
-    public static PermissionFragment newInstance() {
-        return new PermissionFragment();
-    }
+    public static PermissionFragment newInstance(String permissionType) {
 
+        Bundle args = new Bundle();
+        args.putString(ARG_PERMISSION_TYPE, permissionType);
+        PermissionFragment fragment = new PermissionFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mPermissionType = getArguments().getString(ARG_PERMISSION_TYPE);
+        }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_permission, container, false);
 
-        // Set button behavior
-        Button permission = (Button) layout.findViewById(R.id.permissionButton);
-        permission.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                requestPermissions();
-            }
-        });
+        final TextView title = (TextView) layout.findViewById(R.id.permissionTitle);
+        final Button permission = (Button) layout.findViewById(R.id.permissionButton);
+        final TextView content = (TextView) layout.findViewById(R.id.permissionContent);
+
+        switch (mPermissionType) {
+            case CONTACTS:
+
+                permission.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!PermissionManager.checkContactsPermission(getContext())) {
+                            PermissionManager.requestContactsPermission(getActivity());
+                        } else {
+                            getFragmentManager().beginTransaction()
+                                    .remove(PermissionFragment.this)
+                                    .commitAllowingStateLoss();
+                        }
+
+                        Log.d(TAG, "request Contacts");
+                    }
+                });
+
+                title.setText(R.string.contacts_permission_title);
+                content.setText(R.string.contacts_permission_message);
+
+                break;
+            case LOCATION:
+                permission.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (!PermissionManager.checkLocationPermission(getContext())) {
+                            PermissionManager.requestLocationPermission(getActivity());
+                        } else {
+                            getFragmentManager().beginTransaction()
+                                    .remove(PermissionFragment.this)
+                                    .commitAllowingStateLoss();
+                        }
+                    }
+                });
+
+                title.setText(R.string.location_permission_title);
+                content.setText(R.string.location_permission_message);
+
+                break;
+            default:
+                throw new RuntimeException("Permission don't exist");
+        }
 
         return layout;
-    }
-
-    private void requestPermissions() {
-        Log.d(TAG, "requestPermissions");
-
-        String[] permissions
-                = new String[]{
-                Manifest.permission.CAMERA,
-                Manifest.permission.BATTERY_STATS,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        ActivityCompat
-                .requestPermissions(
-                        getActivity(),
-                        permissions,
-                        REQUEST_PHONE_PERMISSIONS);
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case REQUEST_PHONE_PERMISSIONS:
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "permission granted");
-                    getFragmentManager().beginTransaction()
-                            .replace(R.id.activity_main, FriendsActivityFragment.newInstance(), "activities")
-                            .commit();
-                } else {
-                    // TODO: EXPLAIN WHY WE NEED THE PERMISSION
-                }
-                break;
-        }
     }
 }

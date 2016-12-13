@@ -15,7 +15,7 @@ import static android.graphics.Paint.ANTI_ALIAS_FLAG;
 public class Constants {
 
     public final static float EMOJI_SIZE = 60f;
-    public final static float NAVIGATION_EMOJI_SIZE = 100f;
+    public final static float NAVIGATION_EMOJI_SIZE = 80f;
 
     // Database indexation
     public final static String VERSION = "v0";

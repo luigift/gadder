@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
@@ -86,8 +87,12 @@ public class EditFragment extends Fragment {
         editImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                Log.d(TAG, "clicked");
+                if (!PermissionManager.checkWriteStoragePermission(getActivity()) || !PermissionManager.checkReadStoragePermission(getActivity())) {
+
+                    PermissionManager.requestReadStoragePermission(getActivity());
+                    PermissionManager.requestWriteStoragePermission(getActivity());
+//                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, PermissionManager.REQUEST_STORAGE_PERMISSION);
                 } else {
                     Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
                     getIntent.setType("image/*");
@@ -141,12 +146,12 @@ public class EditFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Toast.makeText(getActivity(), "onActivityResult", Toast.LENGTH_SHORT).show();
         if (resultCode != RESULT_OK) {
             return;
         }
 
         if (requestCode == PICK_IMAGE_REQUEST_CODE) {
+
             Uri imageUri = data.getData();
             Log.d(TAG, "data: " + imageUri.toString());
             String photoPath = getPath(imageUri);
@@ -176,10 +181,15 @@ public class EditFragment extends Fragment {
                     Log.e(TAG, "Rotation Exception: " + e);
                 }
 
+                Toast.makeText(getActivity(), "Uploading Image", Toast.LENGTH_SHORT).show();
+
                 final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
                 editImage.setImageBitmap(userBitmap);
 
                 updateUserImage(userBitmap);
+            } else {
+                FirebaseCrash.log(TAG + " Picked null image");
+                Log.d(TAG, "Null image");
             }
         }
     }

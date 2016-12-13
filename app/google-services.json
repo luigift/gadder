@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "254610893779-m0ki7nicqlitc7lf8b4531cdv3rrjdm2.apps.googleusercontent.com",
+          "client_id": "254610893779-hris9i4o5mgqettjh0lg29san7tok56q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "co.gadder.gadder",
-            "certificate_hash": "AD6E3D4EA27199596195AA92C3983A63A6C331DD"
+            "certificate_hash": "B3BCE0093DF4CFB4B72D47A3CEF4B54FCF9E24EF"
           }
         },
         {

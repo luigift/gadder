@@ -1,6 +1,7 @@
 package co.gadder.gadder;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -12,12 +13,15 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.crash.FirebaseCrash;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static co.gadder.gadder.Constants.EMOJI_SIZE;
 
 public class FriendsRecyclerAdapter
         extends RecyclerView.Adapter<FriendsRecyclerAdapter.GenericViewHolder> {
@@ -88,7 +92,7 @@ public class FriendsRecyclerAdapter
                     public boolean onLongClick(View view) {
                         activity.getSupportFragmentManager().beginTransaction()
                                 .addToBackStack("profile")
-                                .add(R.id.activity_main, FloatingProfileFragment.newInstance(friend))
+                                .add(R.id.coordinatorLayout, FloatingProfileFragment.newInstance(friend))
                                 .commit();
                         return true;
                     }
@@ -128,27 +132,32 @@ public class FriendsRecyclerAdapter
         TextView distanceText;
         ImageView friendImage;
         ImageView batteryImage;
+        ImageView friendActivity;
 
         FriendViewHolder(View itemView) {
             super(itemView);
             friendName = (TextView) itemView.findViewById(R.id.friendName);
             friendImage = (ImageView) itemView.findViewById(R.id.friendImage);
-            batteryImage = (ImageView) itemView.findViewById(R.id.friendBattery);
             distanceText = (TextView) itemView.findViewById(R.id.friendDistance);
+            batteryImage = (ImageView) itemView.findViewById(R.id.friendBattery);
+            friendActivity = (ImageView) itemView.findViewById(R.id.friendActivity);
         }
 
         public void updateView(int position) {
+            FirebaseCrash.log("updateView");
             final Friend friend = getItem(position);
             Log.d(TAG, "updateView: " + friend.name);
 
-            this.friendName.setText(friend.name);
-            if (friend.sharing.batterySharing != null && friend.sharing.batterySharing) {
-                this.batteryImage.setImageResource(getBatteryResource(friend.battery));
+            // Set name
+            friendName.setText(friend.name);
+
+            // Set user battery
+            if (friend.sharing.batterySharing != null && friend.sharing.batterySharing && friend.battery != null) {
+                batteryImage.setImageResource(getBatteryResource(friend.battery));
             }
 
-            if (activity.user != null &&
-                    friend.sharing.locationSharing != null &&
-                    friend.sharing.locationSharing ){
+            // Set user distance
+            if (activity.user != null && friend.isSharingLocation()) {
                 Float dist = activity.user.getLocation().distanceTo(friend.getLocation());
                 Integer m = Math.round(dist/100);
                 Integer km = Math.round( dist / 1000);
@@ -164,17 +173,59 @@ public class FriendsRecyclerAdapter
                     distance = "0";
                 }
                 distanceText.setText(distance);
+            } else {
+                distanceText.setText("?");
             }
 
-            if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
-                Picasso.with(activity)
-                        .load(friend.pictureUrl)
-                        .error(R.drawable.ic_face_black_24dp)
-                        .into(friendImage);
-            } else  {
-                Picasso.with(activity)
-                        .load(R.drawable.ic_face_black_24dp)
-                        .into(friendImage);
+            // set emoji
+            if (friend.activity.type != null && !friend.activity.type.isEmpty()) {
+                GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(friend.activity.type);
+                if (act != null) {
+                    String emoji = act.emoji;
+                    friendActivity.setImageBitmap(Constants.textAsBitmap(emoji, EMOJI_SIZE, Color.WHITE));
+                }
+            } else {
+                friendActivity.setImageBitmap(null);
+            }
+
+            // Set picture
+            if (friend.image == null) {
+                Log.d(TAG, "No image" + friend.name);
+                FirebaseCrash.log("No image");
+
+                friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+
+                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
+                    final Target target = new Target() {
+                        @Override
+                        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                            FirebaseCrash.log("onBitmapLoaded");
+                            friend.image = bitmap;
+                            friendImage.setImageBitmap(bitmap);
+                        }
+
+                        @Override
+                        public void onBitmapFailed(Drawable errorDrawable) {
+                            FirebaseCrash.log("onBitmapFailed");
+//                            friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+                        }
+
+                        @Override
+                        public void onPrepareLoad(Drawable placeHolderDrawable) {
+                            FirebaseCrash.log("onPrepareLoad");
+//                            friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+                        }
+                    };
+
+                    Picasso.with(activity)
+                            .load(friend.pictureUrl)
+                            .into(target);
+                }
+
+            } else {
+                Log.d(TAG, "Has image " + friend.name);
+                FirebaseCrash.log("has image");
+                friendImage.setImageBitmap(friend.image);
             }
         }
     }
@@ -265,14 +316,37 @@ public class FriendsRecyclerAdapter
         return activity.friends.size();
     }
 
+
+
     public Friend getItem(int position) {
         ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
         return array.get(position);
     }
 
-    public void addItem(Friend friend) {
-        notifyItemInserted(activity.friends.size());
-        notifyItemChanged(0);
+    public void addItem(String uid) {
+        int position = getPositionById(uid);
+        if (position > 0) {
+            notifyItemInserted(position);
+        }
+    }
+
+    public void updateItem(String uid) {
+        int position = getPositionById(uid);
+        if (position > 0) {
+            notifyItemChanged(position);
+        }
+    }
+
+    public int getPositionById(String uid) {
+        ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
+        int position = 0;
+        for (Friend f : array) {
+            if (f.id.equals(uid)){
+                return position;
+            }
+            position += 1;
+        }
+        return -1;
     }
 
     public void removeItem(int position) {

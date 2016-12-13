@@ -115,21 +115,6 @@ public class FriendsMapFragment extends Fragment {
                 mMap = googleMap;
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-//                for (String friendId : activity.friends.keySet()) {
-//                    Friend friend = activity.friends.get(friendId);
-//
-//                    markerImage.setImageBitmap(friend.image);
-//
-//                    LatLng friendLocation = friend.getLatLng();
-//
-//                    mMap.addMarker(
-//                            new MarkerOptions()
-//                                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(markerView)))
-//                                    .position(friendLocation)
-//                                    .title(friend.name)
-//                                    .snippet("battery: " + friend.battery + "%"));
-//                }
-
                 mMap.setOnCameraMoveStartedListener(new GoogleMap.OnCameraMoveStartedListener() {
                     @Override
                     public void onCameraMoveStarted(int i) {
@@ -172,9 +157,11 @@ public class FriendsMapFragment extends Fragment {
             public void onClick(View view) {
                 Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
                 if (mMap != null) {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
+                    if (f.isSharingLocation()) {
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
+                    }
 
-                    if (friendIterator == activity.friends.size() - 1) {
+                    if (friendIterator >= activity.friends.size() - 1) {
                         friendIterator = 0;
                     } else {
                         friendIterator += 1;
@@ -262,10 +249,15 @@ public class FriendsMapFragment extends Fragment {
 
     public void updateFriendOnMap(final Friend friend) {
         Log.d(TAG, "updateFriendOnMap: " + friend.name);
-        if (mMap != null && mapView != null && markerImage != null) {
+        if (mMap != null &&
+                mapView != null &&
+                marketName != null &&
+                markerImage != null &&
+                markerActivity != null &&
+                friend.isSharingLocation()) {
 
             // create marker
-            if (!markers.containsKey(friend.id)) {
+            if (!markers.containsKey(friend.id) ) {
                 Log.d(TAG, "Create Marker: " + friend.name);
 
                 // set emoji
@@ -337,6 +329,7 @@ public class FriendsMapFragment extends Fragment {
                         .snippet("battery: " + friend.battery + "%"));
         marker.setTag(friend.id);
         markers.put(friend.id, marker);
+
         mBoundsBuilder.include(friend.getLatLng());
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
     }

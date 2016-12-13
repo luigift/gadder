@@ -1,7 +1,9 @@
 package co.gadder.gadder;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,14 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class FriendsActivityFragment extends Fragment {
     private final static String TAG = "FriendsActivityFragment";
 
     private MainActivity activity;
-    private FriendsRecyclerAdapter adapter;
 
+    public FriendsRecyclerAdapter adapter;
 
     public FriendsActivityFragment() {}
 
@@ -58,7 +61,8 @@ public class FriendsActivityFragment extends Fragment {
                                 if (friend.friendship.equals(getString(R.string.friend))){
                                     activity.selectFriend(adapter.getItem(position));
                                 } else if (friend.friendship.equals(getString(R.string.contact))) {
-                                    activity.requestFriendship(adapter.getItem(position));
+                                    Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
+                                    activity.requestFriendship(adapter.getItem(position).id);
                                 }
                             }
 
@@ -66,7 +70,7 @@ public class FriendsActivityFragment extends Fragment {
                             public void onLongItemClick(View view, int position) {
                                 getFragmentManager().beginTransaction()
                                         .addToBackStack("click")
-                                        .replace(R.id.mainPager, FloatingProfileFragment.newInstance(adapter.getItem(position)))
+                                        .replace(R.id.mainLayout, FloatingProfileFragment.newInstance(adapter.getItem(position)))
                                         .commit();
                             }
                         }));
@@ -74,7 +78,14 @@ public class FriendsActivityFragment extends Fragment {
         return layout;
     }
 
-    public void addFriend(Friend friend) {
-        adapter.addItem(friend);
+    public void hideProgressBar() {
+        if (getActivity() != null) {
+            final ProgressBar progressBar = (ProgressBar) getActivity().findViewById(R.id.activityLoadingFriends);
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
+    public void updateRecycler() {
+        adapter.notifyDataSetChanged();
     }
 }

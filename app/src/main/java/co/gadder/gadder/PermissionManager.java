@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 
 public class PermissionManager {
 
@@ -27,11 +28,19 @@ public class PermissionManager {
     }
 
     @NonNull
-    public static Boolean checkStoragePermission(Context context) {
+    public static Boolean checkWriteStoragePermission(Context context) {
         return ActivityCompat
                 .checkSelfPermission(
                         context,
                         android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @NonNull
+    public static Boolean checkReadStoragePermission(Context context) {
+        return ActivityCompat
+                .checkSelfPermission(
+                        context,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     @NonNull
@@ -54,17 +63,26 @@ public class PermissionManager {
     /*
      *  Request methods
      */
+//    @NonNull
+//    public static void requestCameraPermission (Activity activity) {
+//        ActivityCompat
+//                .requestPermissions(
+//                        activity,
+//                        new String[] {Manifest.permission.CAMERA},
+//                        REQUEST_CAMERA_PERMISSION);
+//    }
+//
     @NonNull
-    public static void requestCameraPermission (Activity activity) {
+    public static void requestReadStoragePermission (Activity activity) {
         ActivityCompat
                 .requestPermissions(
                         activity,
-                        new String[] {Manifest.permission.CAMERA},
-                        REQUEST_CAMERA_PERMISSION);
+                        new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
+                        REQUEST_STORAGE_PERMISSION);
     }
 
     @NonNull
-    public static void requestStoragePermission (Activity activity) {
+    public static void requestWriteStoragePermission (Activity activity) {
         ActivityCompat
                 .requestPermissions(
                         activity,
@@ -86,9 +104,7 @@ public class PermissionManager {
         ActivityCompat
                 .requestPermissions(
                         activity,
-                        new String[] {Manifest.permission.WRITE_CONTACTS},
+                        new String[] {Manifest.permission.WRITE_CONTACTS, Manifest.permission.READ_CONTACTS},
                         REQUEST_CONTACTS_PERMISSION);
     }
-
-
 }

@@ -7,17 +7,32 @@
     <string name="country_code">country_code</string>
     <string name="preference_file_key">co.gadder.gadder.PREFERENCE_FILE_KEY</string>
 
+    <string name="terms_of_service">Terms of Service</string>
+    <string name="sign_in_warning">By signing in, you agree with our </string>
+    <string name="privacy_policy">Privacy Policy</string>
+
+    <string name="find_friends">Find Friends</string>
+
+    <string name="add_friends_message">Find your friends by phone. Remember to put the phone in the international format.</string>
+
+    <string name="follow_request">Requesting follow</string>
+
+    <string name="inbox_empty">You have no messages</string>
+
+    <string name="find_me">Find Me</string>
+    <string name="why_location">Gadder needs your location to save the world from the...</string>
+
     <!--Friendship status-->
     <string name="friend">friend</string>
     <string name="contact">contact</string>
 
-    <string name="request_contacts">Achar Amigos</string>
+    <string name="request_contacts">Add Friends</string>
 
     <string name="hint_name">Nome</string>
+    <string name="hint_password">Password</string>
     <string name="hint_email">nome@email.com</string>
-    <string name="hint_password">Senha</string>
-    <string name="short_name">Nome muito curto</string>
-    <string name="short_password">Senha muito curta</string>
+    <string name="short_name">Name too short</string>
+    <string name="short_password">Password too short</string>
 
     <!--Verify SMS-->
     <string name="verify">Verify</string>
@@ -25,23 +40,23 @@
     <string name="try_again">Try Again</string>
     <string name="wrong_code_title">Oops! Wrong Code!</string>
     <string name="charges_may_apply">Carrier SMS charges may apply</string>
-    <string name="verifing_phone_message">We are verifing the number\:</string>
+    <string name="verifying_phone_message">We are verifying the number\:</string>
     <string name="enter_sms_code">Please enter the code you have received.</string>
-    <string name="wrong_code_message">I\'m sorry but the code you have entered doea not match.</string>
+    <string name="wrong_code_message">I\'m sorry but the code you have entered does not match.</string>
     <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
 
     <!--Profile Fragment-->
     <string name="hint_enter_name">Enter your name</string>
     <!--Sharing Options-->
-    <string name="music_sharing">Compartilhar Música</string>
-    <string name="weather_sharing">Compartilhar Clima</string>
-    <string name="battery_sharing">Compartilhar Bateria</string>
-    <string name="company_sharing">Compartilhar Companhia</string>
-    <string name="activity_sharing">Compartilhar Atividades</string>
-    <string name="location_sharing">Compartilhar Localização</string>
-    <string name="sharing_warning">Desabilitar o compartilhamento das informações resulta numa pior experiência para você e seus amigos.</string>
+    <string name="music_sharing">Music Sharing</string>
+    <string name="battery_sharing">Battery Sharing</string>
+    <string name="company_sharing">Company Sharing</string>
+    <string name="weather_sharing">Weather Sharing</string>
+    <string name="location_sharing">Location Sharing</string>
+    <string name="activity_sharing">Activity Sharing</string>
+    <string name="sharing_warning">Disabling sharing reduces your and your friends experience inside the app, though it is not recommended</string>
     <!--Notification Options-->
-    <string name="friends_nearby">Amigos Próximos</string>
+    <string name="friends_nearby">Friends Nearby</string>
     <string name="friends_request">Friends\' Requests</string>
 
     <!--Map Fragment-->
@@ -72,41 +87,57 @@
     <string name="longitude">Longitude</string>
 
     <string name="permissions">Permissions</string>
-    <string name="title_get_permission">Localização</string>
-    <string name="msg_get_permission">A sua localização vai definir se você foi ou não no treino, por isso precisamos dela.</string>
+    <string name="title_get_permission">Location</string>
+    <string name="msg_get_permission">Your location is needed to determine whether or not did you come to class</string>
 
     <string name="ok">Ok</string>
-    <string name="thanks">Obrigado</string>
+    <string name="thanks">Thanks</string>
+    <string name="logout"><b>Logout</b></string>
 
-    <string name="auth_failed">Falha na autorização!</string>
+    <string name="click_again_to_logout">Click again to logout</string>
+    <string name="click_again_to_unfollow">Click again to unfriend</string>
 
-    <string name="sign_in_first">Faça o login primeiro</string>
+    <string name="auth_failed">Authorization Failed!</string>
 
-    <string name="sign_in">Login</string>
-    <string name="sign_up">Cadastro</string>
-    <string name="sign_out">Sair</string>
+    <string name="sign_in_first">Sign in first</string>
 
-    <string name="notifications">Notificações</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_out">Sign Out</string>
+
+    <string name="notifications">Notifications</string>
+
+    <!--Permission Fragment-->
+    <string name="contacts_permission_title">Friend Request</string>
+    <string name="location_permission_title">Location Request</string>
+    <string name="location_permission_message">We need your location to track and kill you</string>
+    <string name="contacts_permission_message">We need your friends for global domination HHAHAHAHAH</string>
+
+    <!--Set Profile-->
+    <string name="set_profile_title">Profile Now!</string>
+    <string name="set_profile_message">Just saying you still don\'t have a name...</string>
+    <string name="angry_no">Not now or I\'ll uninstall the app</string>
 
     <!--Activity Request Notification-->
     <string name="and">and</string>
     <string name="other_friends">other friends</string>
+    <string name="request_friendship">wants to follow you on</string>
     <string name="request_friend_activity_title">What are you up to?!</string>
     <string name="request_friend_activity_message"> wants to know what you are doing now!</string>
 
     <!-- Geofence strings -->
-    <string name="geofences_removed">Geofences removidas</string>
-    <string name="geofences_added">Geofences adicionadas</string>
-    <string name="not_connected">GoogleApiClient não está conectado.</string>
-    <string name="geofence_not_available">Geofence não está disponível agora</string>
-    <string name="geofence_too_many_geofences">Muitas geofences foram registradas</string>
-    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
+    <string name="geofences_added">Geofences added</string>
+    <string name="geofence_transition_exited">Exited</string>
+    <string name="geofence_transition_entered">Entered</string>
+    <string name="geofences_removed">Geofences removed</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
+    <string name="not_connected">GoogleApiClient no yet connected. Try again.</string>
+    <string name="geofence_not_available">Geofence service is not available now</string>
+    <string name="geofence_too_many_geofences">Your app has registered too many geofences</string>
     <string name="unknown_geofence_error">Unknown error: Geofence service is not available</string>
-    <string name="geofence_transition_entered">Chegou</string>
-    <string name="geofence_transition_exited">Saiu</string>
-    <string name="unknown_geofence_transition">Transição desconhecida</string>
-    <string name="geofence_transition_notification_text">Clique para entrar no app</string>
+    <string name="geofence_transition_notification_text">Click notification to return to app</string>
     <string name="geofence_transition_invalid_type">Geofence transition error: invalid transition type %1$d</string>
+    <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
 
     <!--Activities types-->
     <string name="games">Games</string>
@@ -190,5 +221,101 @@
 
     <!--Hobbies-->
     <string name="painting">Painting</string>
+
+
+    <string name="privacy_policy_title">Gadder - Privacy Policy</string>
+    <string name="privacy_policy_content">
+Your privacy is critically important to us. Our privacy policy will explain how personal information is collected, used and disclosed by Gadder application and services. If you have questions or complaints regarding our privacy policy or practices, please contact us at gadderapp@gmail.com. Our privacy policy may be modified from time-to-time. We will alert you that changes have been made by indicating on our privacy policy the date it was last updated. If we make any material changes we will notify you by email or by means of a notice on this web site prior to the change becoming effective. We encourage you to periodically review this page for the latest information on our privacy practices.
+1. What is Personal Information?
+Personal Information" is personally identifiable information such as your name, telephone number, email address and any other non-public information about you that is associated with or linked to any of the foregoing information. Personal information does not include aggregate information, which is data we collect about the use of Gadder. Our privacy policy does not restrict or limit our collection and use of aggregate information.
+2. What Personal Information Does Gadder Collect?
+- Registration and Profile Information. When you create an account, we may collect your personal information such as your username, first and last name, birth date, address, mobile phone number and a photo, if you chose to have a photo associated with your account.. We may collect billing information when you sign up for Premium service.
+
+
+- Geolocation. We collect your unique user identifier and your location through GPS, WiFi, or wireless network triangulation in order to obtain your location for the purposes of providing our Service. We collect the location of your designated Location Alerts to provide notifications when arrive and leave special place. If you turn off location sharing we will not share your location with anyone; however, while you are logged in to your account, we will continue to collect your location information in order to provide the Service (for example, to provide our services or to share your location with members you allow to see your location). We maintain location information only so long as is reasonable to provide the Service and then destroy the location data.
+- User Content. We collect information when you input activities through use of the service. We may also retain any messages you send to us.
+Automatically collected information through the use of technology: When you visit our website or use our mobile app, we and our business partners may collect certain information about your computer or device through technology such as cookies, web beacons, log files, or other tracking/recording tools. The information we collect through the use of tracking technologies includes, but is not limited to, IP address, browser information, referring/exit pages and URLs, click stream data and how you interact with links on the website, mobile app, or Service, domain names, landing pages, pageviews, cookie data that allows us to uniquely identify your browser, browsing behavior on our site, mobile device type, mobile device IDs or other persistent identifiers, and location data collected from your mobile device. Some or all of this data may be combined with other personally identifying information described above. We use this information to: Remember information so that you will not have to re-enter it during your visit or the next time you visit the site or mobile app; Provide custom, personalized content and information; Monitor the effectiveness of our Service and our marketing campaigns; Monitor aggregate metrics such as total number of visitors, users, traffic, and demographic patterns; Diagnose or fix technology problems reported by our Users or engineers that are associated with certain IP addresses or User IDs; Automatically update our mobile application on your system and related devices.
+3. How Does Gadder Use the Personal Information?
+Generally, Gadder collects, stores, uses and discloses information to enable us to:
+- provide Gadder service;
+- create your account;
+- identify you as a user;
+- respond to your inquiries and emails;
+- improve the application;
+- send you administrative and service related communications;
+- send you newsletters, surveys, offers, and other promotional materials.
+Except as set out in this Privacy Policy, your personal Information will not be used for any other purpose without informing you first by updating this Privacy Policy. Except for the limited disclosures described in this Privacy Policy, we do not sell customer lists or any personal information to third parties, and we will endeavor to keep your email address private. Anonymous aggregate statistics that do not personally identify Gadder user will be kept and used by us for various purposes including analysis and reporting of usage patterns.
+4. What Do We Share With Third Parties?
+From time to time, we may employ third parties to help us provide or improve Gadder. These third parties, such as our analytics or hosting provider, may have limited access to databases of user information or registered member information solely for the purpose of helping us provide or improve Gadder and they will not be able to use the information about our members or visitors for any other purpose. We may disclose personal Information in some other limited circumstances, but we will specifically describe them to you when we collect the information, such as in the terms of use for a new service or by revising this Privacy Policy. We may, and you hereby authorize us to, disclose your Personal Information to a third party without your consent: if we have reason to believe that disclosing this information is necessary to identify, contact or bring legal action against someone who may be causing injury to or interference with (either intentionally or unintentionally) our rights or property, other website users, or anyone else (including the rights or property of anyone else) that could be harmed by such activities, in connection with any legal investigation, when we believe in good faith that such disclosure is required by and in accordance with the law or to respond to subpoenas or warrants served on Gadder, to any third party with your prior consent to do so.
+5. Security.
+The security of your Personal Information is important to us. We use reasonable efforts to store and maintain your Personal Information and location information in a secure environment and have implemented reasonable procedures designed to limit unauthorized access, use or disclosure of your Personal Information. We encrypt the transmission location information of that information using secured technologies. Despite these measures, you should know that Gadder cannot fully eliminate security risks associated with Personal Information. You are also responsible for helping to protect the security of your Personal Information. To protect the communications that have taken place in the app, never give out your password.
+6. User Access and Choice.
+If your personal information changes, or if you no longer desire our service, you may email us at gadderapp@gmail.com to deactivate your account. You may also correct, update, or amend your personal information in your profile settings within Gadder app or by emailing us. Removing Gadder from your mobile device will not delete the personal information has retained about you. Your user content can be deleted permanently by emailing a request to gadderapp@gmail.com.
+7. Communication with Gadder.
+You may "opt out" of receiving marketing or promotional emails from us by following the instructions in those emails or by emailing us at gadderapp@gmail.com. If you opt out, we may still send you non-promotional emails, such as emails about your accounts or our ongoing business relations. To opt out of push notifications, please edit settings within the app or change your settings at the device level.
+8. International Users
+Gadder is hosted in  Brazil and is intended for and directed to users in the whole world. If you are a user accessing Gadder from the United States, Asia, or any other region with laws or regulations governing personal data collection, use, and disclosure, that differ from the brazilian  laws, please be advised that through your continued use of Gadder, which is governed by the United Kingdom law, Gadder Privacy Policy, and Terms of Service, you are transferring your personal information to Brazil and you consent to that transfer.
+9. Questions?
+Please contact us at gadderapp@gmail.com if you have any questions about our privacy policy.</string>
+
+    <string name="terms_of_service_title">Gadder - Terms of Use</string>
+    <string name="terms_of_service_content">
+The following terms and conditions govern all use of Gadder mobile applications and services (Applications). The Applications are offered subject to your acceptance without modification of all of the terms and conditions contained herein and all other operating rules, policies (including, without limitation, Gadder Privacy Policy).
+Please read this Agreement carefully before accessing or using the Applications. By accessing or using the Applications, you agree to become bound by the terms and conditions of this agreement. If you do not agree to all the terms and conditions of this agreement, then you may not access or use the Applications. If these terms and conditions are considered an offer by Gadder, acceptance is expressly limited to these terms.
+1. Use of Our Service
+Gadder is a free location and communication app for smartphones. With Gadder, you can see your entire family on a private map, stay in touch 24/7 and protect your beloved ones from any harm. Subscribers of Gadder Premium also enjoy 24/7 access unlimited locations and locations alerts in Gadder Places, expanded location history and more.
+You may use the Service only if you can form a binding contract with Gadder, and only in compliance with this Agreement and all applicable local, state, national, and international laws, rules and regulations. Anyone under 13 is strictly prohibited from creating an account for the Service. In addition, anyone under 13 may only accept invitations from parents / legal guardians to join their account. The Service is not available to any Users previously removed from the Service by Gadder.
+
+
+2. Your Gadder Account.
+If you create Gadder account, you are responsible for maintaining the security of your account, and you are fully responsible for all activities that occur under the account and any other actions taken in connection with the account. You must immediately notify Gadder of any unauthorized uses of your account or any other breaches of security. Gadder will not be liable for any acts or omissions by you, including any damages of any kind incurred as a result of such acts or omissions.
+3. Responsibility of Contributors.
+If you create or submit any content whatsoever (Content) to the Applications, or allow any third party to create or submit Content to the Applications, you are entirely responsible for the content of, and any harm resulting from, that content. That is the case regardless of whether the Content in question constitutes text, graphics, video, location data, or binary data. By submitting Content, you represent and warrant that:
+the downloading, copying and use of the Content will not infringe the proprietary rights, including but not limited to the copyright, patent, trademark or trade secret rights, of any third party;
+if your employer has rights to intellectual property you create, you have either (i) received permission from your employer to post or make available the Content, including but not limited to any software, or (ii) secured from your employer a waiver as to all rights in or to the Content;
+you have fully complied with any third-party licenses relating to the Content, and have done all things necessary to successfully pass through to end users any required terms;
+the Content is not pornographic, does not contain threats or incite violence towards individuals or entities, and does not violate the privacy or publicity rights of any third party;
+your account is not named in a manner that misleads your partner into thinking that you are another person. For example, your name and email address do not belong to someone other than yourself.
+4. Submitting Content.
+By submitting Content to Gadder for inclusion in the Applications, you grant Gadder a world-wide, royalty-free, and non-exclusive license to reproduce, modify, adapt and publish the Content solely for the purpose of displaying to the person with whom you were paired, or for whom you were waiting to confirm pairing, at the time of submission. If you delete Content, Gadder will use reasonable efforts to remove it from the database, but you acknowledge that caching or references to the Content may not be made immediately unavailable.
+Without limiting any of those representations or warranties, Gadder has the right (though not the obligation) to, at Gadder\'s sole discretion (i) refuse or remove any content that, in Gadder\'s reasonable opinion, violates any Gadder policy or is in any way harmful or objectionable, or (ii) terminate or deny access to and use of the Applications to any individual or entity for any reason, at Gadder\'s sole discretion. Gadder will have no obligation to provide a refund of any amounts previously paid.
+5. Responsibility of Application Users.
+Gadder has not reviewed, and cannot review, the Content submitted to the Applications, and cannot therefore be responsible for that Content\'s content, use or effects. By operating the Applications, Gadder does not represent or imply that it endorses the material there posted, or that it believes such material to be accurate, useful or non-harmful. The Applications may contain content that is offensive, indecent, or otherwise objectionable, as well as content containing technical inaccuracies, typographical mistakes, and other errors. The Applications may also contain material that violates the privacy or publicity rights, or infringes the intellectual property and other proprietary rights, of third parties, or the downloading, copying or use of which is subject to additional terms and conditions, stated or unstated. Gadder disclaims any responsibility for any harm resulting from the use by users of the Applications, or from any downloading by those users of content there posted.
+6. Content Posted on Other Websites.
+We have not reviewed, and cannot review, all of the material made available through the websites and webpages to which the Applications link, and that link to the Applications. Gadder does not have any control over those websites, and is not responsible for their contents or their use. By linking to such website or webpage, Gadder does not represent or imply that it endorses such website or webpage. Gadder disclaims any responsibility for any harm resulting from your use of these websites and webpages.
+7. Intellectual Property.
+This Agreement does not transfer from Gadder to you any Gadder or third party intellectual property, and all right, title and interest in and to such property will remain (as between the parties) solely with Gadder. Gadder, and all other trademarks, service marks, graphics and logos used in connection with the Applications are trademarks or registered trademarks of Gadder or Gadder\'s licensors. Other trademarks, service marks, graphics and logos used in connection with the Applications may be the trademarks of other third parties. Your use of the Applications grants you no right or license to reproduce or otherwise use any Gadder or third-party trademarks.
+8. Advertisements.
+Gadder reserves the right to display advertisements in the Applications.
+9. Changes.
+Gadder reserves the right, at its sole discretion, to modify or replace any part of this Agreement. It is your responsibility to check this Agreement periodically for changes. Your continued use of or access to the Applications following the posting of any changes to this Agreement constitutes acceptance of those changes. Gadder may also, in the future, offer new services and/or features through the Applications (including, the release of new tools and resources). Such new features and/or services shall be subject to the terms and conditions of this Agreement.
+10. Termination.
+Gadder may terminate your access to all or any part of the Applications at any time, with or without cause, with or without notice, effective immediately. If you wish to terminate this Agreement or your couple account (if you have one), you may simply discontinue using the Applications, or you may request account deletion by emailing gadderapp@gmail.com. All provisions of this Agreement which by their nature should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity and limitations of liability.
+11. Disclaimer of Warranties.
+The Applications are provided as is. Gadder and its suppliers and licensors hereby disclaim all warranties of any kind, express or implied, including, without limitation, the warranties of merchantability, fitness for a particular purpose and non-infringement. Neither Gadder nor its suppliers and licensors, makes any warranty that the Applications will be error free or that access thereto will be continuous or uninterrupted. You understand that you download from, or otherwise obtain content or services through, the Applications at your own discretion and risk.
+12. Gadder Premium
+a) Gadder Premium is a paid subscription service from Gadder that includes (where available): Unlimited number of family members (up to 3 in free version); Unlimited number of Location alerts (GeoFencing) (up to 2 in free version); Complete location history for all days and members. Only one (1) device can be used per Gadder Premium subscription.
+b) Billing Policies.
+If you elect to use Gadder Premium, you agree to the pricing and payment terms, as we may update them from time to time. Gadder may add new services for additional fees and charges, or amend fees and charges for existing services, at any time in its sole discretion. Any change to our pricing or payment terms shall become effective in the billing cycle following notice of such change to you as provided in this Agreement.
+c) Pricing and Payment Terms
+Gadder Premium subscription is payable in advance. All subscription and access charges for the Service are payable in advance. Gadder Premium subscriptions can be purchased monthly.Gadder is not responsible for any charges or expenses you incur resulting from charges billed by Gadder in accordance with the Terms of Service (e.g. overdrawn accounts, exceeding credit card limit, etc.). By providing a credit card number or other payment method with advance authorization features (e.g. some PayPal accounts), you authorize Gadder to continue charging the payment method for all charges due Gadder until your Gadder Premium account is settled and is terminated by either you or Gadder.
+d) No Refunds.
+You may cancel your Gadder account at any time; however, there are no refunds for any unused time on a subscription, any license or subscription fees for any portion of the Service, any content or data associated with your account, or for anything else. Upon cancelling your Gadder Premium service, your subscription will be valid until your paid period is completed. H. Payment Information; Taxes. All information that you provide in connection with a purchase or transaction or other monetary transaction interaction with the Service must be accurate, complete, and current. You agree to pay all charges incurred by users of your credit card, debit card, or other payment method used in connection with a purchase or transaction or other monetary transaction interaction with the Service at the prices in effect when such charges are incurred. You will pay any applicable taxes, if any, relating to any such purchases, transactions or other monetary transaction interactions.
+
+
+
+
+13. Limitation of Liability.
+In no event will Gadder, or its suppliers or licensors, be liable with respect to any subject matter of this agreement under any contract, negligence, strict liability or other legal or equitable theory for: (i) any special, incidental or consequential damages; (ii) the cost of procurement for substitute products or services; (iii) for interruption of use or loss or corruption of data; or (iv) for any amounts that exceed the fees paid by you to Gadder under this agreement during the twelve (12) month period prior to the cause of action. Gadder shall have no liability for any failure or delay due to matters beyond their reasonable control. The foregoing shall not apply to the extent prohibited by applicable law.
+14. General Representation and Warranty.
+You represent and warrant that (i) your use of the Applications will be in strict accordance with Gadder Privacy Policy, with this Agreement and with all applicable laws and regulations (including without limitation any local laws or regulations in your country, state, city, or other governmental area, regarding online conduct and acceptable content, and including all applicable laws regarding the transmission of technical data exported from Brazil or the country in which you reside) and (ii) your use of the Applications will not infringe or misappropriate the intellectual property rights of any third party.
+15. Indemnification.
+You agree to indemnify and hold harmless Gadder, its contractors, and its licensors, and their respective directors, officers, employees and agents from and against any and all claims and expenses, including attorneys\' fees, arising out of your use of the Applications, including but not limited to your violation of this Agreement.
+16. Miscellaneous.
+This Agreement constitutes the entire agreement between Gadder and you concerning the subject matter hereof, and they may only be modified by a written amendment signed by an authorized executive of Gadder, or by the posting by Gadder of a revised version. Except to the extent applicable law, if any, provides otherwise, this Agreement, any access to or use of the Applications will be governed by the laws of Brazil, excluding its conflict of law provisions, and the proper venue for any disputes arising out of or relating to any of the same will be the courts located in São Paulo, Brazil. Except for claims for injunctive or equitable relief or claims regarding intellectual property rights (which may be brought in any competent court without the posting of a bond), any dispute arising under this Agreement shall be finally settled in accordance with the arbitration rules. The arbitration shall take place in São Paulo, Brazil, in the Portuguese and the arbitral decision may be enforced in any court. The prevailing party in any action or proceeding to enforce this Agreement shall be entitled to costs and attorneys\' fees. If any part of this Agreement is held invalid or unenforceable, that part will be construed to reflect the parties\' original intent, and the remaining portions will remain in full force and effect. A waiver by either party of any term or condition of this Agreement or any breach thereof, in any one instance, will not waive such term or condition or any subsequent breach thereof. You may assign your rights under this Agreement to any party that consents to, and agrees to be bound by, its terms and conditions; Gadder may assign its rights under this Agreement without condition. This Agreement will be binding upon and will inure to the benefit of the parties, their successors and permitted assigns.
+17. Contact.
+Please contact us gadderapp@gmail.com with any questions regarding this Agreement.
+This Agreement was last modified on December 7th, 2016.
+</string>
 
 </resources>

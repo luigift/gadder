@@ -27,6 +27,8 @@ public class NotificationFragment extends Fragment {
 
     FirebaseRecyclerAdapter mFirebaseAdapter;
 
+    TextView message;
+
     public int noNotifications = 0;
 
     public NotificationFragment () {
@@ -71,6 +73,7 @@ public class NotificationFragment extends Fragment {
 
         final FirebaseUser user = activity.mAuth.getCurrentUser();
 
+        message = (TextView) activity.findViewById(R.id.inboxMessage);
 
         if (user != null ) {
 
@@ -90,6 +93,7 @@ public class NotificationFragment extends Fragment {
 
                 @Override
                 protected void populateViewHolder(final FriendRequestViewHolder viewHolder, String model, final int position) {
+                    message.setVisibility(View.GONE);
                     noNotifications += 1;
                     activity.setNotificationListener(noNotifications);
 

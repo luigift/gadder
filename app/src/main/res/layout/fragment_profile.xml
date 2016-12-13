@@ -160,7 +160,7 @@
                 android:layout_marginEnd="5dp"
                 android:layout_marginRight="5dp"
                 android:src="@drawable/ic_people_black_24dp"
-                android:tint="@color/colorAccent"
+                android:tint="@android:color/darker_gray"
                 android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -173,7 +173,8 @@
                 android:layout_height="wrap_content" />
 
             <Switch
-                android:checked="true"
+                android:enabled="false"
+                android:checked="false"
                 android:id="@+id/profileCompanySwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -263,7 +264,7 @@
                 android:layout_marginEnd="5dp"
                 android:layout_marginRight="5dp"
                 android:src="@drawable/ic_shuffle_black_24dp"
-                android:tint="@color/colorAccent"
+                android:tint="@android:color/darker_gray"
                 android:background="@android:color/transparent"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -277,7 +278,8 @@
 
             <Switch
                 android:id="@+id/profileNearbySwitch"
-                android:checked="true"
+                android:checked="false"
+                android:enabled="false"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
         </LinearLayout>
@@ -313,14 +315,49 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <Button
-            android:layout_margin="64dp"
-            android:id="@+id/send"
-            android:text="Logout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Colored" />
+        <TextView
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
+        <LinearLayout
+            android:layout_margin="22dp"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <FrameLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/rate"
+                    android:layout_gravity="center"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    style="@style/Widget.AppCompat.Button.Colored" />
+            </FrameLayout>
+
+            <Space
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" />
+
+            <FrameLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content">
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/logout"
+                    android:layout_gravity="center"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    style="@style/Widget.AppCompat.Button.Colored" />
+            </FrameLayout>
+
+        </LinearLayout>
 
     </LinearLayout>
 

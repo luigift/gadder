@@ -9,9 +9,13 @@ import android.os.Bundle;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crash.FirebaseCrash;
 
 public class InputActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    private static final String TAG = "InputActivity";
 
     GoogleApiClient mGoogleApiClient;
 
@@ -19,6 +23,8 @@ public class InputActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        FirebaseCrash.log(TAG + " created");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_input);
 
@@ -53,6 +59,7 @@ public class InputActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        FirebaseCrash.log(TAG + " onConnected");
         if (PermissionManager.checkLocationPermission(InputActivity.this)) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (mLastLocation != null) {

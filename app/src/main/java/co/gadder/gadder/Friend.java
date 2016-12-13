@@ -88,6 +88,8 @@ public class Friend {
     public String phone;
     public String pictureUrl;
 
+    public Bitmap image;
+
     public String friendship;
 
     public String city;
@@ -97,9 +99,9 @@ public class Friend {
     public Integer temperature;
     public List<String> weather = new ArrayList<>();
 
-    public Activity activity = new Activity();
     public Music music = new Music();
     public Sharing sharing = new Sharing();
+    public Activity activity = new Activity();
     public Coordinates coordinates = new Coordinates();
     public Notifications notification = new Notifications();
 
@@ -121,6 +123,14 @@ public class Friend {
 //    public Date getLastUpdate() {
 //        return new SimpleDateFormat(Constants.DATE_FORMAT).parse(lastUpdate);
 //    }
+
+    public Boolean isSharingLocation() {
+        return sharing != null && sharing.locationSharing != null && sharing.locationSharing;
+    }
+
+    public Boolean hasPictureUrl() {
+        return pictureUrl != null && !pictureUrl.isEmpty();
+    }
 
     @Override
     public String toString() {

@@ -25,6 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import co.gadder.gadder.emoji.Nature;
+
+import static co.gadder.gadder.GadderFirebaseMessagingService.FRIENDSHIP;
+import static co.gadder.gadder.GadderFirebaseMessagingService.NAME;
+import static co.gadder.gadder.GadderFirebaseMessagingService.NOTIFY;
+import static co.gadder.gadder.GadderFirebaseMessagingService.PICTURE_URL;
+import static co.gadder.gadder.GadderFirebaseMessagingService.UPDATE;
+
 public class RequestManager {
 
     private static final String TAG = RequestManager.class.getSimpleName();
@@ -58,32 +66,58 @@ public class RequestManager {
         mRequestQueue.add(imgRequest);
     }
 
-    public void sendUpdateRequest(String token) {
+    public void sendFriendshipRequestNotification(String token, String name, String pictureUrl) {
 
         JSONObject data = new JSONObject();
         JSONObject json = new JSONObject();
         try {
-            data.put("notify", "true");
-            data.put("update", "true");
+
+            data.put(FRIENDSHIP, "true");
+            data.put(NAME, name);
+            data.put(PICTURE_URL, pictureUrl);
+
             json.put("data", data);
             json.put("to", token);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         sendRequest(json);
     }
+    public void sendUpdateRequest(String token) {
+
+        JSONObject data = new JSONObject();
+        JSONObject json = new JSONObject();
+        try {
+
+            data.put(NOTIFY, "true");
+            data.put(UPDATE, "true");
+
+            json.put("data", data);
+            json.put("to", token);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        sendRequest(json);
+    }
+
     public void sendUpdateRequest(String token, String name, String pictureUrl) {
 
         JSONObject data = new JSONObject();
         JSONObject json = new JSONObject();
         try {
-            data.put("notify", "false"); // TODO change to true
-            data.put("update", "true");
-            data.put("name", name);
-            data.put("pictureUrl", pictureUrl);
+
+            data.put(NOTIFY, "false"); // TODO change to true
+            data.put(UPDATE, "true");
+            data.put(NAME, name);
+            data.put(PICTURE_URL, pictureUrl);
+
             json.put("data", data);
             json.put("to", token);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -97,10 +131,13 @@ public class RequestManager {
             JSONObject data = new JSONObject();
             JSONObject json = new JSONObject();
             try {
-                data.put("notify", "true");
-                data.put("update", "true");
+
+                data.put(NOTIFY, "true");
+                data.put(UPDATE, "true");
+
                 json.put("data", data);
                 json.put("to", t);
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

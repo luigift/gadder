@@ -6,22 +6,97 @@
     android:layout_height="match_parent"
     tools:context=".LoginFragment">
 
-    <ImageView
-        android:padding="64dp"
-        android:src="@drawable/cartoon_suns"
-        android:id="@+id/gadderLogo"
+    <FrameLayout
         android:layout_weight="1"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp" />
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+
+        <VideoView
+            android:id="@+id/videoIntro"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:src="@drawable/gadder_png"
+            android:id="@+id/gadderLogo"
+            android:layout_gravity="center"
+            android:padding="32dp"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </FrameLayout>
 
     <Button
         android:id="@+id/signIn"
         android:text="@string/sign_in"
+        android:background="@color/gadderOrange"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_margin="16dp"
         android:layout_height="wrap_content"
         style="@style/Widget.AppCompat.Button.Colored" />
+
+    <TextView
+        android:textSize="12sp"
+        android:textColor="@color/colorPrimaryDark"
+        android:text="@string/sign_in_warning"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_marginTop="6dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="20dp"
+        android:layout_gravity="center"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/privacyPolicy"
+            android:textSize="12sp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"
+            android:text="@string/privacy_policy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:textSize="12sp"
+            android:textColor="@color/colorPrimaryDark"
+            android:text=" "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:textSize="12sp"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="@string/and"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:textSize="12sp"
+            android:textColor="@color/colorPrimaryDark"
+            android:text=" "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/termsOfService"
+            android:textSize="12sp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold"
+            android:text="@string/terms_of_service"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
 
 </LinearLayout>

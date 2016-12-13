@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.firebase.crash.FirebaseCrash;
 import com.hbb20.CountryCodePicker;
 
 public class PhoneLoginFragment extends Fragment {
@@ -53,9 +55,25 @@ public class PhoneLoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
         mPhoneText = (EditText) getActivity().findViewById(R.id.phoneNumberInput);
         mCountryCodePicker = (CountryCodePicker) getActivity().findViewById(R.id.ccp);
         mCountryCodePicker.setKeyboardAutoPopOnSearch(false);
+
+        SharedPreferences pref = getActivity().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
+        // Set saved country code if there is
+        String savedCountryCode = pref.getString(getString(R.string.country_code), null);
+        if (savedCountryCode != null) {
+            mCountryCodePicker.setDefaultCountryUsingPhoneCode(Integer.valueOf(savedCountryCode));
+        }
+
+        // Set saved number if there is
+        String savedPhone = pref.getString(getString(R.string.phone), null);
+        if (savedPhone != null) {
+            mPhoneText.setText(savedPhone);
+        }
 
         // Open keyboard
         mPhoneText.requestFocus();
@@ -70,7 +88,7 @@ public class PhoneLoginFragment extends Fragment {
                 if(ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED||
                         ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED ||
                         ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS}, REQUEST_SMS_PERMISSION);
+                    requestPermissions(new String[]{Manifest.permission.SEND_SMS, Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS}, REQUEST_SMS_PERMISSION);
                 } else {
                     startVerification();
                 }
@@ -85,23 +103,33 @@ public class PhoneLoginFragment extends Fragment {
         SharedPreferences pref = getActivity().getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = pref.edit();
-        editor.putString(getString(R.string.phone), phone);
+        editor.putString(getString(R.string.phone), mPhoneText.getText().toString());
         editor.putString(getString(R.string.country_code), country_code);
-        editor.commit();
+        editor.apply();
 
         getFragmentManager().beginTransaction()
                 .addToBackStack("SmsCode")
                 .replace(R.id.activity_login, SmsCodeFragment.getInstance(phone))
-                .commit();
+                .commitAllowingStateLoss();
     }
 
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d(TAG, "onRequestPermissionsResult");
         switch (requestCode) {
             case REQUEST_SMS_PERMISSION: {
-                startVerification();
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Log.d(TAG, "Got SMS permission");
+                    FirebaseCrash.log("Got SMS permission");
+                    startVerification();
+
+                } else {
+                    // TODO: EXPLAIN WHY WE NEED THE PERMISSION
+                }
                 break;
             }
         }

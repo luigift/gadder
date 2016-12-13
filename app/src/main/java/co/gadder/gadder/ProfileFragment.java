@@ -1,9 +1,15 @@
 package co.gadder.gadder;
 
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.util.TimingLogger;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Switch;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -11,6 +17,7 @@ import android.view.LayoutInflater;
 import android.support.v4.app.Fragment;
 import android.widget.CompoundButton;
 import android.support.v7.widget.CardView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -18,6 +25,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import com.squareup.picasso.Picasso;
 
+import co.gadder.gadder.emoji.Nature;
+import co.gadder.gadder.emoji.Objects;
+import co.gadder.gadder.emoji.Symbols;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileFragment extends Fragment {
@@ -25,6 +35,8 @@ public class ProfileFragment extends Fragment {
     private static  final String TAG = "ProfileFragment";
 
     TimingLogger timings = new TimingLogger(TAG, "Create");
+
+    static int logoutClicks = 0;
 
     CardView edit;
     TextView name;
@@ -76,13 +88,30 @@ public class ProfileFragment extends Fragment {
 
         image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
 
-        Button logout = (Button) getActivity().findViewById(R.id.send);
-        logout.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton logoutFab = (FloatingActionButton) getActivity().findViewById(R.id.logout);
+        logoutFab.setImageBitmap(Constants.textAsBitmap(getString(R.string.logout), Constants.EMOJI_SIZE, Color.WHITE));
+        logoutFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FirebaseAuth.getInstance().signOut();
+                Snackbar.make(view, R.string.click_again_to_logout, Snackbar.LENGTH_SHORT).show();
+                if (logoutClicks > 0) {
+                    FirebaseAuth.getInstance().signOut();
+                }
+                logoutClicks += 1;
             }
         });
+
+        FloatingActionButton rateFab = (FloatingActionButton) getActivity().findViewById(R.id.rate);
+        rateFab.setImageBitmap(Constants.textAsBitmap(Nature.WHITE_STAR, Constants.EMOJI_SIZE, Color.WHITE));
+        rateFab.setEnabled(false);
+        rateFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                launchMarket();
+            }
+        });
+
+
 
         Friend user = ((MainActivity) getActivity()).user;
         if (user != null) {
@@ -114,7 +143,7 @@ public class ProfileFragment extends Fragment {
             public void onClick(View view) {
                 getFragmentManager().beginTransaction()
                         .addToBackStack("editProfile")
-                        .add(R.id.activity_main, EditFragment.newInstance(user))
+                        .add(R.id.coordinatorLayout, EditFragment.newInstance(user))
                         .commit();
             }
         });
@@ -176,5 +205,18 @@ public class ProfileFragment extends Fragment {
                 ref.child("notification").child("requestNotification").setValue(b);
             }
         });
+    }
+
+    private void launchMarket() {
+        Activity activity = getActivity();
+        if (activity != null && activity.getPackageName() != null) {
+            Uri uri = Uri.parse("market://details?id=" + activity.getPackageName());
+            Intent linkToMarket = new Intent(Intent.ACTION_VIEW, uri);
+            try {
+                startActivity(linkToMarket);
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(getContext(), "Unable to find market app", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }

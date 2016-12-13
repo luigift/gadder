@@ -24,10 +24,9 @@
 
             <ImageView
                 android:layout_gravity="bottom|end"
-                android:id="@+id/friendBattery"
-                android:rotation="-90"
+                android:id="@+id/friendActivity"
                 android:layout_width="24dp"
-                android:layout_height="24dp"/>
+                android:layout_height="24dp" />
 
         </FrameLayout>
 
@@ -35,11 +34,23 @@
             android:textStyle="bold"
             android:layout_marginLeft="5dp"
             android:layout_marginStart="5dp"
-            android:layout_weight="1"
             android:id="@+id/friendName"
             android:layout_gravity="center"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+        <ImageView
+            android:layout_gravity="center"
+            android:id="@+id/friendBattery"
+            android:tint="@color/colorAccent"
+            android:rotation="-90"
+            android:layout_width="16dp"
+            android:layout_height="16dp"/>
+
+        <android.support.v4.widget.Space
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent" />
 
         <TextView
             android:layout_gravity="center"
@@ -47,14 +58,13 @@
             android:id="@+id/friendDistance"
             android:textSize="26sp"
             android:textStyle="bold"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
             android:textColor="@color/colorAccent"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"/>
 
         <TextView
             android:text="km"
-            android:layout_gravity="bottom"
+            android:layout_gravity="center"
             android:background="@drawable/rounded_rectangle_white_contour"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
             android:textColor="@color/colorAccent"

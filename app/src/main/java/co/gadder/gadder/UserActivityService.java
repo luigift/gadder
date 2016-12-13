@@ -164,24 +164,30 @@ public class UserActivityService extends Service implements
 
     private void getLocation() throws SecurityException {
         location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        childUpdates.put("coordinates/latitude", location.getLatitude());
-        childUpdates.put("coordinates/longitude", location.getLongitude());
+        if (location != null) {
+            childUpdates.put("coordinates/latitude", location.getLatitude());
+            childUpdates.put("coordinates/longitude", location.getLongitude());
+        } else {
+            Log.d(TAG, "Turn on location");
+        }
     }
 
     private void getCity() {
         Geocoder gcd = new Geocoder(this, Locale.getDefault());
         List<Address> addresses;
-        try {
-            addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            if (addresses.size() > 0) {
-                String city = addresses.get(0).getLocality();
-                Log.d(TAG, "city: " + city);
-                childUpdates.put("city", city);
-                gotCity = true;
-                checkStopSelf();
+        if (location != null) {
+            try {
+                addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                if (addresses.size() > 0) {
+                    String city = addresses.get(0).getLocality();
+                    Log.d(TAG, "city: " + city);
+                    childUpdates.put("city", city);
+                    gotCity = true;
+                    checkStopSelf();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -235,55 +241,59 @@ public class UserActivityService extends Service implements
         Awareness.SnapshotApi.getWeather(mGoogleApiClient).setResultCallback(new ResultCallback<WeatherResult>() {
             @Override
             public void onResult(@NonNull WeatherResult weatherResult) {
-                int temperature = Math.round(weatherResult.getWeather().getTemperature(Weather.CELSIUS));
-                int[] conditions = weatherResult.getWeather().getConditions();
+                Weather weather = weatherResult.getWeather();
 
-                Log.d(TAG, "Temperature: " + temperature);
-                Log.d(TAG, "Conditions: " + "\n");
-                String textCondition = "";
+                if (weather != null) {
+                    int temperature = Math.round(weather.getTemperature(Weather.CELSIUS));
+                    int[] conditions = weather.getConditions();
 
-                List<String> weather = new ArrayList<String>();
-                for(int cond : conditions) {
-                    if (cond == Weather.CONDITION_CLEAR) {
-                        textCondition = Constants.CLEAR;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_FOGGY) {
-                        textCondition = Constants.FOGGY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_CLOUDY) {
-                        textCondition = Constants.CLOUDY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_HAZY) {
-                        textCondition = Constants.HAZY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_ICY) {
-                        textCondition = Constants.ICY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_RAINY) {
-                        textCondition = Constants.RAINY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_SNOWY) {
-                        textCondition = Constants.SNOWY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_STORMY) {
-                        textCondition = Constants.STORMY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_WINDY) {
-                        textCondition = Constants.WINDY;
-                        weather.add(textCondition);
-                    } else if (cond == Weather.CONDITION_UNKNOWN) {
-                        textCondition = Constants.UNKNOWN;
-                        weather.add(textCondition);
+                    Log.d(TAG, "Temperature: " + temperature);
+                    Log.d(TAG, "Conditions: " + "\n");
+                    String textCondition = "";
+
+                    List<String> condition = new ArrayList<String>();
+                    for (int cond : conditions) {
+                        if (cond == Weather.CONDITION_CLEAR) {
+                            textCondition = Constants.CLEAR;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_FOGGY) {
+                            textCondition = Constants.FOGGY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_CLOUDY) {
+                            textCondition = Constants.CLOUDY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_HAZY) {
+                            textCondition = Constants.HAZY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_ICY) {
+                            textCondition = Constants.ICY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_RAINY) {
+                            textCondition = Constants.RAINY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_SNOWY) {
+                            textCondition = Constants.SNOWY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_STORMY) {
+                            textCondition = Constants.STORMY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_WINDY) {
+                            textCondition = Constants.WINDY;
+                            condition.add(textCondition);
+                        } else if (cond == Weather.CONDITION_UNKNOWN) {
+                            textCondition = Constants.UNKNOWN;
+                            condition.add(textCondition);
+                        }
+                        Log.d(TAG, "            " + textCondition + "\n");
                     }
-                    Log.d(TAG, "            " + textCondition + "\n");
+
+                    childUpdates.put("weather", condition);
+                    childUpdates.put("temperature", temperature);
+
+                    gotWeather = true;
+                    checkStopSelf();
+                    Log.d(TAG, "weatherCheckStop");
                 }
-
-                childUpdates.put("weather", weather);
-                childUpdates.put("temperature", temperature);
-
-                gotWeather = true;
-                checkStopSelf();
-                Log.d(TAG, "weatherCheckStop");
             }
         });
     }

@@ -6,7 +6,7 @@
     <TextView
         android:layout_margin="16dp"
         android:layout_gravity="center"
-        android:text="@string/verifing_phone_message"
+        android:text="@string/verifying_phone_message"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

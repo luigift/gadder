@@ -113,6 +113,7 @@ public class InputFragment extends Fragment {
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                confirm.setEnabled(false);
                 Log.d(TAG, "confirmActivity");
                 mSendActivity.type = mActivity;
                 mSendActivity.description = mDescription.getText().toString();

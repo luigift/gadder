@@ -1,13 +1,20 @@
 package co.gadder.gadder;
 
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FloatingProfileFragment extends Fragment {
 
@@ -15,12 +22,14 @@ public class FloatingProfileFragment extends Fragment {
     // Required empty public constructor
     }
 
-    private MainActivity activity;
-
     static Friend mFriend;
+    static int clickCounting;
+
+    private MainActivity activity;
 
     public static FloatingProfileFragment newInstance(Friend friend) {
         mFriend = friend;
+        clickCounting = 0;
         return new FloatingProfileFragment();
     }
 
@@ -49,7 +58,33 @@ public class FloatingProfileFragment extends Fragment {
             }
         });
 
+        // Set name
         TextView name = (TextView) getActivity().findViewById(R.id.floatingProfileName);
         name.setText(mFriend.name);
+
+        // Set Image
+        CircleImageView image = (CircleImageView) getActivity().findViewById(R.id.floatingProfileImage);
+        if (mFriend.hasPictureUrl()) {
+            Picasso.with(getContext())
+                    .load(mFriend.pictureUrl)
+                    .into(image);
+        }
+
+        // Set unfollow button
+        CardView card = (CardView) getActivity().findViewById(R.id.floatingProfileCard);
+        card.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (clickCounting > 0) {
+                    activity.removeFriendship(mFriend.id);
+                    getFragmentManager().beginTransaction()
+                            .remove(FloatingProfileFragment.this)
+                            .commit();
+                } else {
+                    Snackbar.make(view, R.string.click_again_to_unfollow, Snackbar.LENGTH_LONG).show();
+                }
+                clickCounting += 1;
+            }
+        });
     }
 }
