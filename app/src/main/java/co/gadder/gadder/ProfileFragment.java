@@ -111,8 +111,6 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-
-
         Friend user = ((MainActivity) getActivity()).user;
         if (user != null) {
             setUser(user);

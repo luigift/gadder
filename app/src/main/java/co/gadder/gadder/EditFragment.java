@@ -71,6 +71,7 @@ public class EditFragment extends Fragment {
 
         user = ((MainActivity) getActivity()).user;
 
+
         final TextView editName = (TextView) getActivity().findViewById(R.id.editUserName);
         final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
 
@@ -92,8 +93,9 @@ public class EditFragment extends Fragment {
 
                     PermissionManager.requestReadStoragePermission(getActivity());
                     PermissionManager.requestWriteStoragePermission(getActivity());
-//                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, PermissionManager.REQUEST_STORAGE_PERMISSION);
+
                 } else {
+
                     Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
                     getIntent.setType("image/*");
 
@@ -109,36 +111,39 @@ public class EditFragment extends Fragment {
             }
         });
 
-        editName.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        if (user != null) {
 
+            editName.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    ((MainActivity) getActivity()).mDatabase
+                            .child(Constants.VERSION)
+                            .child(Constants.USERS)
+                            .child(user.id)
+                            .child("name")
+                            .setValue(charSequence.toString());
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
+                }
+            });
+
+            editName.setText(user.name);
+            if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
+                Picasso.with(getActivity())
+                        .load(user.pictureUrl)
+                        .into(editImage);
+            } else {
+                ImageView cameraButton = (ImageView) getActivity().findViewById(R.id.editCameraButton);
+                cameraButton.setColorFilter(R.color.colorAccent);
             }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                ((MainActivity)getActivity()).mDatabase
-                        .child(Constants.VERSION)
-                        .child(Constants.USERS)
-                        .child(user.id)
-                        .child("name")
-                        .setValue(charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
-
-        editName.setText(user.name);
-        if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
-            Picasso.with(getActivity())
-                    .load(user.pictureUrl)
-                    .into(editImage);
-        } else {
-            ImageView cameraButton = (ImageView) getActivity().findViewById(R.id.editCameraButton);
-            cameraButton.setColorFilter(R.color.colorAccent);
         }
     }
 

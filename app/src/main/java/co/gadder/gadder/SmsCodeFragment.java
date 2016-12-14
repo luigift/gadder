@@ -20,9 +20,11 @@ import android.telephony.SmsMessage;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -195,6 +197,33 @@ public class SmsCodeFragment extends Fragment {
             }
         });
 
+
+        // set enter button to behave as verify
+        code4.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
+                    String enteredCode
+                            = code1.getText().toString()
+                            + code2.getText().toString()
+                            + code3.getText().toString()
+                            + code4.getText().toString();
+
+                    if (enteredCode.equals(String.valueOf(mCode))) {
+                        createUserOrSignIn();
+                    } else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                                .setPositiveButton(R.string.try_again, null)
+                                .setTitle(R.string.wrong_code_title)
+                                .setMessage(R.string.wrong_code_message);
+                        builder.create().show();
+                    }
+                }
+
+                return false;
+            }
+        });
+
         TextView phoneBeingVerified = (TextView) getActivity().findViewById(R.id.phoneBeingVerified);
         phoneBeingVerified.setText(mPhone);
 
@@ -292,12 +321,15 @@ public class SmsCodeFragment extends Fragment {
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "signInWithCustomToken:onComplete:" + task.isSuccessful());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "signInWithCustomToken:onComplete:" + task.isSuccessful());
                         if (!task.isSuccessful()) {
-                            Log.w(TAG, "signInWithCustomToken", task.getException());
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "SignIn failed");
+                            FirebaseCrash.report(task.getException());
                         } else {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
+
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "User existent");
 
                                 Map<String, Object> childUpdates = new HashMap<>();
 
@@ -322,8 +354,12 @@ public class SmsCodeFragment extends Fragment {
                                 childUpdates.put(Constants.USERS + "/" + user.getUid() + "/", friend);
 
                                 // Add founders
-                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
-                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
+
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + user.getUid() + "/", true); // self
+
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "User set up");
 
                                 mDatabase
                                         .child(Constants.VERSION)
@@ -331,12 +367,14 @@ public class SmsCodeFragment extends Fragment {
                                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                                             @Override
                                             public void onComplete(@NonNull Task<Void> task) {
+                                                FirebaseCrash.logcat(Log.DEBUG, TAG, "User successfully created");
                                                 goToMainActivity();
                                             }
                                         })
                                         .addOnFailureListener(new OnFailureListener() {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
+                                                FirebaseCrash.logcat(Log.DEBUG, TAG, "Error creating user");
                                                 FirebaseCrash.report(e);
                                             }
                                         });

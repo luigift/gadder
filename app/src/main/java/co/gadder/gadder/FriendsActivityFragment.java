@@ -16,6 +16,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.crash.FirebaseCrash;
+
 public class FriendsActivityFragment extends Fragment {
     private final static String TAG = "FriendsActivityFragment";
 
@@ -56,11 +58,13 @@ public class FriendsActivityFragment extends Fragment {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-                                Log.d(TAG, "position: " + position + "size: " + activity.friends.size());
+
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
+
                                 Friend friend = adapter.getItem(position);
-                                if (friend.friendship.equals(getString(R.string.friend))){
+                                if (friend.friendship.equals(Friend.FRIEND)){
                                     activity.selectFriend(adapter.getItem(position));
-                                } else if (friend.friendship.equals(getString(R.string.contact))) {
+                                } else if (friend.friendship.equals(Friend.CONTACT)) {
                                     Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
                                     activity.requestFriendship(adapter.getItem(position).id);
                                 }

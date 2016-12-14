@@ -13,14 +13,14 @@
 
     <string name="find_friends">Find Friends</string>
 
-    <string name="add_friends_message">Find your friends by phone. Remember to put the phone in the international format.</string>
+    <string name="add_friends_message">Find your friends by phone. Remember to put the number in the international format (+CountryCode AreaCode Number).</string>
 
-    <string name="follow_request">Requesting follow</string>
+    <string name="follow_request">Sending friend request</string>
 
-    <string name="inbox_empty">You have no messages</string>
+    <string name="inbox_empty">Your inbox is empty ¯\_(ツ)_/¯</string>
 
     <string name="find_me">Find Me</string>
-    <string name="why_location">Gadder needs your location to save the world from the...</string>
+    <string name="why_location">Let\'s check if your friends are around</string>
 
     <!--Friendship status-->
     <string name="friend">friend</string>
@@ -28,9 +28,9 @@
 
     <string name="request_contacts">Add Friends</string>
 
-    <string name="hint_name">Nome</string>
+    <string name="hint_name">Name</string>
     <string name="hint_password">Password</string>
-    <string name="hint_email">nome@email.com</string>
+    <string name="hint_email">name@email.com</string>
     <string name="short_name">Name too short</string>
     <string name="short_password">Password too short</string>
 
@@ -40,10 +40,10 @@
     <string name="try_again">Try Again</string>
     <string name="wrong_code_title">Oops! Wrong Code!</string>
     <string name="charges_may_apply">Carrier SMS charges may apply</string>
-    <string name="verifying_phone_message">We are verifying the number\:</string>
+    <string name="verifying_phone_message">Verifying your phone number\:</string>
     <string name="enter_sms_code">Please enter the code you have received.</string>
     <string name="wrong_code_message">I\'m sorry but the code you have entered does not match.</string>
-    <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
+    <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code, area code and phone number.</string>
 
     <!--Profile Fragment-->
     <string name="hint_enter_name">Enter your name</string>
@@ -54,7 +54,7 @@
     <string name="weather_sharing">Weather Sharing</string>
     <string name="location_sharing">Location Sharing</string>
     <string name="activity_sharing">Activity Sharing</string>
-    <string name="sharing_warning">Disabling sharing reduces your and your friends experience inside the app, though it is not recommended</string>
+    <string name="sharing_warning">When you disable sharing function it takes away Gadder\'s magic :/ </string>
     <!--Notification Options-->
     <string name="friends_nearby">Friends Nearby</string>
     <string name="friends_request">Friends\' Requests</string>
@@ -88,7 +88,7 @@
 
     <string name="permissions">Permissions</string>
     <string name="title_get_permission">Location</string>
-    <string name="msg_get_permission">Your location is needed to determine whether or not did you come to class</string>
+    <string name="msg_get_permission">We need to know where you are if you want to see if your friends are around :)</string>
 
     <string name="ok">Ok</string>
     <string name="thanks">Thanks</string>
@@ -108,15 +108,15 @@
     <string name="notifications">Notifications</string>
 
     <!--Permission Fragment-->
-    <string name="contacts_permission_title">Friend Request</string>
-    <string name="location_permission_title">Location Request</string>
-    <string name="location_permission_message">We need your location to track and kill you</string>
-    <string name="contacts_permission_message">We need your friends for global domination HHAHAHAHAH</string>
+    <string name="contacts_permission_title">Friends on Gadder</string>
+    <string name="location_permission_title">Your location</string>
+    <string name="location_permission_message">Let\'s check if your friends are around you!</string>
+    <string name="contacts_permission_message">Let\'s check which of your friends are on Gadder too!</string>
 
     <!--Set Profile-->
-    <string name="set_profile_title">Profile Now!</string>
-    <string name="set_profile_message">Just saying you still don\'t have a name...</string>
-    <string name="angry_no">Not now or I\'ll uninstall the app</string>
+    <string name="set_profile_title">Your Profile</string>
+    <string name="set_profile_message">That map would look pretty with your picture and name on it ;) Tap on the box to setup your profile</string>
+    <string name="angry_no">Not now</string>
 
     <!--Activity Request Notification-->
     <string name="and">and</string>

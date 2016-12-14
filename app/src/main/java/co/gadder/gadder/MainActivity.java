@@ -130,9 +130,11 @@ public class MainActivity extends AppCompatActivity implements
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+                    MainActivity.this.user = new Friend();
+                    MainActivity.this.user.id = user.getUid();
+
                     if (loginState == null || !loginState.equals("friends")) {
                         loginState = "friends";
-
 //                        getColors();
 //                        setPrivacyButton();
 //                        displayPermissionDialog();
@@ -210,6 +212,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case PermissionManager.REQUEST_CONTACTS_PERMISSION:
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "request_contacts_permission");
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "contact permission granted");
@@ -227,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 break;
             case PermissionManager.REQUEST_LOCATION_PERMISSION:
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "request_location_permission");
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "contact permission granted");
@@ -619,10 +623,6 @@ public class MainActivity extends AppCompatActivity implements
                         if (user != null) {
                             user.id = dataSnapshot.getKey();
 
-                            if (user.name == null || user.name.isEmpty()) {
-                                requireUserInfo();
-                            }
-
                             if (activityFragment != null) {
                                 activityFragment.updateRecycler();
                             }
@@ -694,7 +694,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
                                                                     newFriend.id = dataSnapshot.getKey();
-                                                                    newFriend.friendship = getString(R.string.contact);
+                                                                    newFriend.friendship = Friend.CONTACT;
                                                                     if (newFriend.name == null || newFriend.name.isEmpty()) {
                                                                         newFriend.name = friend.name;
                                                                     }
@@ -795,10 +795,11 @@ public class MainActivity extends AppCompatActivity implements
                 Log.d(TAG, "onDataChange: " + dataSnapshot.toString());
                 final Friend friend = dataSnapshot.getValue(Friend.class);
                 if (friend != null) {
+
                     Log.d(TAG, "got friend: " + friend.name);
 
                     // Save friends
-                    friend.friendship = getString(R.string.friend);
+                    friend.friendship = Friend.FRIEND;
                     friend.id = dataSnapshot.getKey();
 
                     if(friends.containsKey(friend.id)) {
@@ -829,14 +830,16 @@ public class MainActivity extends AppCompatActivity implements
                     }
 
                     // Update after random time
-                    int time = 5000 * new Random().nextInt(10);
-                    Log.d(TAG, "update: " + friend.name + " after " + time);
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            requestUpdate(friend.id);
-                        }
-                    }, time);
+                    if (friend.id != null && user != null && user.id != null && !friend.id.equals(user.id)) {
+                        int time = 5000 * new Random().nextInt(10);
+                        Log.d(TAG, "update: " + friend.name + " after " + time);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                requestUpdate(friend.id);
+                            }
+                        }, time);
+                    }
                 }
             }
 

@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.crash.FirebaseCrash;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -126,7 +127,6 @@ public class FriendsMapFragment extends Fragment {
                     mMap.setMyLocationEnabled(false);
                 }
 
-
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                     @Override
                     public boolean onMarkerClick(Marker marker) {
@@ -136,11 +136,39 @@ public class FriendsMapFragment extends Fragment {
                         return true;
                     }
                 });
-
             }
         });
 
         return layout;
+    }
+
+    private Boolean checkSomeoneSharing() {
+        ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
+        for(Friend f : array) {
+            if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND))
+                return true;
+        }
+        return false;
+    }
+
+    private void iterateThroughFriends() {
+        Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
+        if (mMap != null && f != null) {
+
+            if (friendIterator >= activity.friends.size() - 1) {
+                friendIterator = 0;
+            } else {
+                friendIterator += 1;
+            }
+
+            if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
+            } else {
+                if (checkSomeoneSharing()) {
+                    iterateThroughFriends();
+                }
+            }
+        }
     }
 
     @Override
@@ -155,18 +183,7 @@ public class FriendsMapFragment extends Fragment {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
-                if (mMap != null) {
-                    if (f.isSharingLocation()) {
-                        mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
-                    }
-
-                    if (friendIterator >= activity.friends.size() - 1) {
-                        friendIterator = 0;
-                    } else {
-                        friendIterator += 1;
-                    }
-                }
+            iterateThroughFriends();
             }
         });
 
@@ -293,6 +310,7 @@ public class FriendsMapFragment extends Fragment {
                             .into(markerImage, new Callback() {
                                 @Override
                                 public void onSuccess() {
+                                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onSu");
                                     addMarker(friend);
                                 }
 

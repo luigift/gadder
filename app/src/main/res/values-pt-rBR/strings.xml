@@ -7,123 +7,123 @@
     <string name="country_code">country_code</string>
     <string name="preference_file_key">co.gadder.gadder.PREFERENCE_FILE_KEY</string>
 
-    <string name="terms_of_service">Terms of Service</string>
+    <string name="terms_of_service">Termos de Uso</string>
     <string name="sign_in_warning">By signing in, you agree with our </string>
-    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy">Política de Privacidade</string>
 
-    <string name="find_friends">Find Friends</string>
+    <string name="find_friends">Encontrar meus amigos</string>
 
-    <string name="add_friends_message">Find your friends by phone. Remember to put the phone in the international format.</string>
+    <string name="add_friends_message">Encontre seus amigos pelo número de telefone. Lembre-se de colocar no formato internacional (+Código do País, Código na região e número do telefone).</string>
 
-    <string name="follow_request">Requesting follow</string>
+    <string name="follow_request">Solicitando amizade</string>
 
-    <string name="inbox_empty">You have no messages</string>
+    <string name="inbox_empty">Sua caixa está vázia ¯\_(ツ)_/¯</string>
 
-    <string name="find_me">Find Me</string>
-    <string name="why_location">Gadder needs your location to save the world from the...</string>
+    <string name="find_me">Me encontre</string>
+    <string name="why_location">Vamos ver se tem algum amigo por perto?</string>
 
     <!--Friendship status-->
-    <string name="friend">friend</string>
-    <string name="contact">contact</string>
+    <string name="friend">Amigo</string>
+    <string name="contact">contato</string>
 
-    <string name="request_contacts">Add Friends</string>
+    <string name="request_contacts">Adicionar amigos</string>
 
     <string name="hint_name">Nome</string>
-    <string name="hint_password">Password</string>
+    <string name="hint_password">Senha</string>
     <string name="hint_email">nome@email.com</string>
-    <string name="short_name">Name too short</string>
-    <string name="short_password">Password too short</string>
+    <string name="short_name">Coloque um nome com no mínimo 6 caracteres</string>
+    <string name="short_password">Coloque uma senha no mínimo 6 caracteres</string>
 
     <!--Verify SMS-->
-    <string name="verify">Verify</string>
-    <string name="send_sms">Send SMS</string>
-    <string name="try_again">Try Again</string>
-    <string name="wrong_code_title">Oops! Wrong Code!</string>
-    <string name="charges_may_apply">Carrier SMS charges may apply</string>
-    <string name="verifying_phone_message">We are verifying the number\:</string>
-    <string name="enter_sms_code">Please enter the code you have received.</string>
-    <string name="wrong_code_message">I\'m sorry but the code you have entered does not match.</string>
-    <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code and phone number.</string>
+    <string name="verify">Verificar</string>
+    <string name="send_sms">Enviar SMS</string>
+    <string name="try_again">Tentar novamente</string>
+    <string name="wrong_code_title">Oops! Código inválido!</string>
+    <string name="charges_may_apply">Encargos extras podem ser aplicados</string>
+    <string name="verifying_phone_message">Verificando o número do telefone</string>
+    <string name="enter_sms_code">Digite o código que você recebeu</string>
+    <string name="wrong_code_message">Desculpe, esse código não é igual ao código enviado</string>
+    <string name="explaining_verification">Gadder enviará um SMS para verificar seu número de telefone. Digite o código do seu país e o seu número de telefone.</string>
 
     <!--Profile Fragment-->
-    <string name="hint_enter_name">Enter your name</string>
+    <string name="hint_enter_name">Digite seu nome ou apelido</string>
     <!--Sharing Options-->
-    <string name="music_sharing">Music Sharing</string>
-    <string name="battery_sharing">Battery Sharing</string>
-    <string name="company_sharing">Company Sharing</string>
-    <string name="weather_sharing">Weather Sharing</string>
-    <string name="location_sharing">Location Sharing</string>
-    <string name="activity_sharing">Activity Sharing</string>
-    <string name="sharing_warning">Disabling sharing reduces your and your friends experience inside the app, though it is not recommended</string>
+    <string name="music_sharing">Compartilhar música</string>
+    <string name="battery_sharing">Compartilhar nível de bateria</string>
+    <string name="company_sharing">Compartilhar companhia</string>
+    <string name="weather_sharing">Compartilhar Clima</string>
+    <string name="location_sharing">Compartilhar localização</string>
+    <string name="activity_sharing">Compartilhar atividades</string>
+    <string name="sharing_warning">Deixando de compartilhar seus dados, a magia do Gadder diminui :/</string>
     <!--Notification Options-->
-    <string name="friends_nearby">Friends Nearby</string>
-    <string name="friends_request">Friends\' Requests</string>
+    <string name="friends_nearby">Amigos Próximos</string>
+    <string name="friends_request">Solicitações de amizade</string>
 
     <!--Map Fragment-->
     <string name="degrees">°C</string>
 
     <!--Input Activity-->
-    <string name="activity_input">What are you doing?</string>
+    <string name="activity_input">O que você está fazendo agora?</string>
     <!--Info types-->
-    <string name="name">Name</string>
-    <string name="city">City</string>
-    <string name="music">Music</string>
-    <string name="battery">Battery</string>
-    <string name="weather">Weather</string>
-    <string name="company">Company</string>
-    <string name="location">Location</string>
-    <string name="activity">Activity</string>
-    <string name="last_update">Last Update</string>
-    <string name="temperature">Temperature</string>
+    <string name="name">Nome</string>
+    <string name="city">Cidade</string>
+    <string name="music">Música</string>
+    <string name="battery">Nível de Bateria</string>
+    <string name="weather">Clima</string>
+    <string name="company">Companhia</string>
+    <string name="location">Localização</string>
+    <string name="activity">Atividade</string>
+    <string name="last_update">Última atualização</string>
+    <string name="temperature">Temperatura</string>
 
     <!--Time lapse-->
-    <string name="days">Days</string>
-    <string name="hours">Hours</string>
-    <string name="months">Months</string>
-    <string name="minutes">Minutes</string>
-    <string name="seconds">Seconds</string>
+    <string name="days">Dias</string>
+    <string name="hours">Horas</string>
+    <string name="months">Meses</string>
+    <string name="minutes">Minutos</string>
+    <string name="seconds">Segundos</string>
 
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
-    <string name="permissions">Permissions</string>
-    <string name="title_get_permission">Location</string>
-    <string name="msg_get_permission">Your location is needed to determine whether or not did you come to class</string>
+    <string name="permissions">Permissões</string>
+    <string name="title_get_permission">Localização</string>
+    <string name="msg_get_permission">Precisamos da localização para saber se seus amigos estão por perto :)</string>
 
     <string name="ok">Ok</string>
-    <string name="thanks">Thanks</string>
-    <string name="logout"><b>Logout</b></string>
+    <string name="thanks">Obrigado</string>
+    <string name="logout"><b>Sair</b></string>
 
-    <string name="click_again_to_logout">Click again to logout</string>
-    <string name="click_again_to_unfollow">Click again to unfriend</string>
+    <string name="click_again_to_logout">Aperte novamente para sair</string>
+    <string name="click_again_to_unfollow">Aperte novamente para desfazer amizade</string>
 
-    <string name="auth_failed">Authorization Failed!</string>
+    <string name="auth_failed">Autorização Falhou!</string>
 
-    <string name="sign_in_first">Sign in first</string>
+    <string name="sign_in_first">Entrar primeiro</string>
 
-    <string name="sign_in">Sign In</string>
-    <string name="sign_up">Sign Up</string>
-    <string name="sign_out">Sign Out</string>
+    <string name="sign_in">Entrar</string>
+    <string name="sign_up">Registrar</string>
+    <string name="sign_out">Sair</string>
 
-    <string name="notifications">Notifications</string>
+    <string name="notifications">Notificações</string>
 
     <!--Permission Fragment-->
-    <string name="contacts_permission_title">Friend Request</string>
-    <string name="location_permission_title">Location Request</string>
-    <string name="location_permission_message">We need your location to track and kill you</string>
-    <string name="contacts_permission_message">We need your friends for global domination HHAHAHAHAH</string>
+    <string name="contacts_permission_title">Amigos no Gadder</string>
+    <string name="location_permission_title">Sua localização</string>
+    <string name="location_permission_message">Vamos ver se seus amigos estão por perto?</string>
+    <string name="contacts_permission_message">Vamos ver quais amigos estão no Gadder também?</string>
 
     <!--Set Profile-->
-    <string name="set_profile_title">Profile Now!</string>
-    <string name="set_profile_message">Just saying you still don\'t have a name...</string>
-    <string name="angry_no">Not now or I\'ll uninstall the app</string>
+    <string name="set_profile_title">Seu Perfil</string>
+    <string name="set_profile_message">Esse mapa ia ficar bonitão com a sua foto e seu nome ;) Clique na caixinha para editar seu perfil</string>
+    <string name="angry_no">Mais tarde</string>
 
     <!--Activity Request Notification-->
-    <string name="and">and</string>
-    <string name="other_friends">other friends</string>
-    <string name="request_friendship">wants to follow you on</string>
-    <string name="request_friend_activity_title">What are you up to?!</string>
-    <string name="request_friend_activity_message"> wants to know what you are doing now!</string>
+    <string name="and">e</string>
+    <string name="other_friends">outros amigos</string>
+    <string name="request_friendship">solicitaram amizade</string>
+    <string name="request_friend_activity_title">O que você está fazendo agora?</string>
+    <string name="request_friend_activity_message"> quer saber o que você está fazendo agora!</string>
 
     <!-- Geofence strings -->
     <string name="geofences_added">Geofences added</string>
@@ -140,90 +140,90 @@
     <string name="geofence_too_many_pending_intents">You have provided too many PendingIntents to the addGeofences() call</string>
 
     <!--Activities types-->
-    <string name="games">Games</string>
-    <string name="recent">Recent</string>
-    <string name="sports">Sports</string>
-    <string name="nightlife">Nightlife</string>
-    <string name="places">places</string>
-    <string name="miscellaneous">miscellaneous</string>
+    <string name="games">Jogos</string>
+    <string name="recent">Recentes</string>
+    <string name="sports">Esportes</string>
+    <string name="nightlife">Rolês</string>
+    <string name="places">Lugares</string>
+    <string name="miscellaneous">Diversos</string>
 
     <!--Weather-->
-    <string name="clear">Clear</string>
-    <string name="foggy">Foggy</string>
-    <string name="snowy">Snowy</string>
-    <string name="cloudy">Cloudy</string>
-    <string name="hazy">Hazy</string>
-    <string name="icy">Icy</string>
-    <string name="rainy">Rainy</string>
-    <string name="stormy">Stormy</string>
-    <string name="windy">Windy</string>
-    <string name="unknown">Unknown</string>
+    <string name="clear">Aberto</string>
+    <string name="foggy">Neblina</string>
+    <string name="snowy">Nevando</string>
+    <string name="cloudy">Nublado</string>
+    <string name="hazy">Névoa</string>
+    <string name="icy">Gelo</string>
+    <string name="rainy">Chuvoso</string>
+    <string name="stormy">Tempestade</string>
+    <string name="windy">Ventania</string>
+    <string name="unknown">Desconhecido</string>
 
     <!--Places-->
-    <string name="concert">Concert</string>
-    <string name="home">Home</string>
-    <string name="movie">Movie</string>
-    <string name="park">Park</string>
-    <string name="school">School</string>
-    <string name="shopping">Shopping</string>
-    <string name="theater">Theater</string>
-    <string name="university">University</string>
-    <string name="work">Work</string>
+    <string name="concert">Show</string>
+    <string name="home">Casa</string>
+    <string name="movie">Filme</string>
+    <string name="park">Parque</string>
+    <string name="school">Escola</string>
+    <string name="shopping">Compras</string>
+    <string name="theater">Teatro</string>
+    <string name="university">Universidade</string>
+    <string name="work">Trabalho</string>
     <string name="bar">Bar</string>
-    <string name="party">Party</string>
+    <string name="party">Festa</string>
 
     <!--Sports-->
-    <string name="gym">Gym</string>
+    <string name="gym">Academia</string>
     <string name="surf">Surf</string>
     <string name="golf">Golf</string>
-    <string name="dance">Dance</string>
+    <string name="dance">Dança</string>
     <string name="rugby">Rugby</string>
-    <string name="tennis">Tennis</string>
-    <string name="soccer">Soccer</string>
-    <string name="running">Running</string>
-    <string name="cycling">Cycling</string>
-    <string name="bowling">Bowling</string>
-    <string name="swimming">Swimming</string>
-    <string name="football">Football</string>
+    <string name="tennis">Tênis</string>
+    <string name="soccer">Futebol</string>
+    <string name="running">Corrida</string>
+    <string name="cycling">Bicicleta</string>
+    <string name="bowling">Boliche</string>
+    <string name="swimming">Natação</string>
+    <string name="football">Futebol Americano</string>
     <string name="baseball">Baseball</string>
-    <string name="basketball">Basketball</string>
-    <string name="table_tennis">Table Tennis</string>
+    <string name="basketball">Basquete</string>
+    <string name="table_tennis">Ping Pong</string>
 
     <!--Music-->
-    <string name="base">Base</string>
-    <string name="drums">Drums</string>
-    <string name="guitar">Guitar</string>
-    <string name="jam">Jam</string>
-    <string name="violin">Violin</string>
+    <string name="base">Baixo</string>
+    <string name="drums">Bateria</string>
+    <string name="guitar">Guitarra</string>
+    <string name="jam">Somzera</string>
+    <string name="violin">Violino</string>
     <string name="piano">Piano</string>
     <string name="sax">Sax</string>
-    <string name="singing">Singing</string>
-    <string name="trumpet">Trumpet</string>
-    <string name="musical_keyboard">Keyboard</string>
+    <string name="singing">Cantando</string>
+    <string name="trumpet">Trumpete</string>
+    <string name="musical_keyboard">Teclado</string>
 
     <!--Games-->
     <string name="rpg">RPG</string>
-    <string name="chess">Chess</string>
-    <string name="cards">Cards</string>
-    <string name="billiards">Billiards</string>
+    <string name="chess">Xadrez</string>
+    <string name="cards">Cartas</string>
+    <string name="billiards">Sinuca</string>
     <string name="video_game">Video Game</string>
 
     <!--Food-->
     <string name="sushi">Sushi</string>
-    <string name="barbecue">Barbecue</string>
-    <string name="burger">Burger</string>
+    <string name="barbecue">Churrasco</string>
+    <string name="burger">Hamburger</string>
 
 
     <!--Miscellaneous-->
-    <string name="toilet">Toilet</string>
-    <string name="smoking">Smoking</string>
-    <string name="showering">Showering</string>
+    <string name="toilet">Banheiro</string>
+    <string name="smoking">Fumando</string>
+    <string name="showering">Tomando banho</string>
 
     <!--Hobbies-->
-    <string name="painting">Painting</string>
+    <string name="painting">Pintando</string>
 
 
-    <string name="privacy_policy_title">Gadder - Privacy Policy</string>
+    <string name="privacy_policy_title">Gadder - Política de Privacidade</string>
     <string name="privacy_policy_content">
 Your privacy is critically important to us. Our privacy policy will explain how personal information is collected, used and disclosed by Gadder application and services. If you have questions or complaints regarding our privacy policy or practices, please contact us at gadderapp@gmail.com. Our privacy policy may be modified from time-to-time. We will alert you that changes have been made by indicating on our privacy policy the date it was last updated. If we make any material changes we will notify you by email or by means of a notice on this web site prior to the change becoming effective. We encourage you to periodically review this page for the latest information on our privacy practices.
 1. What is Personal Information?

@@ -21,6 +21,9 @@ public class Friend {
 
     private static final String TAG = "Friend";
 
+    public static final String FRIEND = "friend";
+    public static final String CONTACT = "contact";
+
     public static class Music {
         public Music() {
             song = "";
