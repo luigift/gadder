@@ -354,10 +354,8 @@ public class SmsCodeFragment extends Fragment {
                                 childUpdates.put(Constants.USERS + "/" + user.getUid() + "/", friend);
 
                                 // Add founders
-                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
-//                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
-
                                 childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + user.getUid() + "/", true); // self
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
 
                                 FirebaseCrash.logcat(Log.DEBUG, TAG, "User set up");
 

@@ -193,9 +193,9 @@ public class InputFragment extends Fragment {
                         public void onItemClick(View view, int position) {
                             ActivityRecyclerAdapter adapter = (ActivityRecyclerAdapter) recycler.getAdapter();
                             GadderActivities.GadderActivity item = adapter.getItem(position);
+                            mActivity = item.type;
                             mImage.setText(item.emoji);
-                            mActivity = getString(item.description);
-                            mDescription.setText(mActivity);
+                            mDescription.setText(getString(item.description));
                         }
 
                         @Override

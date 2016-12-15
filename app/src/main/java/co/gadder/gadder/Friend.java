@@ -108,11 +108,11 @@ public class Friend {
     public Coordinates coordinates = new Coordinates();
     public Notifications notification = new Notifications();
 
-    public LatLng getLatLng() {
+    protected LatLng getLatLng() {
         return new LatLng(coordinates.latitude,coordinates.longitude);
     }
 
-    public Location getLocation() {
+    protected Location getLocation() {
         if (coordinates.latitude == null || coordinates.longitude == null)
             throw new AssertionError();
 
@@ -127,11 +127,11 @@ public class Friend {
 //        return new SimpleDateFormat(Constants.DATE_FORMAT).parse(lastUpdate);
 //    }
 
-    public Boolean isSharingLocation() {
+    protected Boolean isSharingLocation() {
         return sharing != null && sharing.locationSharing != null && sharing.locationSharing;
     }
 
-    public Boolean hasPictureUrl() {
+    protected Boolean hasPictureUrl() {
         return pictureUrl != null && !pictureUrl.isEmpty();
     }
 

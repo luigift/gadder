@@ -13,6 +13,7 @@ android {
     buildToolsVersion "24.0.1"
     defaultConfig {
         applicationId "co.gadder.gadder"
+
         minSdkVersion 14
         targetSdkVersion 25
         versionCode 4

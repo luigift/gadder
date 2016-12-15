@@ -13,7 +13,7 @@
 
     <string name="find_friends">Encontrar meus amigos</string>
 
-    <string name="add_friends_message">Encontre seus amigos pelo número de telefone. Lembre-se de colocar no formato internacional (+Código do País, Código na região e número do telefone).</string>
+    <string name="add_friends_message">Encontre seus amigos pelo número de telefone. Lembre-se de colocar no formato internacional (Código do País, Código na região e número do telefone).</string>
 
     <string name="follow_request">Solicitando amizade</string>
 
@@ -46,7 +46,7 @@
     <string name="explaining_verification">Gadder enviará um SMS para verificar seu número de telefone. Digite o código do seu país e o seu número de telefone.</string>
 
     <!--Profile Fragment-->
-    <string name="hint_enter_name">Digite seu nome ou apelido</string>
+    <string name="hint_enter_name">Qual o seu nome?</string>
     <!--Sharing Options-->
     <string name="music_sharing">Compartilhar música</string>
     <string name="battery_sharing">Compartilhar nível de bateria</string>
