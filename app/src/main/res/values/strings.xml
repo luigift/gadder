@@ -17,7 +17,7 @@
 
     <string name="follow_request">Sending friend request</string>
 
-    <string name="inbox_empty">Your inbox is empty ¯\_(ツ)_/¯</string>
+    <string name="inbox_empty">Your inbox is empty ¯\\_(ツ)_/¯</string>
 
     <string name="find_me">Find Me</string>
     <string name="why_location">Let\'s check if your friends are around</string>
@@ -121,7 +121,7 @@
     <!--Activity Request Notification-->
     <string name="and">and</string>
     <string name="other_friends">other friends</string>
-    <string name="request_friendship">wants to follow you on</string>
+    <string name="request_friendship">wants to be your friend on</string>
     <string name="request_friend_activity_title">What are you up to?!</string>
     <string name="request_friend_activity_message"> wants to know what you are doing now!</string>
 

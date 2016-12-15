@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements
     private static final String FRAGMENT_LOCATION_TAG = "fragment_location_tag";
     private static final String FRAGMENT_CONTACTS_TAG = "fragment_contacts_tag";
 
+    private static final int MESSAGE_COLOR = Color.argb(255,33,34,89);
     private static final int SELECTION_COLOR = Color.argb(0,33,34,89);
 
     // Time
@@ -87,6 +88,10 @@ public class MainActivity extends AppCompatActivity implements
     // Friends & Contacts
     protected Set<String> tokens;
     protected Map<String, Friend> friends;
+
+    // Listeners
+    protected ValueEventListener userListener;
+    protected ChildEventListener friendsListener;
     protected Map<String, ValueEventListener> listeners;
 
     protected String loginState = null;
@@ -124,6 +129,15 @@ public class MainActivity extends AppCompatActivity implements
         mStorage = FirebaseStorage.getInstance().getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
+        hideKeyboard();
+        setActivityButton();
+        listenToCoordinatorExpansion();
+        setViewPager();
+        getMapFragment();
+//        getColors();
+//        setPrivacyButton();
+//        displayPermissionDialog();
+
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -135,27 +149,22 @@ public class MainActivity extends AppCompatActivity implements
 
                     if (loginState == null || !loginState.equals("friends")) {
                         loginState = "friends";
-//                        getColors();
-//                        setPrivacyButton();
-//                        displayPermissionDialog();
 
-                        hideKeyboard();
-                        setActivityButton();
-                        getMapFragment();
-                        syncFriends(user.getUid());
-                        syncUserProfile(user.getUid());
                         requestLocationPermission();
                         requestContactsPermission();
-                        updateUser();
-                        setViewPager();
 
-                        listenToCoordinatorExpansion();
+                        addUserListener(user.getUid());
+                        addFriendsListener(user.getUid());
+
+                        updateUser();
+
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                getFriendsFromContacts();
+//                                getFriendsFromContacts();
                             }
-                        }, 5000);
+                        }, 25000);
+
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -178,12 +187,31 @@ public class MainActivity extends AppCompatActivity implements
     protected void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
+
+        // Add Database listeners
+        if (user != null) {
+            addUserListener(user.id);
+            addFriendsListener(user.id);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
+
+        // Remove Database listeners
+        removeUserListener();
+        removeFriendsListener();
+        removeAllChildFriendListeners();
+
+        // Pause all volley requests than send remove notification
+        RequestManager.getInstance(MainActivity.this).cancelAllRequests();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RequestManager.getInstance(MainActivity.this).sendRemoveNotificationRequest(tokens);
+            }
+        }, 5000);
     }
 
     @Override
@@ -398,6 +426,7 @@ public class MainActivity extends AppCompatActivity implements
             notification.setImageBitmap(Constants.textAsBitmap(Objects.OPEN_MAIL_BOX_WITH_RAISED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
         } else {
             notification.clearColorFilter();
+            notification.setColorFilter(SELECTION_COLOR);
             notification.setImageBitmap(Constants.textAsBitmap(Objects.CLOSED_MAIL_BOX_WITH_LOWERED_FLAG, Constants.NAVIGATION_EMOJI_SIZE, Color.WHITE));
         }
     }
@@ -505,14 +534,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void selectFriend(Friend friend) {
-        if (friend.sharing != null && friend.sharing.locationSharing != null && friend.sharing.locationSharing) {
+        if (friend != null && friend.sharing != null && friend.sharing.locationSharing != null && friend.sharing.locationSharing) {
             appBarLayout.setExpanded(true, true);
             appBarExpanded = true;
             if (mapFragment != null) {
                 mapFragment.focusFriend(friend);
             }
-        } else {
-
         }
     }
 
@@ -552,6 +579,38 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
         }
+
+        notifyFriendshipRequest(friendId);
+    }
+
+    private void notifyFriendshipRequest(final String uid) {
+        Log.d(TAG, "requestUpdate: " + uid);
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USER_TOKEN)
+                .child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        FirebaseCrash.log("gotToken");
+
+                        String token = dataSnapshot.getValue(String.class);
+                        Log.d(TAG, "User: " + uid + " token: " + token);
+                        if (token != null) {
+                            tokens.add(token);
+
+                            RequestManager
+                                    .getInstance(MainActivity.this)
+                                    .sendFriendshipRequestNotification(token, user.name, user.pictureUrl);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d(TAG, "Canceled uid:token request: " + uid);
+                        FirebaseCrash.report(new Throwable(databaseError.toString()));
+                    }
+                });
     }
 
     public void removeFriendship(String uid) {
@@ -570,83 +629,14 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
         }
+
+
     }
 
     private void updateUser() {
         FirebaseCrash.log("updateUser");
 
         startService(new Intent(MainActivity.this, UserActivityService.class));
-    }
-
-    private void requestUpdate(final String uid) {
-        Log.d(TAG, "requestUpdate: " + uid);
-        mDatabase
-                .child(Constants.VERSION)
-                .child(Constants.USER_TOKEN)
-                .child(uid)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        FirebaseCrash.log("gotToken");
-
-                        String token = dataSnapshot.getValue(String.class);
-                        Log.d(TAG, "User: " + uid + " token: " + token);
-                        if (token != null) {
-                            tokens.add(token);
-
-                            RequestManager
-                                    .getInstance(MainActivity.this)
-                                    .sendUpdateRequest(token, user.name, user.pictureUrl);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.d(TAG, "Canceled uid:token request: " + uid);
-                        FirebaseCrash.report(new Throwable(databaseError.toString()));
-                    }
-                });
-    }
-
-    public void syncUserProfile(final String uid) {
-        mDatabase
-                .child(Constants.VERSION)
-                .child(Constants.USERS)
-                .child(uid)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        FirebaseCrash.log("gotUser");
-
-                        Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
-                        user = dataSnapshot.getValue(Friend.class);
-                        if (user != null) {
-                            user.id = dataSnapshot.getKey();
-
-                            if (activityFragment != null) {
-                                activityFragment.updateRecycler();
-                            }
-
-                            if (profileFragment != null) {
-                                profileFragment.setUser(user);
-                            }
-
-                            // set activity to fab
-                            if (user.activity != null && user.activity.type != null) {
-                                final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.activityFab);
-                                GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(user.activity.type);
-                                if (fab != null && act != null ) {
-                                    fab.setImageBitmap(Constants.textAsBitmap(act.emoji, Constants.EMOJI_SIZE, Color.WHITE));
-                                }
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        FirebaseCrash.report(new Throwable(databaseError.toString()));
-                    }
-                });
     }
 
     private void getFriendsFromContacts() {
@@ -728,62 +718,167 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void syncFriends(String uid) {
-        Log.d(TAG, "syncFriends");
-        if (!friendsDownloaded) {
+    private void requestUpdate(final String uid) {
+        Log.d(TAG, "requestUpdate: " + uid);
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USER_TOKEN)
+                .child(uid)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        FirebaseCrash.log("gotToken");
+
+                        String token = dataSnapshot.getValue(String.class);
+                        Log.d(TAG, "User: " + uid + " token: " + token);
+                        if (token != null) {
+                            tokens.add(token);
+
+                            RequestManager
+                                    .getInstance(MainActivity.this)
+                                    .sendUpdateRequest(token, user.name, user.pictureUrl);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.d(TAG, "Canceled uid:token request: " + uid);
+                        FirebaseCrash.report(new Throwable(databaseError.toString()));
+                    }
+                });
+    }
+
+    private ValueEventListener getUserListener() {
+        if (userListener == null) {
+            userListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    FirebaseCrash.log("gotUser");
+
+                    Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
+                    user = dataSnapshot.getValue(Friend.class);
+                    if (user != null) {
+                        user.id = dataSnapshot.getKey();
+
+                        if (activityFragment != null) {
+                            activityFragment.updateRecycler();
+                        }
+
+                        if (profileFragment != null) {
+                            profileFragment.setUser(user);
+                        }
+
+                        // set activity to fab
+                        if (user.activity != null && user.activity.type != null) {
+                            final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.activityFab);
+                            GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(user.activity.type);
+                            if (fab != null && act != null ) {
+                                fab.setImageBitmap(Constants.textAsBitmap(act.emoji, Constants.EMOJI_SIZE, Color.WHITE));
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    FirebaseCrash.report(new Throwable(databaseError.toString()));
+                }
+            };
+        }
+        return userListener;
+    }
+
+    private void addUserListener(final String uid) {
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(uid)
+                .addValueEventListener(getUserListener());
+    }
+
+    private void removeUserListener() {
+        if (user != null) {
             mDatabase
                     .child(Constants.VERSION)
-                    .child(Constants.USER_FRIENDS)
-                    .child(uid)
-                    .addChildEventListener(new ChildEventListener() {
-                        @Override
-                        public void onChildAdded(DataSnapshot snap, String s) {
-                            Log.d(TAG, "onChildAdded: " + snap.toString());
-                            if ((Boolean) snap.getValue()) {
-                                requestUpdate(snap.getKey());
-                                addFriendListener(snap.getKey());
-                            }
-                            friendsDownloaded = true;
-                        }
-
-                        @Override
-                        public void onChildChanged(DataSnapshot snap, String s) {
-                            Log.d(TAG, "onChildChanged: " + snap.toString());
-                            if ((Boolean) snap.getValue()) {
-                                addFriendListener(snap.getKey());
-                            } else {
-                                removeFriendListener(snap.getKey());
-                            }
-                        }
-
-                        @Override
-                        public void onChildRemoved(DataSnapshot snap) {
-                            Log.d(TAG, "onChildRemoved: " + snap.toString());
-                            removeFriendListener(snap.getKey());
-                        }
-
-                        @Override
-                        public void onChildMoved(DataSnapshot snap, String s) {
-                            Log.d(TAG, "onChildMoved: " + snap.toString());
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            friendsDownloaded = false;
-                        }
-                    });
+                    .child(Constants.USERS)
+                    .child(user.id)
+                    .addValueEventListener(getUserListener());
         }
     }
 
-    private void removeFriendListener(String uid) {
+    private ChildEventListener getFriendsListener() {
+        if (friendsListener == null) {
+            friendsListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot snap, String s) {
+                    Log.d(TAG, "onChildAdded: " + snap.toString());
+                    if ((Boolean) snap.getValue()) {
+                        requestUpdate(snap.getKey());
+                        addChildFriendListener(snap.getKey());
+                    }
+                    friendsDownloaded = true;
+                }
+
+                @Override
+                public void onChildChanged(DataSnapshot snap, String s) {
+                    Log.d(TAG, "onChildChanged: " + snap.toString());
+                    if ((Boolean) snap.getValue()) {
+                        addChildFriendListener(snap.getKey());
+                    } else {
+                        removeChildFriendListener(snap.getKey());
+                    }
+                }
+
+                @Override
+                public void onChildRemoved(DataSnapshot snap) {
+                    Log.d(TAG, "onChildRemoved: " + snap.toString());
+                    removeChildFriendListener(snap.getKey());
+                }
+
+                @Override
+                public void onChildMoved(DataSnapshot snap, String s) {
+                    Log.d(TAG, "onChildMoved: " + snap.toString());
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    friendsDownloaded = false;
+                }
+            };
+        }
+        return friendsListener;
+    }
+
+    private void removeFriendsListener() {
+        if (user != null) {
+            Log.d(TAG, "unsyncFriend");
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USER_FRIENDS)
+                    .child(user.id)
+                    .removeEventListener(getFriendsListener());
+        }
+    }
+
+    private void addFriendsListener(String uid) {
+        Log.d(TAG, "addFriendsListener");
+
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USER_FRIENDS)
+                .child(uid)
+                .addChildEventListener(getFriendsListener());
+    }
+
+    private void removeChildFriendListener(String uid) {
         friends.remove(uid);
         listeners.remove(uid);
     }
 
-    private void addFriendListener(String uid) {
-        FirebaseCrash.log("addFriendListener");
+    private void addChildFriendListener(String uid) {
+        FirebaseCrash.log("addChildFriendListener");
 
-        Log.d(TAG, "addFriendListener: " + friends.size());
+        Log.d(TAG, "addChildFriendListener: " + friends.size());
 
         if (activityFragment != null) {
             activityFragment.hideProgressBar();
@@ -829,9 +924,9 @@ public class MainActivity extends AppCompatActivity implements
                         activityFragment.updateRecycler();
                     }
 
-                    // Update after random time
-                    if (friend.id != null && user != null && user.id != null && !friend.id.equals(user.id)) {
-                        int time = 5000 * new Random().nextInt(10);
+                    // Update friends after random time
+                    if (friend.id != null && user != null && user.id != null && !friend.id.equals(user.id) && friend.friendship.equals(Friend.FRIEND)) {
+                        int time = 5000 * (new Random().nextInt(10) + 1);
                         Log.d(TAG, "update: " + friend.name + " after " + time);
                         new Handler().postDelayed(new Runnable() {
                             @Override
@@ -856,6 +951,16 @@ public class MainActivity extends AppCompatActivity implements
                 .addValueEventListener(listener);
 
         listeners.put(uid, listener);
+    }
+
+    private void removeAllChildFriendListeners() {
+        for (String uid : listeners.keySet()) {
+            mDatabase
+                    .child(Constants.VERSION)
+                    .child(Constants.USERS)
+                    .child(uid)
+                    .removeEventListener(listeners.get(uid));
+        }
     }
 
     ////////////////////// GEOFENCES //////////////////////

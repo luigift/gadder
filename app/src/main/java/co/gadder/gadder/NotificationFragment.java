@@ -95,6 +95,7 @@ public class NotificationFragment extends Fragment {
                 protected void populateViewHolder(final FriendRequestViewHolder viewHolder, String model, final int position) {
                     message.setVisibility(View.GONE);
                     noNotifications += 1;
+                    Log.d(TAG, "noNotifications: " + noNotifications);
                     activity.setNotificationListener(noNotifications);
 
                     Log.d("populateViewHolder", "model : " + model);
@@ -147,6 +148,8 @@ public class NotificationFragment extends Fragment {
                             .removeValue();
 
                     noNotifications -=1;
+                    activity.setNotificationListener(noNotifications);
+                    Log.d(TAG, "noNotifications: " + noNotifications);
                 }
 
                 private void setFriendship(Boolean value, int position) {

@@ -177,7 +177,6 @@ public class FriendsMapFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         ImageButton next = (ImageButton) getActivity().findViewById(R.id.nextFriendOnMap);
-        ImageButton previous = (ImageButton) getActivity().findViewById(R.id.previousFriendOnMap);
         ImageButton recenter = (ImageButton) getActivity().findViewById(R.id.recenterFriendsOnMap);
 
         next.setOnClickListener(new View.OnClickListener() {
@@ -187,28 +186,16 @@ public class FriendsMapFragment extends Fragment {
             }
         });
 
-        previous.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mMap != null) {
-                    Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
-
-                    if (friendIterator == 0) {
-                        friendIterator = activity.friends.size() - 1;
-                    } else {
-                        friendIterator -= 1;
-                    }
-                }
-            }
-        });
-
         recenter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mMap != null) {
                     mBoundsBuilder = LatLngBounds.builder();
-                    mBoundsBuilder.include(activity.user.getLatLng());
+
+                    if (activity.user != null) {
+                        mBoundsBuilder.include(activity.user.getLatLng());
+                    }
+
                     for (Marker marker : markers.values()) {
                         mBoundsBuilder.include(marker.getPosition());
                     }
@@ -293,12 +280,26 @@ public class FriendsMapFragment extends Fragment {
                 int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
                 marketName.setText(friend.name);
 
-                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
-                    Log.d(TAG, "download pictureUrl: " + friend.pictureUrl + " " + friend.name);
+                if (friend.hasPictureUrl()) {
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "download pictureUrl: " + friend.pictureUrl + " " + friend.name);
 
                     markerImage.setBorderWidth(5);
                     markerImage.clearColorFilter();
                     markerImage.setBorderColor(color);
+
+                    final Callback callback =  new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "Picture downloaded: " + friend.name);
+
+                            addMarker(friend);
+                        }
+
+                        @Override
+                        public void onError() {
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "Error downloading picture");
+                        }
+                    };
 
                     Picasso.with(getContext())
                             .load(friend.pictureUrl)
@@ -307,19 +308,10 @@ public class FriendsMapFragment extends Fragment {
                             .onlyScaleDown()
                             .error(R.drawable.ic_face_black_24dp)
                             .placeholder(R.drawable.ic_face_black_24dp)
-                            .into(markerImage, new Callback() {
-                                @Override
-                                public void onSuccess() {
-                                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onSu");
-                                    addMarker(friend);
-                                }
+                            .into(markerImage, callback);
 
-                                @Override
-                                public void onError() {
-
-                                }
-                            });
                 } else {
+                    
                     Log.d(TAG, "set drawable: " + friend.pictureUrl + " " + friend.name);
                     markerImage.setBorderWidth(0);
                     markerImage.setColorFilter(color);

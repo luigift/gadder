@@ -307,10 +307,10 @@ public class SmsCodeFragment extends Fragment {
     private void verifyPhone() {
         Random r = new Random();
         mCode = r.nextInt(8999) + 1000;
-        Toast.makeText(getActivity(), "code: " + mCode, Toast.LENGTH_SHORT).show(); // TODO remove
+//        Toast.makeText(getActivity(), "code: " + mCode, Toast.LENGTH_SHORT).show(); // TODO remove
         mMessage = "Your gadder verification code: " + mCode;
         SmsManager sm = SmsManager.getDefault();
-//        sm.sendTextMessage(mPhone, null, mMessage, null, null); //TODO remove comment
+        sm.sendTextMessage(mPhone, null, mMessage, null, null); //TODO remove comment
         animateBar();
     }
 
@@ -355,7 +355,7 @@ public class SmsCodeFragment extends Fragment {
 
                                 // Add founders
                                 childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
-                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
+//                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "ZykjYyUOdOVp9RH9vMDj3ym6sky2" + "/", true); // lucas
 
                                 childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + user.getUid() + "/", true); // self
 

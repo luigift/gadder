@@ -213,11 +213,11 @@ public class GadderActivities {
 
     public static final List<GadderActivity> ACTIVITY_TYPES = new ArrayList<>();
     static {
-        ACTIVITY_TYPES.add(Emoji.RECENT);
+//        ACTIVITY_TYPES.add(Emoji.RECENT);
         ACTIVITY_TYPES.add(Emoji.GAMES);
         ACTIVITY_TYPES.add(Emoji.MUSIC);
         ACTIVITY_TYPES.add(Emoji.SPORTS);
-        ACTIVITY_TYPES.add(Emoji.NIGHTLIFE);
+//        ACTIVITY_TYPES.add(Emoji.NIGHTLIFE);
         ACTIVITY_TYPES.add(Emoji.PLACES);
         ACTIVITY_TYPES.add(Emoji.MISCELLANEOUS);
     }
@@ -293,11 +293,11 @@ public class GadderActivities {
 
     public static final List<List<GadderActivity>> ACTIVITY_LIST = new ArrayList<>();
     static {
-        ACTIVITY_LIST.add(new ArrayList<GadderActivity>());
+//        ACTIVITY_LIST.add(new ArrayList<GadderActivity>());
         ACTIVITY_LIST.add(ACTIVITY_GAMES);
         ACTIVITY_LIST.add(ACTIVITY_MUSIC);
         ACTIVITY_LIST.add(ACTIVITY_SPORTS);
-        ACTIVITY_LIST.add(ACTIVITY_NIGHTLIFE);
+//        ACTIVITY_LIST.add(ACTIVITY_NIGHTLIFE);
         ACTIVITY_LIST.add(ACTIVITY_PLACES);
         ACTIVITY_LIST.add(ACTIVITY_MISCELLANEOUS);
     }

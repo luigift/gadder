@@ -3,6 +3,8 @@ package co.gadder.gadder;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import android.support.v7.widget.CardView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -88,6 +91,17 @@ public class ProfileFragment extends Fragment {
 
         image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
 
+
+        if (getActivity() != null) {
+            try {
+                PackageInfo packageInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
+                final TextView version = (TextView) getActivity().findViewById(R.id.gadderVersion);
+                 version.setText(getString(R.string.app_name) + " v" + packageInfo.versionName);
+            } catch (PackageManager.NameNotFoundException e) {
+                FirebaseCrash.report(e);
+            }
+        }
+
         FloatingActionButton logoutFab = (FloatingActionButton) getActivity().findViewById(R.id.logout);
         logoutFab.setImageBitmap(Constants.textAsBitmap(getString(R.string.logout), Constants.EMOJI_SIZE, Color.WHITE));
         logoutFab.setOnClickListener(new View.OnClickListener() {
@@ -103,7 +117,6 @@ public class ProfileFragment extends Fragment {
 
         FloatingActionButton rateFab = (FloatingActionButton) getActivity().findViewById(R.id.rate);
         rateFab.setImageBitmap(Constants.textAsBitmap(Nature.WHITE_STAR, Constants.EMOJI_SIZE, Color.WHITE));
-        rateFab.setEnabled(false);
         rateFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

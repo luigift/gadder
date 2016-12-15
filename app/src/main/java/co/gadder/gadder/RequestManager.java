@@ -201,4 +201,13 @@ public class RequestManager {
         mRequestQueue.add(request);
     }
 
+
+    public void cancelAllRequests() {
+        mRequestQueue.cancelAll(new RequestQueue.RequestFilter() {
+            @Override
+            public boolean apply(Request<?> request) {
+                return true;
+            }
+        });
+    }
 }

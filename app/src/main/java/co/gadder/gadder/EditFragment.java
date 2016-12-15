@@ -71,7 +71,6 @@ public class EditFragment extends Fragment {
 
         user = ((MainActivity) getActivity()).user;
 
-
         final TextView editName = (TextView) getActivity().findViewById(R.id.editUserName);
         final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
 

@@ -62,11 +62,14 @@ public class FriendsActivityFragment extends Fragment {
                                 FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
 
                                 Friend friend = adapter.getItem(position);
-                                if (friend.friendship.equals(Friend.FRIEND)){
+
+                                if (friend == null) {
+                                  FirebaseCrash.logcat(Log.DEBUG, TAG, "Null friend clicked on friendsRecycler");
+                                } else if (friend.friendship.equals(Friend.FRIEND)){
                                     activity.selectFriend(adapter.getItem(position));
                                 } else if (friend.friendship.equals(Friend.CONTACT)) {
                                     Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
-                                    activity.requestFriendship(adapter.getItem(position).id);
+                                    activity.requestFriendship(friend.id);
                                 }
                             }
 
