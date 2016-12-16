@@ -12,6 +12,7 @@ import android.os.PowerManager;
 import android.util.Log;
 
 import com.android.volley.Response;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -46,11 +47,11 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {                                    // Application on the foreground
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Data Payload: " + remoteMessage.getData());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "From: " + remoteMessage.getFrom());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "Data Payload: " + remoteMessage.getData());
         Map<String, String> data = remoteMessage.getData();
         if(data.containsKey(UPDATE) && Boolean.valueOf(data.get(UPDATE))) {
-            Log.d(TAG, "updateRequest");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "updateRequest");
             startService(new Intent(this, UserActivityService.class));
         }
 
@@ -73,13 +74,13 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageSent(String s) {
-        Log.d(TAG, "Message Sent");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "Message Sent");
     }
 
     @Override
     public void onSendError(String s, Exception e) {
         super.onSendError(s, e);
-        Log.d(TAG, "Message Error");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "Message Error");
     }
 
     private void removeNotification() {
@@ -87,7 +88,7 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void notifyUser(Map<String, String> data) {
-        Log.d(TAG, "notifyUser");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "notifyUser");
         final Notification.Builder builder = new Notification.Builder(getApplicationContext());
 
 //        builder.setCustomContentView(new RemoteViews(getPackageName(), R.layout.notification_activity));
@@ -158,7 +159,7 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     private void notifyUserFriendshipRequest(Map<String, String> data) {
-        Log.d(TAG, "notifyUser");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "notifyUser");
         final Notification.Builder builder = new Notification.Builder(getApplicationContext());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -227,6 +228,6 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
 //            PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.PARTIAL_WAKE_LOCK),"gadder_wake_up");
         PowerManager.WakeLock wakeLock = pm.newWakeLock((PowerManager.FULL_WAKE_LOCK),"gadder_wake_up");
         wakeLock.acquire();
-        Log.d(TAG, "waking device up");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "waking device up");
     }
 }

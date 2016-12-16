@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -51,6 +52,7 @@ public class NotificationFragment extends Fragment {
     }
 
     public static NotificationFragment newInstance() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "newInstance");
         Bundle args = new Bundle();
         NotificationFragment fragment = new NotificationFragment();
         fragment.setArguments(args);
@@ -60,6 +62,7 @@ public class NotificationFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateView");
         super.onCreateView(inflater, container, savedInstanceState);
 
         return inflater.inflate(R.layout.fragment_notification, container, false);
@@ -67,6 +70,8 @@ public class NotificationFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onActivityCreated");
+
         super.onActivityCreated(savedInstanceState);
 
         final MainActivity activity = (MainActivity) getActivity();
@@ -77,7 +82,7 @@ public class NotificationFragment extends Fragment {
 
         if (user != null ) {
 
-            Log.d("Notification Fragment", "user ok");
+            FirebaseCrash.logcat(Log.DEBUG, "Notification Fragment", "user ok");
             RecyclerView recycler = (RecyclerView) activity.findViewById(R.id.notificationRecyclerView);
             recycler.setHasFixedSize(true);
             recycler.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -95,10 +100,10 @@ public class NotificationFragment extends Fragment {
                 protected void populateViewHolder(final FriendRequestViewHolder viewHolder, String model, final int position) {
                     message.setVisibility(View.GONE);
                     noNotifications += 1;
-                    Log.d(TAG, "noNotifications: " + noNotifications);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "noNotifications: " + noNotifications);
                     activity.setNotificationListener(noNotifications);
 
-                    Log.d("populateViewHolder", "model : " + model);
+                    FirebaseCrash.logcat(Log.DEBUG, "populateViewHolder", "model : " + model);
 
                     activity.mDatabase
                             .child(Constants.VERSION)
@@ -149,7 +154,7 @@ public class NotificationFragment extends Fragment {
 
                     noNotifications -=1;
                     activity.setNotificationListener(noNotifications);
-                    Log.d(TAG, "noNotifications: " + noNotifications);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "noNotifications: " + noNotifications);
                 }
 
                 private void setFriendship(Boolean value, int position) {

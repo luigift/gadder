@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
@@ -114,7 +115,7 @@ public class InputFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 confirm.setEnabled(false);
-                Log.d(TAG, "confirmActivity");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "confirmActivity");
                 mSendActivity.type = mActivity;
                 mSendActivity.description = mDescription.getText().toString();
                 SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
@@ -131,7 +132,7 @@ public class InputFragment extends Fragment {
 
 
     public void setLocation(Location location) {
-        Log.d(TAG, "setLocation");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "setLocation");
         mSendActivity.location.latitude = (float) location.getLatitude();
         mSendActivity.location.longitude = (float) location.getLongitude();
 
@@ -143,10 +144,10 @@ public class InputFragment extends Fragment {
     }
 
     private void sendActivity() {
-        Log.d(TAG, "sendActivity");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendActivity");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            Log.d(TAG, "Sending Activity");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "Sending Activity");
 
             Map<String, Object> childUpdates = new HashMap<>();
             childUpdates.put(Constants.VERSION + "/" + Constants.USER_ACTIVITIES + "/" + user.getUid(), mSendActivity);

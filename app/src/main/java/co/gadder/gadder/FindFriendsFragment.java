@@ -23,6 +23,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -66,7 +67,7 @@ public class FindFriendsFragment extends Fragment {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
 
         friendsAdapter = new ContactAdapter() {
@@ -110,7 +111,7 @@ public class FindFriendsFragment extends Fragment {
                     }
                 });
 
-                Log.d(TAG, "set holder: "+ friend.name);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "set holder: "+ friend.name);
                 if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
                     Picasso.with(getActivity())
                             .load(friend.pictureUrl)
@@ -145,7 +146,7 @@ public class FindFriendsFragment extends Fragment {
 //                        @Override
 //                        public void onDataChange(DataSnapshot dataSnapshot) {
 //                            if(dataSnapshot.exists()) {
-//                                Log.d(TAG, "name" +friend.name + " phone: " + friend.phone);
+//                                FirebaseCrash.logcat(Log.DEBUG, TAG, "name" +friend.name + " phone: " + friend.phone);
 //                                String uid = dataSnapshot.getValue(String.class);
 //                                friendsAdapter.addItem(uid, friend);
 //                            }
@@ -171,8 +172,8 @@ public class FindFriendsFragment extends Fragment {
     }
 
     private void getFriendsFromContacts() {
-        Log.d(TAG, "getFriendsFromContacts");
-        Log.d(TAG, "got Contacts permission");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "getFriendsFromContacts");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "got Contacts permission");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -201,8 +202,8 @@ public class FindFriendsFragment extends Fragment {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     if (dataSnapshot.exists()) {
-                                        Log.d(TAG, "name" + friend.name + " phone: " + friend.phone);
-                                        Log.d(TAG, "snapshot: " + dataSnapshot.toString());
+                                        FirebaseCrash.logcat(Log.DEBUG, TAG, "name" + friend.name + " phone: " + friend.phone);
+                                        FirebaseCrash.logcat(Log.DEBUG, TAG, "snapshot: " + dataSnapshot.toString());
                                         friend.id = dataSnapshot.getValue(String.class);
                                         friendsAdapter.addItem(friend.id, friend);
 
@@ -214,7 +215,7 @@ public class FindFriendsFragment extends Fragment {
                                             @Override
                                             public void onDataChange(DataSnapshot dataSnapshot) {
                                                 Friend newFriend = dataSnapshot.getValue(Friend.class);
-                                                Log.d(TAG, "contact info downloaded:  " + newFriend.name);
+                                                FirebaseCrash.logcat(Log.DEBUG, TAG, "contact info downloaded:  " + newFriend.name);
                                                 newFriend.id = dataSnapshot.getKey();
                                                 friendsAdapter.addItem(newFriend.id, newFriend);
                                             }

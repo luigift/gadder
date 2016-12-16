@@ -28,8 +28,7 @@ public class Constants {
 
     public final static String  MUSIC = "music";
     public final static String  ACTIVITY = "activity";
-    public final static String  NO_NOTIFICATIONS = "noNotifications";
-
+    public final static String  NO_FRIENDS = "noFriends";
 
     // Weather conditions
     public final static String CLEAR = "clear";

@@ -16,6 +16,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -121,7 +122,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         tokens = new HashSet<>();
         friends = new HashMap<>();
         listeners = new HashMap<>();
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-//                                getFriendsFromContacts();
+                                getFriendsFromContacts();
                             }
                         }, 25000);
 
@@ -172,6 +172,12 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         }, 15000);
 
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                uploadNumberOfFriends();
+                            }
+                        }, 30000);
                     }
                 } else {
                     if (loginState == null || !loginState.equals("login")) {
@@ -243,7 +249,7 @@ public class MainActivity extends AppCompatActivity implements
                 FirebaseCrash.logcat(Log.DEBUG, TAG, "request_contacts_permission");
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "contact permission granted");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "contact permission granted");
                     getFriendsFromContacts();
 
                     FragmentManager fm =  getSupportFragmentManager();
@@ -261,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements
                 FirebaseCrash.logcat(Log.DEBUG, TAG, "request_location_permission");
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "contact permission granted");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "contact permission granted");
 
                     updateUser();
 
@@ -281,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements
 
     ////////////////////// UI METHODS //////////////////////
     private void hideKeyboard() {
-        Log.d(TAG, "hideKeyboard");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "hideKeyboard");
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
@@ -416,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
         long elapsedTime = System.currentTimeMillis() - startTime;
-        Log.d(TAG, "SetPagerMenu: " + elapsedTime + "ms");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "SetPagerMenu: " + elapsedTime + "ms");
     }
 
     public void setNotificationListener(int noNotifications) {
@@ -500,7 +506,7 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter {
+    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         public ScreenSlidePagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -563,6 +569,21 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    public void uploadNumberOfFriends() {
+        mDatabase
+                .child(Constants.VERSION)
+                .child(Constants.USERS)
+                .child(user.id)
+                .child(Constants.NO_FRIENDS)
+                .setValue(friends.size())
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        FirebaseCrash.report(e);
+                    }
+                });
+    }
+
     public void requestFriendship(String friendId) {
 
         if (user != null) {
@@ -584,7 +605,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void notifyFriendshipRequest(final String uid) {
-        Log.d(TAG, "requestUpdate: " + uid);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "requestUpdate: " + uid);
         mDatabase
                 .child(Constants.VERSION)
                 .child(Constants.USER_TOKEN)
@@ -595,7 +616,7 @@ public class MainActivity extends AppCompatActivity implements
                         FirebaseCrash.log("gotToken");
 
                         String token = dataSnapshot.getValue(String.class);
-                        Log.d(TAG, "User: " + uid + " token: " + token);
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "User: " + uid + " token: " + token);
                         if (token != null) {
                             tokens.add(token);
 
@@ -607,7 +628,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Log.d(TAG, "Canceled uid:token request: " + uid);
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Canceled uid:token request: " + uid);
                         FirebaseCrash.report(new Throwable(databaseError.toString()));
                     }
                 });
@@ -640,9 +661,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void getFriendsFromContacts() {
-        Log.d(TAG, "getFriendsFromContacts");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "getFriendsFromContacts");
         if (PermissionManager.checkContactsPermission(this)) {
-            Log.d(TAG, "got Contacts permission");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "got Contacts permission");
 
             Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
             if (phones != null) {
@@ -666,10 +687,10 @@ public class MainActivity extends AppCompatActivity implements
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         if (dataSnapshot.exists()) {
-                                            Log.d(TAG, "name: " + friend.name + " phone: " + friend.phone);
+                                            FirebaseCrash.logcat(Log.DEBUG, TAG, "name: " + friend.name + " phone: " + friend.phone);
                                             friend.id = dataSnapshot.getValue(String.class);
                                             if (!friends.containsKey(friend.id)) { // not a friend
-                                                Log.d(TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
+                                                FirebaseCrash.logcat(Log.DEBUG, TAG, friend.name + " is not a friend " + friend.id + friends.containsKey(friend.id));
 
                                                 mDatabase
                                                         .child(Constants.VERSION)
@@ -678,7 +699,7 @@ public class MainActivity extends AppCompatActivity implements
                                                         .addListenerForSingleValueEvent(new ValueEventListener() {
                                                             @Override
                                                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                                                Log.d(TAG, "contact info downloaded");
+                                                                FirebaseCrash.logcat(Log.DEBUG, TAG, "contact info downloaded");
                                                                 Friend newFriend = dataSnapshot.getValue(Friend.class);
                                                                 if (newFriend != null) {
 
@@ -719,7 +740,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void requestUpdate(final String uid) {
-        Log.d(TAG, "requestUpdate: " + uid);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "requestUpdate: " + uid);
         mDatabase
                 .child(Constants.VERSION)
                 .child(Constants.USER_TOKEN)
@@ -730,7 +751,7 @@ public class MainActivity extends AppCompatActivity implements
                         FirebaseCrash.log("gotToken");
 
                         String token = dataSnapshot.getValue(String.class);
-                        Log.d(TAG, "User: " + uid + " token: " + token);
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "User: " + uid + " token: " + token);
                         if (token != null) {
                             tokens.add(token);
 
@@ -742,7 +763,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Log.d(TAG, "Canceled uid:token request: " + uid);
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Canceled uid:token request: " + uid);
                         FirebaseCrash.report(new Throwable(databaseError.toString()));
                     }
                 });
@@ -755,7 +776,7 @@ public class MainActivity extends AppCompatActivity implements
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     FirebaseCrash.log("gotUser");
 
-                    Log.d(TAG, "snapshot: "+ dataSnapshot.toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "snapshot: "+ dataSnapshot.toString());
                     user = dataSnapshot.getValue(Friend.class);
                     if (user != null) {
                         user.id = dataSnapshot.getKey();
@@ -811,7 +832,7 @@ public class MainActivity extends AppCompatActivity implements
             friendsListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot snap, String s) {
-                    Log.d(TAG, "onChildAdded: " + snap.toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildAdded: " + snap.toString());
                     if ((Boolean) snap.getValue()) {
                         requestUpdate(snap.getKey());
                         addChildFriendListener(snap.getKey());
@@ -821,7 +842,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 @Override
                 public void onChildChanged(DataSnapshot snap, String s) {
-                    Log.d(TAG, "onChildChanged: " + snap.toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildChanged: " + snap.toString());
                     if ((Boolean) snap.getValue()) {
                         addChildFriendListener(snap.getKey());
                     } else {
@@ -831,13 +852,13 @@ public class MainActivity extends AppCompatActivity implements
 
                 @Override
                 public void onChildRemoved(DataSnapshot snap) {
-                    Log.d(TAG, "onChildRemoved: " + snap.toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildRemoved: " + snap.toString());
                     removeChildFriendListener(snap.getKey());
                 }
 
                 @Override
                 public void onChildMoved(DataSnapshot snap, String s) {
-                    Log.d(TAG, "onChildMoved: " + snap.toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildMoved: " + snap.toString());
                 }
 
                 @Override
@@ -851,7 +872,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private void removeFriendsListener() {
         if (user != null) {
-            Log.d(TAG, "unsyncFriend");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "unsyncFriend");
             mDatabase
                     .child(Constants.VERSION)
                     .child(Constants.USER_FRIENDS)
@@ -861,7 +882,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void addFriendsListener(String uid) {
-        Log.d(TAG, "addFriendsListener");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "addFriendsListener");
 
         mDatabase
                 .child(Constants.VERSION)
@@ -878,7 +899,7 @@ public class MainActivity extends AppCompatActivity implements
     private void addChildFriendListener(String uid) {
         FirebaseCrash.log("addChildFriendListener");
 
-        Log.d(TAG, "addChildFriendListener: " + friends.size());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "addChildFriendListener: " + friends.size());
 
         if (activityFragment != null) {
             activityFragment.hideProgressBar();
@@ -887,11 +908,11 @@ public class MainActivity extends AppCompatActivity implements
         final ValueEventListener listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: " + dataSnapshot.toString());
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "onDataChange: " + dataSnapshot.toString());
                 final Friend friend = dataSnapshot.getValue(Friend.class);
                 if (friend != null) {
 
-                    Log.d(TAG, "got friend: " + friend.name);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "got friend: " + friend.name);
 
                     // Save friends
                     friend.friendship = Friend.FRIEND;
@@ -926,8 +947,8 @@ public class MainActivity extends AppCompatActivity implements
 
                     // Update friends after random time
                     if (friend.id != null && user != null && user.id != null && !friend.id.equals(user.id) && friend.friendship.equals(Friend.FRIEND)) {
-                        int time = 5000 * (new Random().nextInt(10) + 1);
-                        Log.d(TAG, "update: " + friend.name + " after " + time);
+                        int time = 5000 * (new Random().nextInt(5) + 1);
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "update: " + friend.name + " after " + time);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -978,7 +999,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void addGeofences() {
         if (!mGoogleApiClient.isConnected()) {
-            Log.d(TAG, getString(R.string.not_connected));
+            FirebaseCrash.logcat(Log.DEBUG, TAG, getString(R.string.not_connected));
             return;
         }
 
@@ -990,7 +1011,7 @@ public class MainActivity extends AppCompatActivity implements
             ).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
-                    Log.d(TAG, "Geofences Up");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Geofences Up");
                 }
             });
         } catch (SecurityException securityException) {
@@ -1001,7 +1022,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public void removeGeofences() {
         if (!mGoogleApiClient.isConnected()) {
-            Log.d(TAG, getString(R.string.not_connected));
+            FirebaseCrash.logcat(Log.DEBUG, TAG, getString(R.string.not_connected));
             return;
         }
         try {
@@ -1014,7 +1035,7 @@ public class MainActivity extends AppCompatActivity implements
                 @Override
                 public void onResult(@NonNull Status status) {
                     if (status.isSuccess()) {
-                        Log.d(TAG, "Geofences Down");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Geofences Down");
                     }
                 }
             });
@@ -1034,7 +1055,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     protected synchronized void buildGoogleApiClient() {
-        Log.d(TAG, "buildGoogleApiClient");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "buildGoogleApiClient");
 
         if (PermissionManager.checkLocationPermission(this)) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -1054,7 +1075,7 @@ public class MainActivity extends AppCompatActivity implements
 //            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 ////                Event event = dataSnapshot.getValue(Event.class);
 ////                event.setKey(dataSnapshot.getKey());
-////                Log.d(TAG, event.toString());
+////                FirebaseCrash.logcat(Log.DEBUG, TAG, event.toString());
 ////                mGeofenceList.add(event.getGeofence());
 ////                addGeofences();
 //            }
@@ -1083,7 +1104,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Log.d(TAG, "onConnected");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onConnected");
         populateGeofenceList();
     }
 

@@ -12,6 +12,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -24,7 +25,7 @@ public class GadderFirebaseInstanceIDService extends FirebaseInstanceIdService {
     @Override
     public void onTokenRefresh() {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d(TAG, "Token: " + refreshedToken);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "Token: " + refreshedToken);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             DatabaseReference database = FirebaseDatabase.getInstance().getReference();
@@ -35,13 +36,13 @@ public class GadderFirebaseInstanceIDService extends FirebaseInstanceIdService {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "Token updated on database");
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "Token updated on database");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Log.d(TAG, "TokenUpdate Failure: " + e);
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "TokenUpdate Failure: " + e);
                         }
                     });
         }

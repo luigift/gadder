@@ -35,8 +35,6 @@ public class FriendsRecyclerAdapter
     private static final int NEW_FRIENDS_VIEWHOLDER = 2;
     private static final int CONTACTS_REQUEST_VIEWHOLDER = 3;
 
-
-
     private MainActivity activity;
 
     /////////  ViewHolders  /////////
@@ -133,7 +131,9 @@ public class FriendsRecyclerAdapter
     }
 
     private class FriendViewHolder extends GenericViewHolder {
+        TextView noFriends;
         TextView friendName;
+        TextView lastUpdate;
         TextView distanceText;
         ImageView friendImage;
         ImageView batteryImage;
@@ -143,6 +143,8 @@ public class FriendsRecyclerAdapter
             super(itemView);
             friendName = (TextView) itemView.findViewById(R.id.friendName);
             friendImage = (ImageView) itemView.findViewById(R.id.friendImage);
+            noFriends = (TextView) itemView.findViewById(R.id.numberOfFriends);
+            lastUpdate = (TextView) itemView.findViewById(R.id.friendLastUpdate);
             distanceText = (TextView) itemView.findViewById(R.id.friendDistance);
             batteryImage = (ImageView) itemView.findViewById(R.id.friendBattery);
             friendActivity = (ImageView) itemView.findViewById(R.id.friendActivity);
@@ -156,11 +158,18 @@ public class FriendsRecyclerAdapter
             timings.addSplit("got friend: " + friend.name);
 
             if (friend != null) {
-                Log.d(TAG, "updateView: " + friend.name);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "updateView: " + friend.name);
 
                 // Set name
                 friendName.setText(friend.name);
                 timings.addSplit("set name");
+
+                // Set number of friends
+                if (friend.noFriends != null) {
+                    noFriends.setText(String.valueOf(friend.noFriends));
+                } else {
+                    noFriends.setText("0");
+                }
 
                 // Set user battery
                 if (friend.sharing.batterySharing != null && friend.sharing.batterySharing && friend.battery != null) {
@@ -171,17 +180,12 @@ public class FriendsRecyclerAdapter
                 // Set user distance
                 if (activity.user != null && friend.isSharingLocation()) {
 
-                    Location fl = friend.getLocation();
-//                    Log.d(TAG, "user location: " + activity.user.getLocation().toString());
-//                    Log.d(TAG, "friend location: " + fl.toString());
-
-                    Float dist = activity.user.getLocation().distanceTo(fl);
+                    Float dist = activity.user.getLocation().distanceTo(friend.getLocation());
                     Integer m = Math.round(dist / 100);
                     Integer km = Math.round(dist / 1000);
 
-//                    Log.d(TAG, "dist: " + dist + " - " + km + " km " + m + " m");
-
                     String distance;
+
                     if (km > 99) {
                         distance = "99+";
                     } else if (km > 0) {
@@ -210,10 +214,14 @@ public class FriendsRecyclerAdapter
                 timings.addSplit("set emoji");
 
 
+                String timeLapse = friend.getTimeLapse(activity.getResources());
+                if (timeLapse != null && !timeLapse.isEmpty()) {
+                    lastUpdate.setText(timeLapse);
+                }
+
                 // Set picture
                 if (friend.image == null) {
-                    Log.d(TAG, "No image" + friend.name);
-                    FirebaseCrash.log("No image");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "No image");
 
                     friendImage.setImageResource(R.drawable.ic_face_black_24dp);
 
@@ -221,7 +229,7 @@ public class FriendsRecyclerAdapter
                         final Target target = new Target() {
                             @Override
                             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                                FirebaseCrash.log("onBitmapLoaded");
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "onBitmapLoaded");
                                 friend.image = bitmap;
                                 friendImage.setImageBitmap(bitmap);
                                 timings.addSplit("image downloaded");
@@ -243,11 +251,14 @@ public class FriendsRecyclerAdapter
 
                         Picasso.with(activity)
                                 .load(friend.pictureUrl)
+                                .resize(80, 80)
+                                .centerCrop()
+                                .onlyScaleDown()
                                 .into(target);
                     }
 
                 } else {
-                    Log.d(TAG, "Has image " + friend.name);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Has image " + friend.name);
                     FirebaseCrash.log("has image");
                     friendImage.setImageBitmap(friend.image);
                     timings.addSplit("set image");
@@ -269,18 +280,51 @@ public class FriendsRecyclerAdapter
 
         @Override
         public void updateView(int position) {
-            Friend friend = getItem(position);
+            final Friend friend = getItem(position);
 
             if (friend != null) {
                 friendName.setText(friend.name);
-                if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
-                    Picasso.with(activity)
-                            .load(friend.pictureUrl)
-                            .into(friendImage);
+
+                // Set image
+                if (friend.image == null) {
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "No image");
+
+                    friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+
+                    if (friend.pictureUrl != null && !friend.pictureUrl.isEmpty()) {
+                        final Target target = new Target() {
+                            @Override
+                            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "onBitmapLoaded");
+                                friend.image = bitmap;
+                                friendImage.setImageBitmap(bitmap);
+
+                            }
+
+                            @Override
+                            public void onBitmapFailed(Drawable errorDrawable) {
+                                FirebaseCrash.log("onBitmapFailed");
+//                            friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+                            }
+
+                            @Override
+                            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                                FirebaseCrash.log("onPrepareLoad");
+//                            friendImage.setImageResource(R.drawable.ic_face_black_24dp);
+                            }
+                        };
+
+                        Picasso.with(activity)
+                                .load(friend.pictureUrl)
+                                .resize(85, 85)
+                                .centerCrop()
+                                .onlyScaleDown()
+                                .into(target);
+                    }
+
                 } else {
-                    Picasso.with(activity)
-                            .load(friend.pictureUrl)
-                            .into(friendImage);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Has image " + friend.name);
+                    friendImage.setImageBitmap(friend.image);
                 }
             }
         }
@@ -316,7 +360,7 @@ public class FriendsRecyclerAdapter
 
     @Override
     public GenericViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.d(TAG, "onCreateViewHolder");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateViewHolder");
         switch (viewType) {
             case CONTACTS_REQUEST_VIEWHOLDER:
                 return new ContactsRequestViewHolder(LayoutInflater
@@ -341,7 +385,7 @@ public class FriendsRecyclerAdapter
 
     @Override
     public void onBindViewHolder(final GenericViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder:  " + position + "type: " + holder.getClass());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onBindViewHolder:  " + position + "type: " + holder.getClass());
 
         holder.updateView(position);
     }

@@ -34,6 +34,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -81,7 +82,7 @@ public class UserActivityService extends Service implements
 
     @Override
     public void onCreate() {
-        Log.d(TAG, "onCreate");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
         super.onCreate();
 
         // Init firebase
@@ -96,7 +97,7 @@ public class UserActivityService extends Service implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onStartCommand");
         if (!mGoogleApiClient.isConnected()) {
             mGoogleApiClient.connect();
         }
@@ -106,7 +107,7 @@ public class UserActivityService extends Service implements
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onDestroy");
         super.onDestroy();
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
@@ -115,7 +116,7 @@ public class UserActivityService extends Service implements
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d(TAG, "onBind");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onBind");
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -131,7 +132,7 @@ public class UserActivityService extends Service implements
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Ask for location permission");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "Ask for location permission");
         } else {
             getTime();
             getLocation();
@@ -168,7 +169,7 @@ public class UserActivityService extends Service implements
             childUpdates.put("coordinates/latitude", location.getLatitude());
             childUpdates.put("coordinates/longitude", location.getLongitude());
         } else {
-            Log.d(TAG, "Turn on location");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "Turn on location");
         }
     }
 
@@ -180,7 +181,7 @@ public class UserActivityService extends Service implements
                 addresses = gcd.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                 if (addresses.size() > 0) {
                     String city = addresses.get(0).getLocality();
-                    Log.d(TAG, "city: " + city);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "city: " + city);
                     childUpdates.put("city", city);
                     gotCity = true;
                     checkStopSelf();
@@ -208,14 +209,14 @@ public class UserActivityService extends Service implements
         boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
         boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
 
-        Log.d(TAG, "battery: " + (level*100)/ 100);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "battery: " + (level*100)/ 100);
         childUpdates.put("battery", (level * 100)/100);
         gotBattery = true;
         checkStopSelf();
     }
 
     private void getDetectedActivity() {
-        Log.d(TAG, "getDetectedActivity");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "getDetectedActivity");
         Awareness.SnapshotApi.getDetectedActivity(mGoogleApiClient)
                 .setResultCallback(new ResultCallback<DetectedActivityResult>() {
                     @Override
@@ -232,7 +233,7 @@ public class UserActivityService extends Service implements
                         }
                         gotActivity = true;
                         checkStopSelf();
-                        Log.d(TAG, "activityCheckStop");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "activityCheckStop");
                     }
                 });
     }
@@ -247,8 +248,8 @@ public class UserActivityService extends Service implements
                     int temperature = Math.round(weather.getTemperature(Weather.CELSIUS));
                     int[] conditions = weather.getConditions();
 
-                    Log.d(TAG, "Temperature: " + temperature);
-                    Log.d(TAG, "Conditions: " + "\n");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Temperature: " + temperature);
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Conditions: " + "\n");
                     String textCondition = "";
 
                     List<String> condition = new ArrayList<String>();
@@ -284,7 +285,7 @@ public class UserActivityService extends Service implements
                             textCondition = Constants.UNKNOWN;
                             condition.add(textCondition);
                         }
-                        Log.d(TAG, "            " + textCondition + "\n");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "            " + textCondition + "\n");
                     }
 
                     childUpdates.put("weather", condition);
@@ -292,7 +293,7 @@ public class UserActivityService extends Service implements
 
                     gotWeather = true;
                     checkStopSelf();
-                    Log.d(TAG, "weatherCheckStop");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "weatherCheckStop");
                 }
             }
         });
@@ -301,11 +302,11 @@ public class UserActivityService extends Service implements
     private void getTime() {
         SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
         String date = sdf.format(calendar.getTime());
-        Log.d(TAG, "time: " + date);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "time: " + date);
         childUpdates.put("lastUpdate", date); //DateFormat.getDateTimeInstance().format(new Date()));//calendar.getTime());
         gotTime = true;
         checkStopSelf();
-        Log.d(TAG, "timeCheckStop");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "timeCheckStop");
     }
 
     private void getHeadphone() {
@@ -316,29 +317,29 @@ public class UserActivityService extends Service implements
                     int state = headphoneStateResult.getHeadphoneState().getState();
                     if (state == HeadphoneState.PLUGGED_IN) {
                         childUpdates.put("headphone", true);
-                        Log.d(TAG, "Headphone: plugged in");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Headphone: plugged in");
                     } else if (state == HeadphoneState.UNPLUGGED){
                         childUpdates.put("headphone", false);
-                        Log.d(TAG, "Headphone: unplugged");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Headphone: unplugged");
                     }
                 } else {
-                    Log.d(TAG, "Headphone: unknown");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Headphone: unknown");
                 }
                 gotHeadphone = true;
                 checkStopSelf();
-                Log.d(TAG, "HeadphoneCheckStop");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "HeadphoneCheckStop");
             }
         });
     }
 
     private void getPlaces() throws SecurityException {
-        Log.d(TAG, "getPlaces");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "getPlaces");
         Awareness.SnapshotApi.getPlaces(mGoogleApiClient).setResultCallback(new ResultCallback<PlacesResult>() {
             @Override
             public void onResult(@NonNull PlacesResult placesResult) {
-                Log.d(TAG, "gotPlaces");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "gotPlaces");
                 if (placesResult.getPlaceLikelihoods() != null && placesResult.getPlaceLikelihoods().size() > 0) {
-                    Log.d(TAG, "places: " + placesResult.getPlaceLikelihoods().toString());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "places: " + placesResult.getPlaceLikelihoods().toString());
                 }
                 gotPlaces = true;
                 checkStopSelf();
@@ -353,7 +354,7 @@ public class UserActivityService extends Service implements
     }
 
     private void update() {
-        Log.d(TAG, "update");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "update");
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
             mDatabase
@@ -363,7 +364,7 @@ public class UserActivityService extends Service implements
                     .updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
                 public void onSuccess(Void aVoid) {
-                    Log.d(TAG, "stopSelf");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "stopSelf");
                     stopSelf();
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -374,7 +375,7 @@ public class UserActivityService extends Service implements
                 }
             });
         } else {
-            Log.d(TAG, "user null");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "user null");
         }
     }
 }

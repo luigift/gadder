@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -106,7 +107,7 @@ public class SignUpFragment extends Fragment {
                 .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
 
                         if (task.isSuccessful()) {
                             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
@@ -118,7 +119,7 @@ public class SignUpFragment extends Fragment {
                                         @Override
                                         public void onComplete(@NonNull Task<Void> task) {
                                             if (task.isSuccessful()) {
-                                                Log.d(TAG, "User updated.");
+                                                FirebaseCrash.logcat(Log.DEBUG, TAG, "User updated.");
                                             }
                                         }
                                     });
@@ -128,7 +129,7 @@ public class SignUpFragment extends Fragment {
                 }).addOnFailureListener(getActivity(), new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d(TAG, e.toString());
+                FirebaseCrash.logcat(Log.DEBUG, TAG, e.toString());
                 if(e instanceof FirebaseAuthUserCollisionException) {
                     getFragmentManager()
                             .beginTransaction()

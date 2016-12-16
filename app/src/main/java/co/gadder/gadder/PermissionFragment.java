@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.crash.FirebaseCrash;
+
 public class PermissionFragment extends Fragment {
 
     private final static String TAG ="PermissionFragment";
@@ -38,7 +40,7 @@ public class PermissionFragment extends Fragment {
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mPermissionType = getArguments().getString(ARG_PERMISSION_TYPE);
@@ -68,7 +70,7 @@ public class PermissionFragment extends Fragment {
                                     .commitAllowingStateLoss();
                         }
 
-                        Log.d(TAG, "request Contacts");
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "request Contacts");
                     }
                 });
 

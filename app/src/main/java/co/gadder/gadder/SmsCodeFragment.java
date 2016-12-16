@@ -261,13 +261,13 @@ public class SmsCodeFragment extends Fragment {
             @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "onReceive");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "onReceive");
                 if (intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
                     for (SmsMessage sms : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-                        Log.d(TAG, "body: " + sms.getMessageBody());
-                        Log.d(TAG, "Sender: " + sms.getOriginatingAddress());
-                        Log.d(TAG, "pid: " + sms.getIndexOnIcc());
-                        Log.d(TAG, "protocol: " + sms.getProtocolIdentifier());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "body: " + sms.getMessageBody());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Sender: " + sms.getOriginatingAddress());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "pid: " + sms.getIndexOnIcc());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, "protocol: " + sms.getProtocolIdentifier());
 
                         if(mMessage.equals(sms.getMessageBody()) && mPhone.equals(sms.getOriginatingAddress())) {
                             createUserOrSignIn();
@@ -356,6 +356,7 @@ public class SmsCodeFragment extends Fragment {
                                 // Add founders
                                 childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + user.getUid() + "/", true); // self
                                 childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "nJnFV13qbrZ7LdB51nMC08LcTM23" + "/", true); // luigi
+                                childUpdates.put(Constants.USER_FRIENDS + "/" + user.getUid() + "/" + "31wCZvy0RfYWAsz18PoyWLOyBAE2" + "/", true); // lucas
 
                                 FirebaseCrash.logcat(Log.DEBUG, TAG, "User set up");
 
@@ -394,7 +395,7 @@ public class SmsCodeFragment extends Fragment {
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            Log.d(TAG, "exception: " + e);
+                                            FirebaseCrash.logcat(Log.DEBUG, TAG, "exception: " + e);
                                         }
                                     });
                         }

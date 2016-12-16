@@ -86,7 +86,7 @@ public class FriendsMapFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
         super.onCreate(savedInstanceState);
         markers = new HashMap<>();
         activity = (MainActivity) getActivity();
@@ -96,7 +96,7 @@ public class FriendsMapFragment extends Fragment {
     @Override
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateView");
         View layout = inflater.inflate(R.layout.fragment_friends_map, container, false);
 
         infoLayout = (LinearLayout) layout.findViewById(R.id.mapUserInfoLayout);
@@ -173,7 +173,7 @@ public class FriendsMapFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onActivityCreated");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
 
         ImageButton next = (ImageButton) getActivity().findViewById(R.id.nextFriendOnMap);
@@ -182,7 +182,7 @@ public class FriendsMapFragment extends Fragment {
         next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            iterateThroughFriends();
+                iterateThroughFriends();
             }
         });
 
@@ -252,7 +252,7 @@ public class FriendsMapFragment extends Fragment {
     }
 
     public void updateFriendOnMap(final Friend friend) {
-        Log.d(TAG, "updateFriendOnMap: " + friend.name);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "updateFriendOnMap: " + friend.name);
         if (mMap != null &&
                 mapView != null &&
                 marketName != null &&
@@ -262,7 +262,7 @@ public class FriendsMapFragment extends Fragment {
 
             // create marker
             if (!markers.containsKey(friend.id) ) {
-                Log.d(TAG, "Create Marker: " + friend.name);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "Create Marker: " + friend.name);
 
                 // set emoji
                 if (friend.activity.type != null && !friend.activity.type.isEmpty()) {
@@ -303,7 +303,7 @@ public class FriendsMapFragment extends Fragment {
 
                     Picasso.with(getContext())
                             .load(friend.pictureUrl)
-                            .resize(112, 112)
+                            .resize(85, 85)
                             .centerCrop()
                             .onlyScaleDown()
                             .error(R.drawable.ic_face_black_24dp)
@@ -311,15 +311,15 @@ public class FriendsMapFragment extends Fragment {
                             .into(markerImage, callback);
 
                 } else {
-                    
-                    Log.d(TAG, "set drawable: " + friend.pictureUrl + " " + friend.name);
+
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "set drawable: " + friend.pictureUrl + " " + friend.name);
                     markerImage.setBorderWidth(0);
                     markerImage.setColorFilter(color);
                     markerImage.setImageResource(R.drawable.ic_face_black_24dp);
                     addMarker(friend);
                 }
             } else {
-                Log.d(TAG, "update marker: "+ friend.name);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "update marker: "+ friend.name);
                 Marker marker = markers.get(friend.id);
                 marker.setTag(friend.id);
                 marker.setTitle(friend.name);
@@ -367,7 +367,7 @@ public class FriendsMapFragment extends Fragment {
     }
 
     private void unfocusFriend() {
-        Log.d(TAG, "unfocusFriend");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "unfocusFriend");
 
         if (friendFocused) {
             for (Marker m : markers.values()) {
@@ -382,7 +382,7 @@ public class FriendsMapFragment extends Fragment {
 
     public void displayFriendInfo(Friend friend) {
 
-        Log.d(TAG, "displayFriendInfo: " + friend.name);
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "displayFriendInfo: " + friend.name);
 
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
@@ -690,51 +690,11 @@ public class FriendsMapFragment extends Fragment {
                             }, DISPLAY_TIME);
                 }
             });
+            String timeLapse = friend.getTimeLapse(getResources());
 
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
-                Date date = Calendar.getInstance().getTime();
-                Date lastDate = sdf.parse(friend.lastUpdate);
-
-                long dif  = Math.abs(date.getTime() - lastDate.getTime());
-                long secondsInMilli = 1000;
-                long minutesInMilli = secondsInMilli * 60;
-                long hoursInMilli = minutesInMilli * 60;
-                long daysInMilli = hoursInMilli * 24;
-                long monthsInMilli = daysInMilli * 30;
-
-                long elapsedMonths = dif / monthsInMilli;
-                dif = dif % monthsInMilli;
-
-                long elapsedDays = dif / daysInMilli;
-                dif = dif % daysInMilli;
-
-                long elapsedHours = dif / hoursInMilli;
-                dif = dif % hoursInMilli;
-
-                long elapsedMinutes = dif / minutesInMilli;
-                dif = dif % minutesInMilli;
-
-                long elapsedSeconds = dif / secondsInMilli;
-
-                String elapsedTime = "";
-                if (elapsedMonths > 0 ) {
-                    elapsedTime = elapsedMonths + " " + getString(R.string.months);
-                } else if (elapsedDays > 0 ) {
-                    elapsedTime = elapsedDays + " " + getString(R.string.days);
-                } else if (elapsedHours > 0 ) {
-                    elapsedTime = elapsedHours + " " + getString(R.string.hours);
-                } else if (elapsedMinutes > 0 ) {
-                    elapsedTime = elapsedMinutes + " " + getString(R.string.minutes);
-                } else if (elapsedSeconds > 0 ) {
-                    elapsedTime = elapsedSeconds + " " + getString(R.string.seconds);
-                }
-
-                value.setText(elapsedTime);
-
+            if (timeLapse != null) {
+                value.setText(timeLapse);
                 infoLayout.addView(info);
-            } catch (ParseException e) {
-                Log.e(TAG, "Couldn't parse date: " + e + " " + friend.name);
             }
         }
     }

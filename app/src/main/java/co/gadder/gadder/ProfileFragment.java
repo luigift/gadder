@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.util.TimingLogger;
 import android.view.View;
 import android.widget.Switch;
@@ -64,17 +65,21 @@ public class ProfileFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateView");
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onActivityCreated");
+
         super.onActivityCreated(savedInstanceState);
 
         name = (TextView) getActivity().findViewById(R.id.profileName);
@@ -131,6 +136,8 @@ public class ProfileFragment extends Fragment {
     }
 
     public void setUser(final Friend user) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "setUser");
+
         name.setText(user.name);
         music.setChecked(user.sharing.musicSharing);
         battery.setChecked(user.sharing.batterySharing);
@@ -141,7 +148,7 @@ public class ProfileFragment extends Fragment {
         nearby.setChecked(user.notification.nearbyNotification);
         request.setChecked(user.notification.requestNotification);
 
-        if (user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
+        if (getContext() != null && user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
             Picasso.with(getContext())
                     .load(user.pictureUrl)
                     .resize(112, 112)
@@ -219,6 +226,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void launchMarket() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "launchMarket");
         Activity activity = getActivity();
         if (activity != null && activity.getPackageName() != null) {
             Uri uri = Uri.parse("market://details?id=" + activity.getPackageName());

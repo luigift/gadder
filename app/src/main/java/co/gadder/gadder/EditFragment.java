@@ -87,7 +87,7 @@ public class EditFragment extends Fragment {
         editImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "clicked");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "clicked");
                 if (!PermissionManager.checkWriteStoragePermission(getActivity()) || !PermissionManager.checkReadStoragePermission(getActivity())) {
 
                     PermissionManager.requestReadStoragePermission(getActivity());
@@ -157,7 +157,7 @@ public class EditFragment extends Fragment {
         if (requestCode == PICK_IMAGE_REQUEST_CODE) {
 
             Uri imageUri = data.getData();
-            Log.d(TAG, "data: " + imageUri.toString());
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "data: " + imageUri.toString());
             String photoPath = getPath(imageUri);
             Bitmap userBitmap = BitmapFactory.decodeFile(photoPath);
             if (userBitmap != null) {
@@ -193,7 +193,7 @@ public class EditFragment extends Fragment {
                 updateUserImage(userBitmap);
             } else {
                 FirebaseCrash.log(TAG + " Picked null image");
-                Log.d(TAG, "Null image");
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "Null image");
             }
         }
     }

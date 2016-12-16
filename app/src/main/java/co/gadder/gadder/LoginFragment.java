@@ -30,6 +30,7 @@ import android.widget.VideoView;
 
 import com.daimajia.androidanimations.library.Techniques;
 import com.daimajia.androidanimations.library.YoYo;
+import com.google.firebase.crash.FirebaseCrash;
 
 public class LoginFragment extends Fragment {
 
@@ -51,7 +52,7 @@ public class LoginFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.d(TAG, "onCreateView");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateView");
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_login, container, false);
         signIn = (Button) layout.findViewById(R.id.signIn);

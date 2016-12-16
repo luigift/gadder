@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.google.firebase.crash.FirebaseCrash;
+
 
 public class VerifiedFragment extends Fragment {
 
@@ -78,12 +80,12 @@ public class VerifiedFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        Log.d(TAG, "onRequestPermissionsResult");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onRequestPermissionsResult");
         switch (requestCode) {
             case REQUEST_CONTACTS_PERMISSION:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d(TAG, "permission granted");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "permission granted");
                     findFriends();
                 } else {
                     // TODO: EXPLAIN WHY WE NEED THE PERMISSION

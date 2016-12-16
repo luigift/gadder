@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.crash.FirebaseCrash;
 
 public class SignInFragment extends Fragment {
 
@@ -40,7 +41,7 @@ public class SignInFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
         super.onCreate(savedInstanceState);
         activity = (LoginActivity) getActivity();
         mAuth = FirebaseAuth.getInstance();
@@ -49,7 +50,7 @@ public class SignInFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreateView");
         // Inflate the layout for this fragment
         View layout = inflater.inflate(R.layout.fragment_sign_in, container, false);
         nextButton = (ImageButton) layout.findViewById(R.id.next);
@@ -60,7 +61,7 @@ public class SignInFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        Log.d(TAG, "onViewCreated");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onViewCreated");
         super.onViewCreated(view, savedInstanceState);
         setNextButtonBehavior();
     }
@@ -96,7 +97,7 @@ public class SignInFragment extends Fragment {
                 .addOnFailureListener(getActivity(), new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.d(TAG, e.toString());
+                        FirebaseCrash.logcat(Log.DEBUG, TAG, e.toString());
                         if (e instanceof FirebaseAuthInvalidCredentialsException) {
                             Toast.makeText(getActivity(), "Wrong Password", Toast.LENGTH_SHORT).show();
                         }

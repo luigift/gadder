@@ -20,6 +20,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.android.gms.location.Geofence;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DatabaseReference;
 import com.google.android.gms.location.GeofencingEvent;
@@ -65,7 +66,7 @@ public class GeofenceTransitionsIntentService extends IntentService implements
             if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {                         // Friend possible encounter
                 List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
                 for (Geofence geofence : triggeringGeofences) {
-                    Log.d(TAG, "Enter: " + geofence.getRequestId());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Enter: " + geofence.getRequestId());
                 }
             } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {                   // Update user's geofence
                 List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
@@ -73,13 +74,13 @@ public class GeofenceTransitionsIntentService extends IntentService implements
                     if (geofence.getRequestId().equals(user.getUid())) {                            // User left geofence, create new one
                         updateUserGeofence();
                     }
-                    Log.d(TAG, "Exit: " + geofence.getRequestId());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Exit: " + geofence.getRequestId());
                 }
             } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {                  // Friend probable encounter
                 List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
 
                 for (Geofence geofence : triggeringGeofences) {
-                    Log.d(TAG, "Dwell: " + geofence.getRequestId());
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Dwell: " + geofence.getRequestId());
                 }
             }
         } else {

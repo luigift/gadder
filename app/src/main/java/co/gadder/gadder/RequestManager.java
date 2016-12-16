@@ -14,6 +14,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
@@ -168,12 +169,12 @@ public class RequestManager {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, SERVER_URL, json, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.d(TAG, "response: " + response);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "response: " + response);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.d(TAG, "error: " + error);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "error: " + error);
             }
         }) {
             @Override
@@ -189,15 +190,15 @@ public class RequestManager {
             }
         };
 
-        Log.d(TAG, "body: " + request .getBody().toString());
-        Log.d(TAG, "content: " + request.getBodyContentType());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "body: " + request .getBody().toString());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "content: " + request.getBodyContentType());
         try {
-            Log.d(TAG, "headers: " + request.getHeaders().toString());
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "headers: " + request.getHeaders().toString());
         } catch (AuthFailureError authFailureError) {
-            Log.d(TAG, "AUTH ERROR");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, "AUTH ERROR");
             authFailureError.printStackTrace();
         }
-        Log.d(TAG, request.toString());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, request.toString());
         mRequestQueue.add(request);
     }
 

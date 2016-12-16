@@ -135,13 +135,13 @@ public class PhoneLoginFragment extends Fragment {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.d(TAG, "onRequestPermissionsResult");
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onRequestPermissionsResult");
         switch (requestCode) {
             case REQUEST_SMS_PERMISSION: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    Log.d(TAG, "Got SMS permission");
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "Got SMS permission");
                     FirebaseCrash.log("Got SMS permission");
                     startVerification();
 
