@@ -47,27 +47,32 @@ public class GadderFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {                                    // Application on the foreground
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "From: " + remoteMessage.getFrom());
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "Data Payload: " + remoteMessage.getData());
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "onMessageReceived");
+
         Map<String, String> data = remoteMessage.getData();
+
         if(data.containsKey(UPDATE) && Boolean.valueOf(data.get(UPDATE))) {
-            FirebaseCrash.logcat(Log.DEBUG, TAG, "updateRequest");
+            FirebaseCrash.logcat(Log.DEBUG, TAG, UPDATE);
             startService(new Intent(this, UserActivityService.class));
         }
 
         if (data.containsKey(NOTIFY) && Boolean.valueOf(data.get(NOTIFY))) {
+            FirebaseCrash.logcat(Log.DEBUG, TAG, NOTIFY);
             notifyUser(data);
         }
 
         if (data.containsKey(FRIENDSHIP) && Boolean.valueOf(data.get(FRIENDSHIP))) {
+            FirebaseCrash.logcat(Log.DEBUG, TAG, FRIENDSHIP);
             notifyUserFriendshipRequest(data);
         }
 
         if (data.containsKey(REMOVE_NOTIFICATION) && Boolean.valueOf(data.get(REMOVE_NOTIFICATION))) {
+            FirebaseCrash.logcat(Log.DEBUG, TAG, REMOVE_NOTIFICATION);
             removeNotification();
         }
 
         if(data.containsKey(WAKE_UP) && Boolean.valueOf(data.get(WAKE_UP))) {
+            FirebaseCrash.logcat(Log.DEBUG, TAG, WAKE_UP);
             wakePhoneUp();
         }
     }

@@ -50,6 +50,8 @@ public class RequestManager {
     }
 
     public static RequestManager getInstance(Context context) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "getInstance");
+
         if (mInstance == null) {
             mInstance = new RequestManager(context);
         }
@@ -57,6 +59,8 @@ public class RequestManager {
     }
 
     public void downloadImage(String url, Response.Listener<Bitmap> listener) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "downloadImage");
+
         ImageRequest imgRequest = new ImageRequest(url, listener, 200, 200, ImageView.ScaleType.CENTER_CROP, Bitmap.Config.ARGB_8888,
                 new Response.ErrorListener() {
                     @Override
@@ -68,6 +72,7 @@ public class RequestManager {
     }
 
     public void sendFriendshipRequestNotification(String token, String name, String pictureUrl) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendFriendshipRequestNotification");
 
         JSONObject data = new JSONObject();
         JSONObject json = new JSONObject();
@@ -86,7 +91,9 @@ public class RequestManager {
 
         sendRequest(json);
     }
+
     public void sendUpdateRequest(String token) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendUpdateRequest");
 
         JSONObject data = new JSONObject();
         JSONObject json = new JSONObject();
@@ -106,6 +113,7 @@ public class RequestManager {
     }
 
     public void sendUpdateRequest(String token, String name, String pictureUrl) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendUpdateRequest");
 
         JSONObject data = new JSONObject();
         JSONObject json = new JSONObject();
@@ -126,8 +134,8 @@ public class RequestManager {
         sendRequest(json);
     }
 
-    public void sendAllUpdateRequest(List<String> tokens) {
-
+    public void sendAllUpdatesRequest(List<String> tokens) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendAllUpdatesRequest");
         for (String t :tokens) {
             JSONObject data = new JSONObject();
             JSONObject json = new JSONObject();
@@ -148,6 +156,7 @@ public class RequestManager {
     }
 
     public void sendRemoveNotificationRequest(Set<String> tokens) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendRemoveNotificationRequest");
         for (String t :tokens) {
             JSONObject data = new JSONObject();
             JSONObject json = new JSONObject();
@@ -166,15 +175,17 @@ public class RequestManager {
     }
 
     private void sendRequest(JSONObject json) {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendRequest");
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.POST, SERVER_URL, json, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                FirebaseCrash.logcat(Log.DEBUG, TAG, "response: " + response);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "onResponse");
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                FirebaseCrash.logcat(Log.DEBUG, TAG, "error: " + error);
+                FirebaseCrash.logcat(Log.DEBUG, TAG, "onErrorResponse" + error);
+                FirebaseCrash.report(error.getCause());
             }
         }) {
             @Override
@@ -190,20 +201,12 @@ public class RequestManager {
             }
         };
 
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "body: " + request .getBody().toString());
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "content: " + request.getBodyContentType());
-        try {
-            FirebaseCrash.logcat(Log.DEBUG, TAG, "headers: " + request.getHeaders().toString());
-        } catch (AuthFailureError authFailureError) {
-            FirebaseCrash.logcat(Log.DEBUG, TAG, "AUTH ERROR");
-            authFailureError.printStackTrace();
-        }
-        FirebaseCrash.logcat(Log.DEBUG, TAG, request.toString());
         mRequestQueue.add(request);
     }
 
 
     public void cancelAllRequests() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "cancelAllRequests");
         mRequestQueue.cancelAll(new RequestQueue.RequestFilter() {
             @Override
             public boolean apply(Request<?> request) {

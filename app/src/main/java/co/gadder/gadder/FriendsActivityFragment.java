@@ -58,27 +58,30 @@ public class FriendsActivityFragment extends Fragment {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
+                                if (position > 0 && activity != null && position < activity.friends.size()) {
+                                    FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
 
-                                FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
+                                    Friend friend = adapter.getItem(position);
 
-                                Friend friend = adapter.getItem(position);
-
-                                if (friend == null) {
-                                  FirebaseCrash.logcat(Log.DEBUG, TAG, "Null friend clicked on friendsRecycler");
-                                } else if (friend.friendship.equals(Friend.FRIEND)){
-                                    activity.selectFriend(adapter.getItem(position));
-                                } else if (friend.friendship.equals(Friend.CONTACT)) {
-                                    Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
-                                    activity.requestFriendship(friend.id);
+                                    if (friend == null) {
+                                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Null friend clicked on friendsRecycler");
+                                    } else if (friend.friendship.equals(Friend.FRIEND)) {
+                                        activity.selectFriend(adapter.getItem(position));
+                                    } else if (friend.friendship.equals(Friend.CONTACT)) {
+                                        Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
+                                        activity.requestFriendship(friend.id);
+                                    }
                                 }
                             }
 
                             @Override
                             public void onLongItemClick(View view, int position) {
-                                getFragmentManager().beginTransaction()
-                                        .addToBackStack("click")
-                                        .replace(R.id.mainLayout, FloatingProfileFragment.newInstance(adapter.getItem(position)))
-                                        .commit();
+                                if (position > 0 && activity != null && position < activity.friends.size()) {
+                                    getFragmentManager().beginTransaction()
+                                            .addToBackStack("click")
+                                            .replace(R.id.mainLayout, FloatingProfileFragment.newInstance(adapter.getItem(position)))
+                                            .commit();
+                                }
                             }
                         }));
 

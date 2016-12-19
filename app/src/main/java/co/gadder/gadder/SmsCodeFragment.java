@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -315,7 +316,14 @@ public class SmsCodeFragment extends Fragment {
     }
 
     private void createUserOrSignIn() {
-        getActivity().unregisterReceiver(receiver);
+        if (receiver != null) {
+            try {
+                getActivity().unregisterReceiver(receiver);
+                receiver = null;
+            } catch (IllegalArgumentException e) {
+                FirebaseCrash.report(e);
+            }
+        }
 
         mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -326,12 +334,12 @@ public class SmsCodeFragment extends Fragment {
                             FirebaseCrash.logcat(Log.DEBUG, TAG, "SignIn failed");
                             FirebaseCrash.report(task.getException());
                         } else {
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            final FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
 
                                 FirebaseCrash.logcat(Log.DEBUG, TAG, "User existent");
 
-                                Map<String, Object> childUpdates = new HashMap<>();
+                                final HashMap<String, Object> childUpdates = new HashMap<>();
 
                                 // Register user number
                                 childUpdates.put(Constants.USER_PHONE + "/" + mPhoneParsed + "/", user.getUid());
@@ -373,6 +381,12 @@ public class SmsCodeFragment extends Fragment {
                                         .addOnFailureListener(new OnFailureListener() {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
+                                                if (getActivity()!= null) {
+                                                    Intent intent = new Intent(getActivity(), CreateUserService.class);
+                                                    intent.putExtra(Constants.USER_INFO, childUpdates);
+                                                    getActivity().startActivity(intent);
+                                                }
+
                                                 FirebaseCrash.logcat(Log.DEBUG, TAG, "Error creating user");
                                                 FirebaseCrash.report(e);
                                             }
@@ -389,21 +403,27 @@ public class SmsCodeFragment extends Fragment {
                                     .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                         @Override
                                         public void onComplete(@NonNull Task<AuthResult> task) {
+                                            FirebaseCrash.logcat(Log.DEBUG, TAG, "sigInWithEmailAndPassword: user existed");
                                             goToMainActivity();
                                         }
                                     })
                                     .addOnFailureListener(new OnFailureListener() {
                                         @Override
                                         public void onFailure(@NonNull Exception e) {
-                                            FirebaseCrash.logcat(Log.DEBUG, TAG, "exception: " + e);
+                                            FirebaseCrash.logcat(Log.DEBUG, TAG, "sigInWithEmailAndPassword: failed");
+                                            FirebaseCrash.report(e);
                                         }
                                     });
+                        } else {
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "createUserWithEmailAndPassword: FAILED");
+                            Toast.makeText(getContext(), "Error creating user, please retry", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
     }
 
     private void goToMainActivity() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "goToMainActivity");
         if (getActivity() != null) {
             Intent intent = new Intent(getActivity(), MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

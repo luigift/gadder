@@ -124,7 +124,7 @@ public class InputFragment extends Fragment {
 
                 mActivityReady = true;
 
-                sendActivity();
+                sendUserActivity();
 
             }
         });
@@ -139,12 +139,12 @@ public class InputFragment extends Fragment {
         mLocationReady = true;
 
         if (mActivityReady) {
-            sendActivity();
+            sendUserActivity();
         }
     }
 
-    private void sendActivity() {
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendActivity");
+    private void sendUserActivity() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "sendUserActivity");
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             FirebaseCrash.logcat(Log.DEBUG, TAG, "Sending Activity");

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,9 +61,9 @@ public class FriendsMapFragment extends Fragment {
     private MapView mapView;
     private LatLngBounds.Builder mBoundsBuilder;
 
-    private int bounderPadding = 250;
+    private int bounderPadding = 150;
 
-    private Boolean friendFocused = false;
+    private String friendFocused;
 
     View markerView;
     TextView marketName;
@@ -152,6 +153,7 @@ public class FriendsMapFragment extends Fragment {
     }
 
     private void iterateThroughFriends() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "iterateThroughFriends");
         Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
         if (mMap != null && f != null) {
 
@@ -162,7 +164,7 @@ public class FriendsMapFragment extends Fragment {
             }
 
             if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(f.getLatLng()));
+                focusFriend(f);
             } else {
                 if (checkSomeoneSharing()) {
                     iterateThroughFriends();
@@ -199,6 +201,7 @@ public class FriendsMapFragment extends Fragment {
                     for (Marker marker : markers.values()) {
                         mBoundsBuilder.include(marker.getPosition());
                     }
+
                     mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
                 }
             }
@@ -249,6 +252,7 @@ public class FriendsMapFragment extends Fragment {
 
     public void clearFriendInfo(){
         infoLayout.removeAllViews();
+        friendFocused = null;
     }
 
     public void updateFriendOnMap(final Friend friend) {
@@ -326,6 +330,11 @@ public class FriendsMapFragment extends Fragment {
                 marker.setPosition(friend.getLatLng());
                 marker.setSnippet("battery: " + friend.battery + "%");
             }
+
+            if (friendFocused != null && friendFocused.equals(friend.id)){
+                clearFriendInfo();
+                focusFriend(friend);
+            }
         }
     }
 
@@ -341,43 +350,46 @@ public class FriendsMapFragment extends Fragment {
         markers.put(friend.id, marker);
 
         mBoundsBuilder.include(friend.getLatLng());
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
+//        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(mBoundsBuilder.build(), bounderPadding));
     }
 
     public void focusFriend(Friend friend) {
-        LatLng latLng = friend.getLatLng();
-        if (latLng != null) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-        }
-
-        // Display focused marker
-        for (Marker m : markers.values()) {
-            if (m != null) {
-                m.setVisible(false);
+        if (friendFocused == null || !friendFocused.equals(friend.id)) {
+            LatLng latLng = friend.getLatLng();
+            if (latLng != null) {
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
             }
-        }
-        Marker marker = markers.get(friend.id);
-        if (marker != null) {
-            marker.setVisible(true);
-        }
 
-        displayFriendInfo(friend);
+            // Display hide other markers
+            for (Marker m : markers.values()) {
+                if (m != null) {
+                    m.setVisible(false);
+                }
+            }
 
-        friendFocused = true;
+            // Display selected marker
+            Marker marker = markers.get(friend.id);
+            if (marker != null) {
+                marker.setVisible(true);
+            }
+
+            displayFriendInfo(friend);
+
+            friendFocused = friend.id;
+        }
     }
 
     private void unfocusFriend() {
         FirebaseCrash.logcat(Log.DEBUG, TAG, "unfocusFriend");
 
-        if (friendFocused) {
+        if (friendFocused != null) {
             for (Marker m : markers.values()) {
                 if (m != null) {
                     m.setVisible(true);
                 }
             }
-            infoLayout.removeAllViews();
+            clearFriendInfo();
         }
-        friendFocused = false;
     }
 
     public void displayFriendInfo(Friend friend) {
@@ -499,7 +511,7 @@ public class FriendsMapFragment extends Fragment {
 
             String weather = "";
             String weatherText = "";
-            for(String w : friend.weather) {
+            for (String w : friend.weather) {
                 switch (w) {
                     case Constants.CLEAR:
                         weatherText += getString(R.string.clear) + " ";
@@ -544,28 +556,30 @@ public class FriendsMapFragment extends Fragment {
             }
 
             // Set values
-            image.setImageBitmap(Constants.textAsBitmap(weather, EMOJI_SIZE, Color.WHITE));
-            description.setText(getString(R.string.weather));
-            value.setText(weatherText);
-            description.setVisibility(View.GONE);
-            info.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    description.setVisibility(View.VISIBLE);
-                    new Handler().postDelayed(
-                            new Runnable() {
-                                @Override
-                                public void run() {
-                                    description.setVisibility(View.GONE);
-                                }
-                            }, DISPLAY_TIME);
-                }
-            });
+            if (!weather.isEmpty()) {
+                image.setImageBitmap(Constants.textAsBitmap(weather, EMOJI_SIZE, Color.WHITE));
+                description.setText(getString(R.string.weather));
 
+                value.setText(weatherText);
+                description.setVisibility(View.GONE);
+                info.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        description.setVisibility(View.VISIBLE);
+                        new Handler().postDelayed(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        description.setVisibility(View.GONE);
+                                    }
+                                }, DISPLAY_TIME);
+                    }
+                });
 
-            infoLayout.addView(info);
+                infoLayout.addView(info);
+            }
         }
-
+        
         // Share temperature
         if (friend.sharing.weatherSharing) {
 

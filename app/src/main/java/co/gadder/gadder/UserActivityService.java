@@ -376,6 +376,7 @@ public class UserActivityService extends Service implements
             });
         } else {
             FirebaseCrash.logcat(Log.DEBUG, TAG, "user null");
+            stopSelf();
         }
     }
 }

@@ -42,6 +42,13 @@ public class Constants {
     public final static String WINDY = "windy";
     public final static String UNKNOWN = "unknown";
 
+    // Shared Preferences
+    public final static String USER_CREATED = "user_created";
+
+
+    public final static String USER_INFO = "user_info";
+
+
     final static String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     public static Bitmap textAsBitmap(String text, float textSize, int textColor) {
