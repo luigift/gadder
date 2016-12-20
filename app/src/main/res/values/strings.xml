@@ -46,6 +46,7 @@
     <string name="explaining_verification">Gadder will send an SMS message to verify your phone number. Enter your country code, area code and phone number.</string>
 
     <!--Profile Fragment-->
+    <string name="your_phone">Your phone</string>
     <string name="hint_enter_name">Enter your name</string>
     <!--Sharing Options-->
     <string name="music_sharing">Music Sharing</string>

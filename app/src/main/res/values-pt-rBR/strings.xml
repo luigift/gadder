@@ -46,6 +46,7 @@
     <string name="explaining_verification">Gadder enviará um SMS para verificar seu número de telefone. Digite o código do seu país e o seu número de telefone.</string>
 
     <!--Profile Fragment-->
+    <string name="your_phone">Seu telefone </string>
     <string name="hint_enter_name">Qual o seu nome?</string>
     <!--Sharing Options-->
     <string name="music_sharing">Compartilhar música</string>

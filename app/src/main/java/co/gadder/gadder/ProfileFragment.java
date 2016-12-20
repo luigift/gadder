@@ -2,7 +2,9 @@ package co.gadder.gadder;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -10,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.util.TimingLogger;
 import android.view.View;
@@ -38,8 +41,6 @@ public class ProfileFragment extends Fragment {
 
     private static  final String TAG = "ProfileFragment";
 
-    TimingLogger timings = new TimingLogger(TAG, "Create");
-
     static int logoutClicks = 0;
 
     CardView edit;
@@ -47,13 +48,11 @@ public class ProfileFragment extends Fragment {
     CircleImageView image;
 
     Switch music;
-    Switch nearby;
-    Switch battery;
     Switch weather;
     Switch company;
     Switch location;
+    Switch battery;
     Switch activities;
-    Switch request;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -86,13 +85,11 @@ public class ProfileFragment extends Fragment {
         edit = (CardView) getActivity().findViewById(R.id.profileUserCard);
 
         music = (Switch) getActivity().findViewById(R.id.profileMusicSwitch);
-        nearby = (Switch) getActivity().findViewById(R.id.profileNearbySwitch);
         battery = (Switch) getActivity().findViewById(R.id.profileBatterySwitch);
         weather = (Switch) getActivity().findViewById(R.id.profileWeatherSwitch);
         company = (Switch) getActivity().findViewById(R.id.profileCompanySwitch);
         location = (Switch) getActivity().findViewById(R.id.profileLocationSwitch);
         activities = (Switch) getActivity().findViewById(R.id.profileActivitySwitch);
-        request = (Switch) getActivity().findViewById(R.id.profileFriendRequestSwitch);
 
         image = (CircleImageView) getActivity().findViewById(R.id.profileImage);
 
@@ -129,6 +126,13 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        final TextView phone = (TextView) getActivity().findViewById(R.id.profileUserPhone);
+        SharedPreferences pref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String s = getString(R.string.your_phone) + ": " +
+                pref.getString(getString(R.string.country_code), null) +
+                pref.getString(getString(R.string.phone), null);
+        phone.setText(s);
+
         Friend user = ((MainActivity) getActivity()).user;
         if (user != null) {
             setUser(user);
@@ -144,9 +148,6 @@ public class ProfileFragment extends Fragment {
         company.setChecked(user.sharing.companySharing);
         location.setChecked(user.sharing.locationSharing);
         activities.setChecked(user.sharing.activitySharing);
-
-        nearby.setChecked(user.notification.nearbyNotification);
-        request.setChecked(user.notification.requestNotification);
 
         if (getContext() != null && user.pictureUrl != null && !user.pictureUrl.isEmpty()) {
             Picasso.with(getContext())
@@ -207,20 +208,6 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 ref.child("sharing").child("weatherSharing").setValue(b);
-            }
-        });
-
-        // Notification callbacks
-        nearby.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                ref.child("notification").child("nearbyNotification").setValue(b);
-            }
-        });
-        request.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                ref.child("notification").child("requestNotification").setValue(b);
             }
         });
     }

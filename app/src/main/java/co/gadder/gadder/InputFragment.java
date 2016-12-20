@@ -130,7 +130,6 @@ public class InputFragment extends Fragment {
         });
     }
 
-
     public void setLocation(Location location) {
         FirebaseCrash.logcat(Log.DEBUG, TAG, "setLocation");
         mSendActivity.location.latitude = (float) location.getLatitude();
