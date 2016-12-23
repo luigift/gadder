@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -58,7 +59,8 @@ public class FriendsActivityFragment extends Fragment {
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-                                if (position > 0 && activity != null && position < activity.friends.size()) {
+                                FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
+                                if (position >= 0 && activity != null && position < activity.friends.size()) {
                                     FirebaseCrash.logcat(Log.DEBUG, TAG, "position: " + position + "size: " + activity.friends.size());
 
                                     Friend friend = adapter.getItem(position);
@@ -71,12 +73,18 @@ public class FriendsActivityFragment extends Fragment {
                                         Snackbar.make(view, getString(R.string.follow_request), Snackbar.LENGTH_LONG).show();
                                         activity.requestFriendship(friend.id);
                                     }
+                                } else if (activity != null){
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                                    builder.setTitle(activity.getString(R.string.add_friend_title))
+                                            .setMessage(activity.getString(R.string.add_friend_message))
+                                            .setPositiveButton(activity.getString(R.string.ok), null);
+                                    builder.create().show();
                                 }
                             }
 
                             @Override
                             public void onLongItemClick(View view, int position) {
-                                if (position > 0 && activity != null && position < activity.friends.size()) {
+                                if (position >= 0 && activity != null && position < activity.friends.size()) {
                                     getFragmentManager().beginTransaction()
                                             .addToBackStack("click")
                                             .replace(R.id.mainLayout, FloatingProfileFragment.newInstance(adapter.getItem(position)))

@@ -39,6 +39,7 @@
     <string name="send_sms">Send SMS</string>
     <string name="try_again">Try Again</string>
     <string name="wrong_code_title">Oops! Wrong Code!</string>
+    <string name="verification_title">Verify your phone number</string>
     <string name="charges_may_apply">Carrier SMS charges may apply</string>
     <string name="verifying_phone_message">Verifying your phone number\:</string>
     <string name="enter_sms_code">Please enter the code you have received.</string>
@@ -62,6 +63,10 @@
 
     <!--Map Fragment-->
     <string name="degrees">°C</string>
+
+    <!--Activity Fragment-->
+    <string name="add_friend_title">Add Friends</string>
+    <string name="add_friend_message">Friends are found automatically by saving their numbers (in the international format) to your contact list.</string>
 
     <!--Input Activity-->
     <string name="activity_input">What are you doing?</string>

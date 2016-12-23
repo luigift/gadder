@@ -4,9 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.telephony.PhoneNumberUtils;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -88,6 +92,32 @@ public class PhoneLoginFragment extends Fragment {
                 return false;
             }
         });
+
+//        // Format phone as it is being typed
+//        mPhoneText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                FirebaseCrash.logcat(Log.DEBUG, TAG, "afterTextChanged");
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    FirebaseCrash.logcat(Log.DEBUG, TAG, editable.toString());
+//                    mPhoneText.removeTextChangedListener(this);
+//                    String parsed = PhoneNumberUtils.formatNumber(editable.toString(), mCountryCodePicker.getDefaultCountryNameCode());
+//                    FirebaseCrash.logcat(Log.DEBUG, TAG, "parsed: " + parsed);
+//                    mPhoneText.setText(parsed);
+//                    mPhoneText.addTextChangedListener(this);
+//                }
+//            }
+//        });
 
         // Open keyboard
         mPhoneText.requestFocus();

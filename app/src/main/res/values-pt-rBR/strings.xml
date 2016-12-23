@@ -39,6 +39,7 @@
     <string name="send_sms">Enviar SMS</string>
     <string name="try_again">Tentar novamente</string>
     <string name="wrong_code_title">Oops! Código inválido!</string>
+    <string name="verification_title">Verificação do Número</string>
     <string name="charges_may_apply">Encargos extras podem ser aplicados</string>
     <string name="verifying_phone_message">Verificando o número do telefone</string>
     <string name="enter_sms_code">Digite o código que você recebeu</string>
@@ -62,6 +63,10 @@
 
     <!--Map Fragment-->
     <string name="degrees">°C</string>
+
+    <!--Activity Fragment-->
+    <string name="add_friend_title">Adicione seus amigos</string>
+    <string name="add_friend_message">Seus amigos são encontrados automaticamente a partir dos seus contatos salvos. Lembre-se de colocar o número no formato internacional.</string>
 
     <!--Input Activity-->
     <string name="activity_input">O que você está fazendo agora?</string>

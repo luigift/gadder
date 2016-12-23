@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TimingLogger;
@@ -33,7 +34,8 @@ public class FriendsRecyclerAdapter
     private static final int FRIEND_VIEWHOLDER = 0;
     private static final int ALL_FRIENDS_VIEWHOLDER = 1;
     private static final int NEW_FRIENDS_VIEWHOLDER = 2;
-    private static final int CONTACTS_REQUEST_VIEWHOLDER = 3;
+    private static final int ADD_FRIEND_VIEWHOLDER = 3;
+    private static final int CONTACTS_REQUEST_VIEWHOLDER = 4;
 
     private MainActivity activity;
 
@@ -114,6 +116,8 @@ public class FriendsRecyclerAdapter
             requestContactsImage = (ImageView) itemView.findViewById(R.id.requestContactsImage);
             Picasso.with(activity)
                     .load("http://cdn.tinybuddha.com/wp-content/uploads/2014/09/Friends-Having-Fun.png")
+                    .resize(400,200)
+                    .onlyScaleDown()
                     .into(requestContactsImage);
             requestContactsPermissionButton = (Button) itemView.findViewById(R.id.buttonRequestContacts);
             requestContactsPermissionButton.setOnClickListener(new View.OnClickListener() {
@@ -122,6 +126,18 @@ public class FriendsRecyclerAdapter
                     PermissionManager.requestContactsPermission(activity);
                 }
             });
+        }
+
+        @Override
+        public void updateView(int position) {
+
+        }
+    }
+
+    private class AddFriendViewHolder extends GenericViewHolder {
+
+        AddFriendViewHolder(View itemView) {
+            super(itemView);
         }
 
         @Override
@@ -337,23 +353,28 @@ public class FriendsRecyclerAdapter
 
     @Override
     public int getItemViewType(int position) {
-        Friend friend = getItem(position);
-
-        if (friend == null) {
-            return FRIEND_VIEWHOLDER;
-        }
-
         int itemViewType;
-        switch (friend.friendship) {
-            case Friend.FRIEND :
-                itemViewType = FRIEND_VIEWHOLDER;
-                break;
-            case Friend.CONTACT :
-                itemViewType = NEW_FRIENDS_VIEWHOLDER;
-                break;
-            default:
-                itemViewType = FRIEND_VIEWHOLDER;
-                break;
+
+        if (position < activity.friends.size()) {
+            Friend friend = getItem(position);
+
+            if (friend == null) {
+                return FRIEND_VIEWHOLDER;
+            }
+
+            switch (friend.friendship) {
+                case Friend.FRIEND:
+                    itemViewType = FRIEND_VIEWHOLDER;
+                    break;
+                case Friend.CONTACT:
+                    itemViewType = NEW_FRIENDS_VIEWHOLDER;
+                    break;
+                default:
+                    itemViewType = FRIEND_VIEWHOLDER;
+                    break;
+            }
+        } else {
+            itemViewType = ADD_FRIEND_VIEWHOLDER;
         }
         return itemViewType;
     }
@@ -376,6 +397,12 @@ public class FriendsRecyclerAdapter
                 return new NewFriendViewHolder(LayoutInflater
                         .from(parent.getContext())
                         .inflate(R.layout.item_new_friend, parent, false));
+
+            case ADD_FRIEND_VIEWHOLDER:
+                return new AddFriendViewHolder(LayoutInflater
+                        .from(parent.getContext())
+                        .inflate(R.layout.item_add_friends, parent, false));
+
             default:
                 return new FriendViewHolder(LayoutInflater
                         .from(parent.getContext())
@@ -392,7 +419,7 @@ public class FriendsRecyclerAdapter
 
     @Override
     public int getItemCount() {
-        return activity.friends.size();
+        return activity.friends.size() + 1;
     }
 
     public Friend getItem(int position) {

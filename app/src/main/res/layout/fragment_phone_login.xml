@@ -7,7 +7,7 @@
     tools:context="co.gadder.gadder.PhoneLoginFragment">
 
     <TextView
-        android:text="Verify your phone number"
+        android:text="@string/verification_title"
         android:textStyle="bold"
         android:textSize="16sp"
         android:layout_gravity="center"
@@ -40,6 +40,7 @@
             app:defaultNameCode="US"  />
 
         <EditText
+            android:hint=""
             android:textColor="@color/colorAccent"
             android:layout_weight="0.7"
             android:layout_width="0dp"
