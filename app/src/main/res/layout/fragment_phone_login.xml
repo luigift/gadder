@@ -40,14 +40,13 @@
             app:defaultNameCode="US"  />
 
         <EditText
-            android:hint=""
             android:textColor="@color/colorAccent"
             android:layout_weight="0.7"
             android:layout_width="0dp"
-            android:textSize="30sp"
+            android:textSize="25sp"
             android:layout_height="wrap_content"
             android:id="@+id/phoneNumberInput"
-            android:inputType="number" />
+            android:inputType="phone" />
     </LinearLayout>
 
     <LinearLayout

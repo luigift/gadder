@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.PhoneNumberUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,10 +26,19 @@ import android.widget.TextView;
 import com.google.firebase.crash.FirebaseCrash;
 import com.hbb20.CountryCodePicker;
 
+import static co.gadder.gadder.Config.FORMAT_WHILE_TYPING;
+import static co.gadder.gadder.Config.OPEN_KEYBOARD;
+
 public class PhoneLoginFragment extends Fragment {
     private final static String TAG = "PhoneLoginFragment";
 
     private final int REQUEST_SMS_PERMISSION = 1;
+
+    private final static String PHONE_HINT = "1123546532";
+
+    // Release Switches
+
+    private PhoneNumberFormattingTextWatcher phoneNumberWatcher;
 
     public PhoneLoginFragment() {
         // Required empty public constructor
@@ -62,7 +72,6 @@ public class PhoneLoginFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-
         mPhoneText = (EditText) getActivity().findViewById(R.id.phoneNumberInput);
         mCountryCodePicker = (CountryCodePicker) getActivity().findViewById(R.id.ccp);
         mCountryCodePicker.setKeyboardAutoPopOnSearch(false);
@@ -73,15 +82,59 @@ public class PhoneLoginFragment extends Fragment {
         // Set saved country code if there is
         String savedCountryCode = pref.getString(getString(R.string.country_code), null);
         if (savedCountryCode != null) {
-            mCountryCodePicker.setDefaultCountryUsingPhoneCode(Integer.valueOf(savedCountryCode));
+            mCountryCodePicker.setCountryForPhoneCode(Integer.valueOf(savedCountryCode));
         }
 
         // Set saved number if there is
         String savedPhone = pref.getString(getString(R.string.phone), null);
         if (savedPhone != null) {
-            mPhoneText.setText(savedPhone);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mPhoneText.setText(PhoneNumberUtils.formatNumber(savedPhone, mCountryCodePicker.getSelectedCountryNameCode()));
+            } else {
+                mPhoneText.setText(savedPhone);
+            }
         }
 
+        // Format phone as it is being typed
+        if (FORMAT_WHILE_TYPING) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                phoneNumberWatcher = new PhoneNumberFormattingTextWatcher(mCountryCodePicker.getSelectedCountryNameCode());
+                mPhoneText.addTextChangedListener(phoneNumberWatcher);
+
+                mCountryCodePicker.setOnCountryChangeListener(new CountryCodePicker.OnCountryChangeListener() {
+                    @Override
+                    public void onCountrySelected() {
+                        mPhoneText.removeTextChangedListener(phoneNumberWatcher);
+                        phoneNumberWatcher = new PhoneNumberFormattingTextWatcher(mCountryCodePicker.getSelectedCountryNameCode());
+                        mPhoneText.addTextChangedListener(phoneNumberWatcher);
+                        mPhoneText.setHint(PhoneNumberUtils.formatNumber(PHONE_HINT, mCountryCodePicker.getSelectedCountryNameCode()));
+                    }
+                });
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            String hintPhone = PhoneNumberUtils.formatNumber(PHONE_HINT, mCountryCodePicker.getSelectedCountryNameCode());
+            mPhoneText.setHint(hintPhone);
+        }
+
+        // Open keyboard
+        if (OPEN_KEYBOARD) {
+            mPhoneText.requestFocus();
+            InputMethodManager imgr =
+                    (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        }
+            mPhoneText.clearFocus();
+
+        // Verify Buttons
+        final Button verify = (Button) getActivity().findViewById(R.id.sendSmsButton);
+        verify.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkPermissionAndVerify();
+            }
+        });
         // Enter button behave as send sms button
         mPhoneText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -90,46 +143,6 @@ public class PhoneLoginFragment extends Fragment {
                     checkPermissionAndVerify();
                 }
                 return false;
-            }
-        });
-
-//        // Format phone as it is being typed
-//        mPhoneText.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-//
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//                FirebaseCrash.logcat(Log.DEBUG, TAG, "afterTextChanged");
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                    FirebaseCrash.logcat(Log.DEBUG, TAG, editable.toString());
-//                    mPhoneText.removeTextChangedListener(this);
-//                    String parsed = PhoneNumberUtils.formatNumber(editable.toString(), mCountryCodePicker.getDefaultCountryNameCode());
-//                    FirebaseCrash.logcat(Log.DEBUG, TAG, "parsed: " + parsed);
-//                    mPhoneText.setText(parsed);
-//                    mPhoneText.addTextChangedListener(this);
-//                }
-//            }
-//        });
-
-        // Open keyboard
-        mPhoneText.requestFocus();
-        InputMethodManager imgr =
-                (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
-
-        final Button verify = (Button) getActivity().findViewById(R.id.sendSmsButton);
-        verify.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkPermissionAndVerify();
             }
         });
     }

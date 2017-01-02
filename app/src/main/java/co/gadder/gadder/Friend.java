@@ -21,6 +21,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static co.gadder.gadder.Config.ACTIVITY_MAX_DURATION;
+import static co.gadder.gadder.Config.MUSIC_MAX_DURATION;
+
 public class Friend {
 
     private static final String TAG = "Friend";
@@ -30,9 +33,11 @@ public class Friend {
 
     public static class Music {
         public Music() {
+            time = "";
             song = "";
             playing = false;
         }
+        public String time;
         public String song;
         public Boolean playing;
     }
@@ -191,6 +196,72 @@ public class Friend {
             }
         }
         return "unknown";
+    }
+
+    protected Boolean displayActivity() {
+        if (activity != null && activity.time != null) {
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(Constants.DATE_FORMAT);
+                Date date = Calendar.getInstance().getTime();
+                Date lastDate = sdf.parse(activity.time);
+
+                long dif = Math.abs(date.getTime() - lastDate.getTime());
+                long secondsInMilli = 1000;
+                long minutesInMilli = secondsInMilli * 60;
+                long hoursInMilli = minutesInMilli * 60;
+                long daysInMilli = hoursInMilli * 24;
+                long monthsInMilli = daysInMilli * 30;
+
+                long elapsedMonths = dif / monthsInMilli;
+                dif = dif % monthsInMilli;
+
+                long elapsedDays = dif / daysInMilli;
+                dif = dif % daysInMilli;
+
+                long elapsedHours = dif / hoursInMilli;
+
+                return elapsedHours <= ACTIVITY_MAX_DURATION;
+
+            } catch (ParseException e) {
+                FirebaseCrash.report(e);
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    protected Boolean displayMusic() {
+        if (music != null && music.time != null) {
+            try {
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat(Constants.DATE_FORMAT);
+                Date date = Calendar.getInstance().getTime();
+                Date lastDate = sdf.parse(music.time);
+
+                long dif = Math.abs(date.getTime() - lastDate.getTime());
+                long secondsInMilli = 1000;
+                long minutesInMilli = secondsInMilli * 60;
+                long hoursInMilli = minutesInMilli * 60;
+                long daysInMilli = hoursInMilli * 24;
+                long monthsInMilli = daysInMilli * 30;
+
+                long elapsedMonths = dif / monthsInMilli;
+                dif = dif % monthsInMilli;
+
+                long elapsedDays = dif / daysInMilli;
+                dif = dif % daysInMilli;
+
+                long elapsedHours = dif / hoursInMilli;
+
+                return elapsedHours <= MUSIC_MAX_DURATION;
+
+            } catch (ParseException e) {
+                FirebaseCrash.report(e);
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     @Override

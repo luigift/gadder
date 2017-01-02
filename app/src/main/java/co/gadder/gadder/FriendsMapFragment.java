@@ -154,20 +154,22 @@ public class FriendsMapFragment extends Fragment {
 
     private void iterateThroughFriends() {
         FirebaseCrash.logcat(Log.DEBUG, TAG, "iterateThroughFriends");
-        Friend f =  new ArrayList<>(activity.friends.values()).get(friendIterator);
-        if (mMap != null && f != null) {
+        if (mMap != null && activity.friends.size() > 0) {
+            Friend f = new ArrayList<>(activity.friends.values()).get(friendIterator);
+            if (f != null) {
 
-            if (friendIterator >= activity.friends.size() - 1) {
-                friendIterator = 0;
-            } else {
-                friendIterator += 1;
-            }
+                if (friendIterator >= activity.friends.size() - 1) {
+                    friendIterator = 0;
+                } else {
+                    friendIterator += 1;
+                }
 
-            if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
-                focusFriend(f);
-            } else {
-                if (checkSomeoneSharing()) {
-                    iterateThroughFriends();
+                if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
+                    focusFriend(f);
+                } else {
+                    if (checkSomeoneSharing()) {
+                        iterateThroughFriends();
+                    }
                 }
             }
         }
@@ -432,7 +434,7 @@ public class FriendsMapFragment extends Fragment {
         }
 
         // Set music
-        if (friend.sharing.musicSharing && friend.music.playing) {
+        if (friend.sharing.musicSharing && friend.music.playing && friend.displayMusic()) {
             View info = inflater.inflate(R.layout.item_info, null);
             info.setLayoutParams(layout);
             ImageView image = (ImageView) info.findViewById(R.id.infoImage);
@@ -645,7 +647,7 @@ public class FriendsMapFragment extends Fragment {
             infoLayout.addView(info);
         }
 
-        if (friend.sharing.activitySharing) {
+        if (friend.sharing.activitySharing && friend.displayActivity()) {
             // Inflate View
             View info = inflater.inflate(R.layout.item_info, null);
             info.setLayoutParams(layout);

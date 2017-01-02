@@ -50,13 +50,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import static co.gadder.gadder.Config.ANIMATE_BAR;
+import static co.gadder.gadder.Config.SEND_REAL_SMS;
+import static co.gadder.gadder.Config.SET_SMS_RECEIVER;
+
 public class SmsCodeFragment extends Fragment {
 
     public static final String TAG = "SmsCodeFragment";
     private static final String ARG_PHONE = "arg_phone";
 
     public SmsCodeFragment() {
-
     }
 
     private BroadcastReceiver receiver;
@@ -92,7 +95,7 @@ public class SmsCodeFragment extends Fragment {
         // Set user login info
         mPhoneParsed = mPhone.replaceAll("\\D+", "");
         mEmail = mPhoneParsed + "@gadder.co";
-        mPassword = mPhone;
+        mPassword = "+" + mPhoneParsed;
     }
 
     @Override
@@ -204,21 +207,10 @@ public class SmsCodeFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if ((keyEvent != null && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) || (i == EditorInfo.IME_ACTION_DONE)) {
-                    String enteredCode
-                            = code1.getText().toString()
+                    checkCode(code1.getText().toString()
                             + code2.getText().toString()
                             + code3.getText().toString()
-                            + code4.getText().toString();
-
-                    if (enteredCode.equals(String.valueOf(mCode))) {
-                        createUserOrSignIn();
-                    } else {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                                .setPositiveButton(R.string.try_again, null)
-                                .setTitle(R.string.wrong_code_title)
-                                .setMessage(R.string.wrong_code_message);
-                        builder.create().show();
-                    }
+                            + code4.getText().toString() );
                 }
 
                 return false;
@@ -232,21 +224,10 @@ public class SmsCodeFragment extends Fragment {
         verify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String enteredCode
-                        = code1.getText().toString()
+                checkCode(code1.getText().toString()
                         + code2.getText().toString()
                         + code3.getText().toString()
-                        + code4.getText().toString();
-
-                if (enteredCode.equals(String.valueOf(mCode))) {
-                    createUserOrSignIn();
-                } else {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                            .setPositiveButton(R.string.try_again, null)
-                            .setTitle(R.string.wrong_code_title)
-                            .setMessage(R.string.wrong_code_message);
-                    builder.create().show();
-                }
+                        + code4.getText().toString() );
             }
         });
 
@@ -255,68 +236,88 @@ public class SmsCodeFragment extends Fragment {
 
     }
 
+    private void checkCode(String code) {
+        if (code.equals(String.valueOf(mCode))) {
+            createUserOrSignIn();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                    .setPositiveButton(R.string.try_again, null)
+                    .setTitle(R.string.wrong_code_title)
+                    .setMessage(R.string.wrong_code_message);
+            builder.create().show();
+        }
+    }
+    
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void setSmsReceiver() {
+        if (SET_SMS_RECEIVER) {
+            receiver = new BroadcastReceiver() {
+                @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    FirebaseCrash.logcat(Log.DEBUG, TAG, "onReceive");
+                    if (intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
+                        for (SmsMessage sms : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "body: " + sms.getMessageBody());
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "Sender: " + sms.getOriginatingAddress());
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "pid: " + sms.getIndexOnIcc());
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "protocol: " + sms.getProtocolIdentifier());
 
-        receiver = new BroadcastReceiver() {
-            @android.support.annotation.RequiresApi(api = Build.VERSION_CODES.KITKAT)
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                FirebaseCrash.logcat(Log.DEBUG, TAG, "onReceive");
-                if (intent.getAction().equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
-                    for (SmsMessage sms : Telephony.Sms.Intents.getMessagesFromIntent(intent)) {
-                        FirebaseCrash.logcat(Log.DEBUG, TAG, "body: " + sms.getMessageBody());
-                        FirebaseCrash.logcat(Log.DEBUG, TAG, "Sender: " + sms.getOriginatingAddress());
-                        FirebaseCrash.logcat(Log.DEBUG, TAG, "pid: " + sms.getIndexOnIcc());
-                        FirebaseCrash.logcat(Log.DEBUG, TAG, "protocol: " + sms.getProtocolIdentifier());
-
-                        if(mMessage.equals(sms.getMessageBody()) && mPhone.equals(sms.getOriginatingAddress())) {
-                            createUserOrSignIn();
+                            if (mMessage.equals(sms.getMessageBody()) && mPhone.equals(sms.getOriginatingAddress())) {
+                                createUserOrSignIn();
+                            }
                         }
                     }
                 }
-            }
-        };
-        IntentFilter intentFilter = new IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
-        intentFilter.setPriority(1000);
-        getActivity().registerReceiver(receiver, intentFilter);
+            };
+            IntentFilter intentFilter = new IntentFilter(Telephony.Sms.Intents.SMS_RECEIVED_ACTION);
+            intentFilter.setPriority(1000);
+            getActivity().registerReceiver(receiver, intentFilter);
+        }
     }
 
     private void animateBar() {
-        final ProgressBar progressBar = (ProgressBar) getActivity().findViewById(R.id.verificationProgress);
-        final Handler handler = new Handler();
-        new Thread(new Runnable() {
-            public void run() {
-                final int[] progressStatus = new int[]{0};
-                while (progressStatus[0] < 100) {
-                    handler.post(new Runnable() {
-                        public void run() {
-                            progressBar.setProgress(progressStatus[0]);
-                            progressStatus[0] += 1;
+        if (ANIMATE_BAR) {
+            final ProgressBar progressBar = (ProgressBar) getActivity().findViewById(R.id.verificationProgress);
+            final Handler handler = new Handler();
+            new Thread(new Runnable() {
+                public void run() {
+                    final int[] progressStatus = new int[]{0};
+                    while (progressStatus[0] < 100) {
+                        handler.post(new Runnable() {
+                            public void run() {
+                                progressBar.setProgress(progressStatus[0]);
+                                progressStatus[0] += 1;
+                            }
+                        });
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                    });
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
                 }
-            }
-        }).start();
+            }).start();
+        }
     }
 
     private void verifyPhone() {
         Random r = new Random();
         mCode = r.nextInt(8999) + 1000;
-//        Toast.makeText(getActivity(), "code: " + mCode, Toast.LENGTH_SHORT).show(); // TODO remove
         mMessage = "Your gadder verification code: " + mCode;
         SmsManager sm = SmsManager.getDefault();
-        sm.sendTextMessage(mPhone, null, mMessage, null, null); //TODO remove comment
+
+        if (SEND_REAL_SMS) {
+            sm.sendTextMessage(mPhone, null, mMessage, null, null); //TODO remove comment
+        } else {
+            Toast.makeText(getActivity(), "code: " + mCode, Toast.LENGTH_SHORT).show(); // TODO remove
+        }
+
         animateBar();
     }
 
     private void createUserOrSignIn() {
-        if (receiver != null) {
+        if (getActivity() != null && receiver != null) {
             try {
                 getActivity().unregisterReceiver(receiver);
                 receiver = null;
@@ -429,6 +430,14 @@ public class SmsCodeFragment extends Fragment {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
             getActivity().finish();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (getActivity() != null && receiver != null) {
+            getActivity().unregisterReceiver(receiver);
         }
     }
 }

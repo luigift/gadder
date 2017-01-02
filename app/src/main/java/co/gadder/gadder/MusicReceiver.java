@@ -10,6 +10,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,12 +25,16 @@ public class MusicReceiver extends BroadcastReceiver {
         String album = intent.getStringExtra("album");
         String track = intent.getStringExtra("track");
         String artist = intent.getStringExtra("artist");
-        String song = artist + ":" + album + ":" + track;
+        String song = artist + ":" + track;
+
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.DATE_FORMAT);
+        String date = sdf.format(Calendar.getInstance().getTime());
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             Map<String, Object> childUpdates = new HashMap<>();
             childUpdates.put("song", song);
+            childUpdates.put("time", date);
             childUpdates.put("playing", playing);
             FirebaseDatabase
                     .getInstance()

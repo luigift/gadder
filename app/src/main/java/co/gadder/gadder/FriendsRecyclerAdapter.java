@@ -218,17 +218,18 @@ public class FriendsRecyclerAdapter
                 timings.addSplit("set distance");
 
                 // set emoji
-                friendActivity.setImageBitmap(null);
-                if (friend.activity.type != null && !friend.activity.type.isEmpty()) {
-                    GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(friend.activity.type);
-                    if (act != null) {
-                        FirebaseCrash.logcat(Log.DEBUG, TAG, "activity set");
-                        String emoji = act.emoji;
-                        friendActivity.setImageBitmap(Constants.textAsBitmap(emoji, EMOJI_SIZE, Color.WHITE));
+                if (friend.displayActivity()) {
+                    friendActivity.setImageBitmap(null);
+                    if (friend.activity.type != null && !friend.activity.type.isEmpty()) {
+                        GadderActivities.GadderActivity act = GadderActivities.ACTIVITY_MAP.get(friend.activity.type);
+                        if (act != null) {
+                            FirebaseCrash.logcat(Log.DEBUG, TAG, "activity set");
+                            String emoji = act.emoji;
+                            friendActivity.setImageBitmap(Constants.textAsBitmap(emoji, EMOJI_SIZE, Color.WHITE));
+                        }
                     }
+                    timings.addSplit("set emoji");
                 }
-                timings.addSplit("set emoji");
-
 
                 String timeLapse = friend.getTimeLapse(activity.getResources());
                 if (timeLapse != null && !timeLapse.isEmpty()) {

@@ -60,6 +60,8 @@ import java.util.Set;
 import co.gadder.gadder.emoji.Objects;
 import co.gadder.gadder.emoji.People;
 
+import static co.gadder.gadder.Config.OFFLINE_PERSISTANCE;
+
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
@@ -79,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements
     protected GoogleApiClient mGoogleApiClient;
     protected ArrayList<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent = null;
+
+    static Boolean calledPersistent = false;
 
     // Firebase
     public FirebaseAuth mAuth;
@@ -126,8 +130,13 @@ public class MainActivity extends AppCompatActivity implements
         friends = new HashMap<>();
         listeners = new HashMap<>();
 
-        mStorage = FirebaseStorage.getInstance().getReference();
+        if(OFFLINE_PERSISTANCE && !calledPersistent) {
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+            calledPersistent = true;
+        }
+
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        mStorage = FirebaseStorage.getInstance().getReference();
 
         hideKeyboard();
         setActivityButton();
