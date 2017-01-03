@@ -85,6 +85,8 @@ public class FriendsMapFragment extends Fragment {
         return new FriendsMapFragment();
     }
 
+
+    ////////// Fragment Lifecycle  //////////
     @Override
     public void onCreate(Bundle savedInstanceState) {
         FirebaseCrash.logcat(Log.DEBUG, TAG, "onCreate");
@@ -141,38 +143,6 @@ public class FriendsMapFragment extends Fragment {
         });
 
         return layout;
-    }
-
-    private Boolean checkSomeoneSharing() {
-        ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
-        for(Friend f : array) {
-            if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND))
-                return true;
-        }
-        return false;
-    }
-
-    private void iterateThroughFriends() {
-        FirebaseCrash.logcat(Log.DEBUG, TAG, "iterateThroughFriends");
-        if (mMap != null && activity.friends.size() > 0) {
-            Friend f = new ArrayList<>(activity.friends.values()).get(friendIterator);
-            if (f != null) {
-
-                if (friendIterator >= activity.friends.size() - 1) {
-                    friendIterator = 0;
-                } else {
-                    friendIterator += 1;
-                }
-
-                if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
-                    focusFriend(f);
-                } else {
-                    if (checkSomeoneSharing()) {
-                        iterateThroughFriends();
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -250,6 +220,40 @@ public class FriendsMapFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
+    }
+
+
+    ///////// UI Methods ///////////
+    private Boolean checkSomeoneSharing() {
+        ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
+        for(Friend f : array) {
+            if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND))
+                return true;
+        }
+        return false;
+    }
+
+    private void iterateThroughFriends() {
+        FirebaseCrash.logcat(Log.DEBUG, TAG, "iterateThroughFriends");
+        if (mMap != null && activity.friends.size() > 0 && friendIterator < activity.friends.size()) {
+            Friend f = new ArrayList<>(activity.friends.values()).get(friendIterator);
+            if (f != null) {
+
+                if (friendIterator >= activity.friends.size() - 1) {
+                    friendIterator = 0;
+                } else {
+                    friendIterator += 1;
+                }
+
+                if (f.isSharingLocation() && f.friendship.equals(Friend.FRIEND)) {
+                    focusFriend(f);
+                } else {
+                    if (checkSomeoneSharing()) {
+                        iterateThroughFriends();
+                    }
+                }
+            }
+        }
     }
 
     public void clearFriendInfo(){
@@ -357,6 +361,7 @@ public class FriendsMapFragment extends Fragment {
 
     public void focusFriend(Friend friend) {
         if (friendFocused == null || !friendFocused.equals(friend.id)) {
+            clearFriendInfo();
             LatLng latLng = friend.getLatLng();
             if (latLng != null) {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));

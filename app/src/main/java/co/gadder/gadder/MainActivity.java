@@ -100,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements
     protected Map<String, ValueEventListener> listeners;
 
     protected String loginState = null;
-    protected Boolean friendsDownloaded = false;
 
     // View pager
     private static final int NUM_PAGES = 3;
@@ -841,18 +840,19 @@ public class MainActivity extends AppCompatActivity implements
             friendsListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot snap, String s) {
+
                     FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildAdded: " + snap.toString());
-                    if ((Boolean) snap.getValue()) {
+//                    if ((Boolean) snap.getValue()) {
                         requestUpdate(snap.getKey());
                         addChildFriendListener(snap.getKey());
-                    }
-                    friendsDownloaded = true;
+//                    }
                 }
 
                 @Override
                 public void onChildChanged(DataSnapshot snap, String s) {
                     FirebaseCrash.logcat(Log.DEBUG, TAG, "onChildChanged: " + snap.toString());
-                    if ((Boolean) snap.getValue()) {
+                    String relation = String.valueOf(snap.getValue());
+                    if (relation.equals("true") || relation.equals("friend")) {
                         addChildFriendListener(snap.getKey());
                     } else {
                         removeChildFriendListener(snap.getKey());
@@ -872,7 +872,6 @@ public class MainActivity extends AppCompatActivity implements
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    friendsDownloaded = false;
                 }
             };
         }

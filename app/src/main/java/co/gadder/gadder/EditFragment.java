@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -74,7 +75,7 @@ public class EditFragment extends Fragment {
         final TextView editName = (TextView) getActivity().findViewById(R.id.editUserName);
         final CircleImageView editImage = (CircleImageView) getActivity().findViewById(R.id.editUserImage);
 
-        FrameLayout layout = (FrameLayout) getActivity().findViewById(R.id.editLayout);
+        ScrollView layout = (ScrollView) getActivity().findViewById(R.id.editLayout);
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

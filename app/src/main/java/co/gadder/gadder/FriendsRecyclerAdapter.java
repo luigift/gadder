@@ -21,6 +21,8 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -425,6 +427,13 @@ public class FriendsRecyclerAdapter
 
     public Friend getItem(int position) {
         ArrayList<Friend> array = new ArrayList<>(activity.friends.values());
+        Collections.sort(array, new Comparator<Friend>() {
+            @Override
+            public int compare(Friend friend, Friend t1) {
+                return  friend.friendship.equals(t1.friendship) ? 0 : 1;
+            }
+        });
+
         if (position > array.size() - 1) {
             return null;
         }

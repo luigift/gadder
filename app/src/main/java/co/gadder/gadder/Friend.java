@@ -132,10 +132,6 @@ public class Friend {
         return location;
     }
 
-//    public Date getLastUpdate() {
-//        return new SimpleDateFormat(Constants.DATE_FORMAT).parse(lastUpdate);
-//    }
-
     protected Boolean isSharingLocation() {
         return sharing != null &&
                 sharing.locationSharing != null &&
@@ -148,7 +144,6 @@ public class Friend {
     protected Boolean hasPictureUrl() {
         return pictureUrl != null && !pictureUrl.isEmpty();
     }
-
 
     protected String getTimeLapse(Resources resources) {
         if (lastUpdate != null && !lastUpdate.isEmpty()) {
